@@ -20,13 +20,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       const pathname = nextUrl.pathname;
 
       // Protected routes
-      if (pathname.startsWith("/dashboard") || pathname.startsWith("/admin")) {
+      if (
+        pathname.startsWith("/dashboard") ||
+        pathname.startsWith("/admin") ||
+        pathname.startsWith("/onboarding")
+      ) {
         return isLoggedIn;
       }
 
       // Redirect logged-in users away from sign-in
       if (pathname === "/sign-in" && isLoggedIn) {
-        return Response.redirect(new URL("/dashboard", nextUrl));
+        return Response.redirect(new URL("/onboarding", nextUrl));
       }
 
       return true;

@@ -125,7 +125,7 @@ export function InstanceTable() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b text-left text-gray-500">
+              <tr className="border-b border-neutral-800 text-left text-gray-500">
                 <th className="pb-3 pr-4">Customer</th>
                 <th className="pb-3 pr-4">Plan</th>
                 <th className="pb-3 pr-4">Status</th>
@@ -138,7 +138,7 @@ export function InstanceTable() {
             </thead>
             <tbody>
               {instances.map((instance) => (
-                <tr key={instance.id} className="border-b last:border-0">
+                <tr key={instance.id} className="border-b border-neutral-800 last:border-0">
                   <td className="py-3 pr-4">
                     <div>
                       <div className="font-medium">{instance.user.name || "--"}</div>
@@ -168,7 +168,7 @@ export function InstanceTable() {
                         href={`https://t.me/${instance.telegramBotUsername}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-violet-600 hover:underline"
+                        className="text-red-400 hover:underline"
                       >
                         @{instance.telegramBotUsername}
                       </a>

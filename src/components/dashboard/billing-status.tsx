@@ -100,7 +100,7 @@ export function BillingStatus() {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center text-sm text-gray-600">
+        <div className="flex items-center text-sm text-gray-400">
           <Calendar className="mr-2 h-4 w-4" />
           Renews on{" "}
           {new Date(subscription.currentPeriodEnd).toLocaleDateString()}

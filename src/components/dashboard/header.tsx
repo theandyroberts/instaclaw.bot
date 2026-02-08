@@ -11,10 +11,10 @@ export function DashboardHeader({ title, description }: HeaderProps) {
   const { data: session } = useSession();
 
   return (
-    <div className="border-b bg-white px-8 py-6">
+    <div className="border-b border-neutral-800 bg-[#0a0a0a] px-8 py-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+          <h1 className="text-2xl font-bold text-gray-100">{title}</h1>
           {description && (
             <p className="mt-1 text-sm text-gray-500">{description}</p>
           )}

@@ -1,7 +1,7 @@
 const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY!;
 const API_BASE = "https://openrouter.ai/api/v1";
 
-async function orFetch(path: string, options?: RequestInit) {
+async function orFetch(path: string, options?: RequestInit): Promise<any> {
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {

@@ -135,27 +135,27 @@ export function StepLLM({ onComplete }: StepLLMProps) {
                 disabled={!isAvailable}
                 className={`flex items-start gap-4 rounded-lg border p-4 text-left transition-colors ${
                   isSelected
-                    ? "border-violet-600 bg-violet-50"
+                    ? "border-red-600 bg-red-950/30"
                     : isAvailable
-                      ? "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
-                      : "border-gray-100 bg-gray-50 opacity-60"
+                      ? "border-neutral-800 hover:border-neutral-700 hover:bg-neutral-800"
+                      : "border-neutral-800 bg-neutral-900 opacity-60"
                 }`}
               >
                 <div
                   className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 ${
                     isSelected
-                      ? "border-violet-600 bg-violet-600"
-                      : "border-gray-300"
+                      ? "border-red-600 bg-red-600"
+                      : "border-neutral-600"
                   }`}
                 >
                   {isSelected && <Check className="h-3 w-3 text-white" />}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-gray-900">
+                    <span className="font-medium text-gray-100">
                       {model.name}
                     </span>
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs text-gray-500">
                       {model.provider}
                     </span>
                     {model.free && (

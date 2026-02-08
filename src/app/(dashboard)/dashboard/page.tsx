@@ -4,10 +4,8 @@ import { redirect } from "next/navigation";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import {
-  Bot,
   Server,
   CreditCard,
   ArrowRight,
@@ -25,68 +23,13 @@ export default async function DashboardPage() {
     prisma.instance.findUnique({ where: { userId: session.user.id } }),
   ]);
 
-  // No subscription yet
+  // No subscription or onboarding incomplete -- redirect to onboarding funnel
   if (!subscription || subscription.status !== "active") {
-    return (
-      <>
-        <DashboardHeader
-          title="Dashboard"
-          description="Welcome to InstaClaw"
-        />
-        <div className="p-8">
-          <Card>
-            <CardContent className="flex flex-col items-center py-12 text-center">
-              <Bot className="mb-4 h-16 w-16 text-violet-300" />
-              <h2 className="mb-2 text-xl font-semibold">
-                Get Your AI Assistant
-              </h2>
-              <p className="mb-6 max-w-md text-gray-500">
-                Choose a plan to get your personal AI assistant on Telegram.
-                Setup takes less than 5 minutes.
-              </p>
-              <Button size="lg" asChild>
-                <a href="/#pricing">
-                  View Plans
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </a>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </>
-    );
+    redirect("/onboarding");
   }
 
-  // Has subscription but onboarding not complete
-  if (instance && instance.onboardingStep !== "complete") {
-    return (
-      <>
-        <DashboardHeader
-          title="Dashboard"
-          description="Let's finish setting up your AI assistant"
-        />
-        <div className="p-8">
-          <Card>
-            <CardContent className="flex flex-col items-center py-12 text-center">
-              <Bot className="mb-4 h-16 w-16 text-violet-300" />
-              <h2 className="mb-2 text-xl font-semibold">
-                Setup In Progress
-              </h2>
-              <p className="mb-6 max-w-md text-gray-500">
-                Your AI assistant is almost ready. Complete the setup to start
-                chatting on Telegram.
-              </p>
-              <Button size="lg" asChild>
-                <Link href="/dashboard/setup">
-                  Continue Setup
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      </>
-    );
+  if (!instance || instance.onboardingStep !== "complete") {
+    redirect("/onboarding");
   }
 
   // Fully set up
@@ -109,12 +52,12 @@ export default async function DashboardPage() {
               <div className="flex items-center gap-2">
                 <Badge
                   variant={
-                    instance?.status === "active" ? "default" : "secondary"
+                    instance.status === "active" ? "default" : "secondary"
                   }
                 >
-                  {instance?.status || "unknown"}
+                  {instance.status}
                 </Badge>
-                {instance?.healthStatus === "healthy" && (
+                {instance.healthStatus === "healthy" && (
                   <span className="text-xs text-green-600">Healthy</span>
                 )}
               </div>
@@ -129,12 +72,12 @@ export default async function DashboardPage() {
               <MessageCircle className="h-4 w-4 text-gray-400" />
             </CardHeader>
             <CardContent>
-              {instance?.telegramBotUsername ? (
+              {instance.telegramBotUsername ? (
                 <a
                   href={`https://t.me/${instance.telegramBotUsername}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-medium text-violet-600 hover:underline"
+                  className="font-medium text-red-400 hover:underline"
                 >
                   @{instance.telegramBotUsername}
                 </a>
@@ -156,13 +99,13 @@ export default async function DashboardPage() {
                 {subscription.plan}
               </div>
               <p className="text-xs text-gray-500">
-                AI: {instance?.llmProvider || "Kimi"}
+                AI: {instance.llmProvider || "Kimi"}
               </p>
             </CardContent>
           </Card>
         </div>
 
-        {instance?.telegramBotUsername && (
+        {instance.telegramBotUsername && (
           <Card className="mt-6">
             <CardContent className="flex items-center justify-between py-6">
               <div>

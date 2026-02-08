@@ -46,9 +46,9 @@ export function Sidebar({ onboardingIncomplete, isAdmin }: SidebarProps) {
   ];
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r bg-white">
-      <div className="border-b p-4">
-        <Link href="/" className="text-xl font-bold text-violet-600">
+    <aside className="flex h-screen w-64 flex-col border-r border-neutral-800 bg-[#0a0a0a]">
+      <div className="border-b border-neutral-800 p-4">
+        <Link href="/" className="text-xl font-bold text-red-500">
           InstaClaw
         </Link>
       </div>
@@ -62,14 +62,14 @@ export function Sidebar({ onboardingIncomplete, isAdmin }: SidebarProps) {
               href={link.href}
               className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-violet-50 text-violet-700"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  ? "bg-red-950/30 text-red-400"
+                  : "text-gray-400 hover:bg-neutral-800 hover:text-gray-100"
               }`}
             >
               <link.icon className="h-4 w-4" />
               {link.label}
               {link.dot && (
-                <span className="ml-auto h-2 w-2 rounded-full bg-violet-500" />
+                <span className="ml-auto h-2 w-2 rounded-full bg-red-500" />
               )}
             </Link>
           );
@@ -77,13 +77,13 @@ export function Sidebar({ onboardingIncomplete, isAdmin }: SidebarProps) {
 
         {isAdmin && (
           <>
-            <div className="my-2 border-t" />
+            <div className="my-2 border-t border-neutral-800" />
             <Link
               href="/admin/instances"
               className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 pathname.startsWith("/admin")
-                  ? "bg-violet-50 text-violet-700"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                  ? "bg-red-950/30 text-red-400"
+                  : "text-gray-400 hover:bg-neutral-800 hover:text-gray-100"
               }`}
             >
               <Shield className="h-4 w-4" />
@@ -93,10 +93,10 @@ export function Sidebar({ onboardingIncomplete, isAdmin }: SidebarProps) {
         )}
       </nav>
 
-      <div className="border-t p-3">
+      <div className="border-t border-neutral-800 p-3">
         <Button
           variant="ghost"
-          className="w-full justify-start text-gray-600"
+          className="w-full justify-start text-gray-400"
           onClick={() => signOut({ callbackUrl: "/" })}
         >
           <LogOut className="mr-2 h-4 w-4" />

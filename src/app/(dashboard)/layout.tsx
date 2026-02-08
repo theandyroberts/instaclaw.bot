@@ -26,7 +26,7 @@ export default async function DashboardLayout({
   const admin = isAdmin(session.user.email);
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-background">
       <Sidebar onboardingIncomplete={onboardingIncomplete} isAdmin={admin} />
       <div className="flex-1 overflow-auto">{children}</div>
     </div>

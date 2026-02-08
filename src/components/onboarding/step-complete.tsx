@@ -14,7 +14,7 @@ export function StepComplete({ botUsername }: StepCompleteProps) {
     <Card>
       <CardContent className="flex flex-col items-center py-12 text-center">
         <CheckCircle className="mb-4 h-16 w-16 text-green-500" />
-        <h2 className="mb-2 text-2xl font-bold text-gray-900">
+        <h2 className="mb-2 text-2xl font-bold text-gray-100">
           Your AI Assistant is Live!
         </h2>
         <p className="mb-6 max-w-md text-gray-500">

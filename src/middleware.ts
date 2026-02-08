@@ -10,7 +10,11 @@ export function middleware(request: NextRequest) {
     request.cookies.has("__Secure-authjs.session-token");
 
   // Protected routes -- redirect to sign-in if no session
-  if (pathname.startsWith("/dashboard") || pathname.startsWith("/admin")) {
+  if (
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/admin") ||
+    pathname.startsWith("/onboarding")
+  ) {
     if (!hasSession) {
       return NextResponse.redirect(new URL("/sign-in", request.url));
     }
@@ -18,12 +22,12 @@ export function middleware(request: NextRequest) {
 
   // Redirect signed-in users away from sign-in page
   if (pathname === "/sign-in" && hasSession) {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL("/onboarding", request.url));
   }
 
   return NextResponse.next();
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/sign-in"],
+  matcher: ["/dashboard/:path*", "/admin/:path*", "/sign-in", "/onboarding/:path*"],
 };

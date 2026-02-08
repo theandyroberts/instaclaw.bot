@@ -97,9 +97,9 @@ export function OnboardingWizard() {
               <div
                 className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
                   isActive
-                    ? "bg-violet-600 text-white"
-                    : "bg-gray-200 text-gray-500"
-                } ${isCurrent ? "ring-2 ring-violet-300" : ""}`}
+                    ? "bg-red-600 text-white"
+                    : "bg-neutral-800 text-gray-500"
+                } ${isCurrent ? "ring-2 ring-red-400" : ""}`}
               >
                 {step + 1}
               </div>
@@ -107,8 +107,8 @@ export function OnboardingWizard() {
                 <div
                   className={`h-0.5 w-12 ${
                     currentStepIndex > stepMap[step]
-                      ? "bg-violet-600"
-                      : "bg-gray-200"
+                      ? "bg-red-600"
+                      : "bg-neutral-800"
                   }`}
                 />
               )}

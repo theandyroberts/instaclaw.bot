@@ -16,10 +16,10 @@ export function StepProvision({
     <Card>
       <CardContent className="flex flex-col items-center py-12 text-center">
         <div className="relative mb-6">
-          <Server className="h-16 w-16 text-violet-300" />
-          <Loader2 className="absolute -bottom-1 -right-1 h-6 w-6 animate-spin text-violet-600" />
+          <Server className="h-16 w-16 text-red-400" />
+          <Loader2 className="absolute -bottom-1 -right-1 h-6 w-6 animate-spin text-red-500" />
         </div>
-        <h2 className="mb-2 text-xl font-semibold text-gray-900">{message}</h2>
+        <h2 className="mb-2 text-xl font-semibold text-gray-100">{message}</h2>
         <p className="max-w-md text-gray-500">{submessage}</p>
         <div className="mt-6 flex items-center gap-2 text-sm text-gray-400">
           <Loader2 className="h-4 w-4 animate-spin" />

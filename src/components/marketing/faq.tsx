@@ -50,10 +50,10 @@ const faqs = [
 
 export function FAQ() {
   return (
-    <section id="faq" className="bg-gray-50 px-4 py-20">
+    <section id="faq" className="bg-[#111111] px-4 py-20">
       <div className="mx-auto max-w-3xl">
         <div className="mb-12 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
+          <h2 className="mb-4 text-3xl font-bold text-gray-100 md:text-4xl">
             Frequently Asked Questions
           </h2>
         </div>
@@ -64,7 +64,7 @@ export function FAQ() {
               <AccordionTrigger className="text-left text-base font-medium">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="text-gray-600">
+              <AccordionContent className="text-gray-400">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>

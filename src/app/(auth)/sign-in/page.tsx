@@ -6,10 +6,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function SignInPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 text-3xl font-bold text-violet-600">
+          <div className="mx-auto mb-4 text-3xl font-bold text-red-500">
             InstaClaw
           </div>
           <CardTitle className="text-2xl">Welcome back</CardTitle>
@@ -22,7 +22,7 @@ export default function SignInPage() {
             className="w-full"
             variant="outline"
             size="lg"
-            onClick={() => signIn("google", { callbackUrl: "/dashboard" })}
+            onClick={() => signIn("google", { callbackUrl: "/onboarding" })}
           >
             <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24">
               <path

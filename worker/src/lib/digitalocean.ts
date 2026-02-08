@@ -2,7 +2,7 @@ const DO_TOKEN = process.env.DIGITALOCEAN_TOKEN!;
 const DO_SSH_KEY_ID = process.env.DO_SSH_KEY_ID!;
 const API_BASE = "https://api.digitalocean.com/v2";
 
-async function doFetch(path: string, options?: RequestInit) {
+async function doFetch(path: string, options?: RequestInit): Promise<any> {
   const response = await fetch(`${API_BASE}${path}`, {
     ...options,
     headers: {

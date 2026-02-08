@@ -87,13 +87,13 @@ export function Pricing() {
   };
 
   return (
-    <section id="pricing" className="bg-white px-4 py-20">
+    <section id="pricing" className="bg-[#0a0a0a] px-4 py-20">
       <div className="mx-auto max-w-6xl">
         <div className="mb-12 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
+          <h2 className="mb-4 text-3xl font-bold text-gray-100 md:text-4xl">
             Simple, Transparent Pricing
           </h2>
-          <p className="mx-auto max-w-2xl text-gray-600">
+          <p className="mx-auto max-w-2xl text-gray-400">
             No hidden fees. No usage limits on Starter. Cancel anytime.
           </p>
         </div>
@@ -104,13 +104,13 @@ export function Pricing() {
               key={plan.name}
               className={
                 plan.highlight
-                  ? "relative border-2 border-violet-600 shadow-lg"
+                  ? "relative border-2 border-red-600 shadow-lg"
                   : ""
               }
             >
               {plan.highlight && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-violet-600 text-white">
+                  <Badge className="bg-red-600 text-white">
                     Most Popular
                   </Badge>
                 </div>
@@ -119,7 +119,7 @@ export function Pricing() {
                 <CardTitle className="text-2xl">{plan.name}</CardTitle>
                 <CardDescription>{plan.description}</CardDescription>
                 <div className="mt-4">
-                  <span className="text-4xl font-bold text-gray-900">
+                  <span className="text-4xl font-bold text-gray-100">
                     {plan.price}
                   </span>
                   <span className="text-gray-500">{plan.period}</span>
@@ -130,7 +130,7 @@ export function Pricing() {
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2">
                       <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
-                      <span className="text-sm text-gray-700">{feature}</span>
+                      <span className="text-sm text-gray-300">{feature}</span>
                     </li>
                   ))}
                 </ul>

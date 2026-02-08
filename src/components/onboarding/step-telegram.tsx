@@ -23,7 +23,7 @@ export function StepTelegram({ onComplete }: StepTelegramProps) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const tokenRegex = /^\d{8,10}:[A-Za-z0-9_-]{35}$/;
+  const tokenRegex = /^\d{8,10}:[A-Za-z0-9_-]{34,}$/;
   const isValidFormat = tokenRegex.test(token);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,13 +64,13 @@ export function StepTelegram({ onComplete }: StepTelegramProps) {
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Instructions */}
-        <div className="rounded-lg bg-gray-50 p-4">
-          <h3 className="mb-3 font-semibold text-gray-900">
+        <div className="rounded-lg bg-[#111111] p-4">
+          <h3 className="mb-3 font-semibold text-gray-100">
             Step-by-step instructions:
           </h3>
-          <ol className="space-y-3 text-sm text-gray-700">
+          <ol className="space-y-3 text-sm text-gray-300">
             <li className="flex gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-medium text-violet-600">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-950/50 text-xs font-medium text-red-400">
                 1
               </span>
               <span>
@@ -79,7 +79,7 @@ export function StepTelegram({ onComplete }: StepTelegramProps) {
                   href="https://t.me/BotFather"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-medium text-violet-600 hover:underline"
+                  className="font-medium text-red-400 hover:underline"
                 >
                   @BotFather
                   <ExternalLink className="ml-1 inline h-3 w-3" />
@@ -87,16 +87,16 @@ export function StepTelegram({ onComplete }: StepTelegramProps) {
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-medium text-violet-600">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-950/50 text-xs font-medium text-red-400">
                 2
               </span>
               <span>
-                Send <code className="rounded bg-gray-200 px-1">/newbot</code>{" "}
+                Send <code className="rounded bg-neutral-800 px-1">/newbot</code>{" "}
                 to BotFather
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-medium text-violet-600">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-950/50 text-xs font-medium text-red-400">
                 3
               </span>
               <span>
@@ -104,7 +104,7 @@ export function StepTelegram({ onComplete }: StepTelegramProps) {
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-medium text-violet-600">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-950/50 text-xs font-medium text-red-400">
                 4
               </span>
               <span>
@@ -113,7 +113,7 @@ export function StepTelegram({ onComplete }: StepTelegramProps) {
               </span>
             </li>
             <li className="flex gap-3">
-              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-100 text-xs font-medium text-violet-600">
+              <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-red-950/50 text-xs font-medium text-red-400">
                 5
               </span>
               <span>

@@ -8,34 +8,28 @@ export function Navbar() {
   const { data: session } = useSession();
 
   return (
-    <nav className="sticky top-0 z-50 border-b bg-white/80 backdrop-blur-md">
+    <nav className="sticky top-0 z-50 border-b border-neutral-800 bg-[#0a0a0a]/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link href="/" className="text-2xl font-bold text-violet-600">
+        <Link href="/" className="text-2xl font-bold text-red-500">
           InstaClaw
         </Link>
 
         <div className="hidden items-center gap-6 md:flex">
           <Link
-            href="#how-it-works"
-            className="text-sm text-gray-600 hover:text-gray-900"
-          >
-            How It Works
-          </Link>
-          <Link
             href="#features"
-            className="text-sm text-gray-600 hover:text-gray-900"
+            className="text-sm text-gray-400 hover:text-gray-100"
           >
             Features
           </Link>
           <Link
             href="#pricing"
-            className="text-sm text-gray-600 hover:text-gray-900"
+            className="text-sm text-gray-400 hover:text-gray-100"
           >
             Pricing
           </Link>
           <Link
             href="#faq"
-            className="text-sm text-gray-600 hover:text-gray-900"
+            className="text-sm text-gray-400 hover:text-gray-100"
           >
             FAQ
           </Link>
@@ -44,17 +38,12 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           {session ? (
             <Button asChild>
-              <Link href="/dashboard">Dashboard</Link>
+              <Link href="/onboarding">Get Started</Link>
             </Button>
           ) : (
-            <>
-              <Button variant="ghost" asChild>
-                <Link href="/sign-in">Sign In</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/sign-in">Get Started</Link>
-              </Button>
-            </>
+            <Button asChild>
+              <Link href="/sign-in">Get Started</Link>
+            </Button>
           )}
         </div>
       </div>

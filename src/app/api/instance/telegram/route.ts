@@ -7,7 +7,7 @@ import { NextResponse } from "next/server";
 export const dynamic = 'force-dynamic';
 
 const telegramTokenSchema = z.object({
-  token: z.string().regex(/^\d{8,10}:[A-Za-z0-9_-]{35}$/, "Invalid Telegram bot token format"),
+  token: z.string().regex(/^\d{8,10}:[A-Za-z0-9_-]{34,}$/, "Invalid Telegram bot token format"),
 });
 
 export async function POST(req: Request) {

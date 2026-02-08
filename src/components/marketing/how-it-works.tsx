@@ -23,13 +23,13 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="bg-white px-4 py-20">
+    <section id="how-it-works" className="bg-[#0a0a0a] px-4 py-20">
       <div className="mx-auto max-w-6xl">
         <div className="mb-12 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-4xl">
+          <h2 className="mb-4 text-3xl font-bold text-gray-100 md:text-4xl">
             Live in 5 Minutes. Seriously.
           </h2>
-          <p className="mx-auto max-w-2xl text-gray-600">
+          <p className="mx-auto max-w-2xl text-gray-400">
             No servers to configure. No code to write. No Docker, no terminal, no headaches.
           </p>
         </div>
@@ -37,13 +37,13 @@ export function HowItWorks() {
         <div className="grid gap-8 md:grid-cols-3">
           {steps.map((step) => (
             <div key={step.title} className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-violet-100">
-                <step.icon className="h-8 w-8 text-violet-600" />
+              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-red-950/50">
+                <step.icon className="h-8 w-8 text-red-500" />
               </div>
-              <h3 className="mb-2 text-xl font-semibold text-gray-900">
+              <h3 className="mb-2 text-xl font-semibold text-gray-100">
                 {step.title}
               </h3>
-              <p className="text-gray-600">{step.description}</p>
+              <p className="text-gray-400">{step.description}</p>
             </div>
           ))}
         </div>
