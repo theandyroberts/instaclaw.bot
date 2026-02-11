@@ -93,6 +93,7 @@ model Instance {
   llmProvider         LLMProvider    @default(kimi)
   openrouterKeyId     String?
   llmConfigured       Boolean        @default(false)
+  provisionLog        Json?
   provisionedAt       DateTime?
   suspendedAt         DateTime?
   lastHealthCheck     DateTime?

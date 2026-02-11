@@ -12,6 +12,26 @@ import * as fs from "fs";
 import * as path from "path";
 import * as crypto from "crypto";
 
+interface LogEntry {
+  step: string;
+  message: string;
+  ts: string;
+}
+
+async function appendLog(instanceId: string, step: string, message: string) {
+  const entry: LogEntry = { step, message, ts: new Date().toISOString() };
+  const instance = await prisma.instance.findUnique({
+    where: { id: instanceId },
+    select: { provisionLog: true },
+  });
+  const log = (instance?.provisionLog as LogEntry[] | null) || [];
+  log.push(entry);
+  await prisma.instance.update({
+    where: { id: instanceId },
+    data: { provisionLog: log },
+  });
+}
+
 export const provisionWorker = new Worker(
   "provision",
   async (job) => {
@@ -26,8 +46,11 @@ export const provisionWorker = new Worker(
         data: {
           status: "provisioning",
           onboardingStep: "provisioning",
+          provisionLog: [],
         },
       });
+
+      await appendLog(instanceId, "started", "Provisioning started -- creating your server");
 
       // Read cloud-init template
       const cloudInitPath = path.join(__dirname, "../templates/cloud-init.yml");
@@ -47,15 +70,23 @@ export const provisionWorker = new Worker(
       );
 
       console.log(`[provision:${job.id}] Droplet created: ${droplet.id}`);
+      await appendLog(instanceId, "droplet_created", "Server created -- waiting for boot");
 
       // Wait for active
       console.log(`[provision:${job.id}] Waiting for droplet to be active...`);
       const activeDroplet = await waitForDropletActive(droplet.id);
       const ipAddress = getDropletPublicIP(activeDroplet);
       console.log(`[provision:${job.id}] Droplet active at ${ipAddress}`);
+      const instanceRecord = await prisma.instance.findUnique({
+        where: { id: instanceId },
+        include: { user: { select: { botConfig: true } } },
+      });
+      const botName = (instanceRecord?.user?.botConfig as { botName?: string } | null)?.botName;
+      await appendLog(instanceId, "droplet_active", botName ? `Server ${botName} online` : "Server online");
 
       // Wait for SSH and cloud-init to finish
       console.log(`[provision:${job.id}] Waiting for SSH and cloud-init...`);
+      await appendLog(instanceId, "cloud_init", "Installing system software");
       await new Promise((resolve) => setTimeout(resolve, 30000)); // Initial wait for SSH
 
       const ssh = await connectSSH(ipAddress);
@@ -76,9 +107,11 @@ export const provisionWorker = new Worker(
       // Verify Docker is available
       console.log(`[provision:${job.id}] Verifying Docker...`);
       await execSSH(ssh, "docker --version", "/");
+      await appendLog(instanceId, "docker_ready", "Docker installed and ready");
 
       try {
         console.log(`[provision:${job.id}] Setting up OpenClaw...`);
+        await appendLog(instanceId, "openclaw_setup", "Configuring your AI assistant");
 
         // Create directories (config lives at home/.openclaw for container's node user)
         await execSSH(ssh, "mkdir -p /opt/openclaw/home/.openclaw /opt/openclaw/data", "/");
@@ -95,8 +128,10 @@ export const provisionWorker = new Worker(
 
         // Pull Docker images
         console.log(`[provision:${job.id}] Pulling Docker images...`);
+        await appendLog(instanceId, "pulling_images", "Gathering the latest components");
         await execSSH(ssh, "docker compose pull", "/opt/openclaw");
 
+        await appendLog(instanceId, "base_complete", "Base setup complete -- ready for Telegram");
         console.log(`[provision:${job.id}] Base setup complete`);
       } finally {
         ssh.dispose();
@@ -117,6 +152,8 @@ export const provisionWorker = new Worker(
       console.log(`[provision:${job.id}] Provisioning complete!`);
     } catch (error) {
       console.error(`[provision:${job.id}] Failed:`, error);
+
+      await appendLog(instanceId, "error", "Provisioning encountered an issue -- retrying");
 
       await prisma.instance.update({
         where: { id: instanceId },

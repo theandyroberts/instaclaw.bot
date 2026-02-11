@@ -26,6 +26,7 @@ export async function GET() {
       llmProvider: instance.llmProvider,
       llmConfigured: instance.llmConfigured,
       healthStatus: instance.healthStatus,
+      provisionLog: instance.provisionLog,
     });
   } catch (error) {
     console.error("Instance status error:", error);
