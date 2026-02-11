@@ -12,8 +12,7 @@ export function middleware(request: NextRequest) {
   // Protected routes -- redirect to sign-in if no session
   if (
     pathname.startsWith("/dashboard") ||
-    pathname.startsWith("/admin") ||
-    pathname.startsWith("/onboarding")
+    pathname.startsWith("/admin")
   ) {
     if (!hasSession) {
       return NextResponse.redirect(new URL("/sign-in", request.url));
@@ -29,5 +28,5 @@ export function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/admin/:path*", "/sign-in", "/onboarding/:path*"],
+  matcher: ["/dashboard/:path*", "/admin/:path*", "/sign-in"],
 };

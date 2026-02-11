@@ -10,8 +10,8 @@ export function Navbar() {
   return (
     <nav className="sticky top-0 z-50 border-b border-neutral-800 bg-[#0a0a0a]/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link href="/" className="text-2xl font-bold text-red-500">
-          InstaClaw
+        <Link href="/" className="text-2xl font-bold">
+          <span className="text-gray-400">Insta</span><span className="text-red-500">Claw</span>
         </Link>
 
         <div className="hidden items-center gap-6 md:flex">
@@ -42,7 +42,7 @@ export function Navbar() {
             </Button>
           ) : (
             <Button asChild>
-              <Link href="/sign-in">Get Started</Link>
+              <Link href="/onboarding">Get Started</Link>
             </Button>
           )}
         </div>

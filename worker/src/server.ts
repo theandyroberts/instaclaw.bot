@@ -48,18 +48,16 @@ app.post("/jobs/configure-telegram", async (req, res) => {
   }
 });
 
-// Configure LLM
-app.post("/jobs/configure-llm", async (req, res) => {
+// Configure Workspace
+app.post("/jobs/configure-workspace", async (req, res) => {
   try {
-    const { instanceId, provider, plan } = req.body;
-    const job = await configureQueue.add("configure-llm", {
+    const { instanceId } = req.body;
+    const job = await configureQueue.add("configure-workspace", {
       instanceId,
-      provider,
-      plan,
     });
     res.json({ jobId: job.id, queue: "configure" });
   } catch (error) {
-    console.error("Failed to enqueue configure-llm:", error);
+    console.error("Failed to enqueue configure-workspace:", error);
     res.status(500).json({ error: "Failed to enqueue job" });
   }
 });

@@ -24,11 +24,17 @@ runcmd:
   - systemctl enable fail2ban
   - systemctl start fail2ban
 
+  # Install Docker
+  - curl -fsSL https://get.docker.com | sh
+  - systemctl enable docker
+  - systemctl start docker
+
   # Create app directories
   - mkdir -p /opt/openclaw/config
   - mkdir -p /opt/openclaw/data
 
   # Setup Docker log rotation
+  - mkdir -p /etc/docker
   - |
     cat > /etc/docker/daemon.json << 'EOF'
     {

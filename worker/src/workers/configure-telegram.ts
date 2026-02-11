@@ -1,7 +1,9 @@
 import { Worker } from "bullmq";
-import { redis } from "../queues";
+import { redis, configureQueue } from "../queues";
 import { prisma } from "../lib/prisma";
 import { connectSSH, execSSH, writeFileSSH } from "../lib/ssh";
+
+const CONFIG_PATH = "/opt/openclaw/home/.openclaw/openclaw.json";
 
 export const configureTelegramWorker = new Worker(
   "configure",
@@ -27,31 +29,28 @@ export const configureTelegramWorker = new Worker(
         // Read existing config or create new one
         let config: Record<string, unknown> = {};
         try {
-          const existing = await execSSH(
-            ssh,
-            "cat /opt/openclaw/config/openclaw.json"
-          );
+          const existing = await execSSH(ssh, `cat ${CONFIG_PATH}`);
           config = JSON.parse(existing);
         } catch {
           // No existing config, start fresh
         }
 
-        // Update Telegram configuration
-        config.version = "1.0";
-        config.channels = {
-          ...(config.channels as Record<string, unknown> || {}),
-          telegram: {
-            enabled: true,
-            token: token,
-          },
+        // Update Telegram configuration (OpenClaw format)
+        const channels = (config.channels as Record<string, unknown>) || {};
+        channels.telegram = {
+          enabled: true,
+          botToken: token,
+          dmPolicy: "open",
+          allowFrom: ["*"],
         };
+        config.channels = channels;
+
+        // Ensure config directory exists with correct ownership
+        await execSSH(ssh, "mkdir -p /opt/openclaw/home/.openclaw && chown -R 1000:1000 /opt/openclaw/home");
 
         // Write updated config
-        await writeFileSSH(
-          ssh,
-          "/opt/openclaw/config/openclaw.json",
-          JSON.stringify(config, null, 2)
-        );
+        await writeFileSSH(ssh, CONFIG_PATH, JSON.stringify(config, null, 2));
+        await execSSH(ssh, `chown 1000:1000 ${CONFIG_PATH}`);
 
         // Restart gateway if running
         try {
@@ -66,13 +65,16 @@ export const configureTelegramWorker = new Worker(
         ssh.dispose();
       }
 
-      // Update instance
+      // Update instance and chain to workspace configuration
       await prisma.instance.update({
         where: { id: instanceId },
         data: {
-          onboardingStep: "awaiting_llm_choice",
+          onboardingStep: "configuring_workspace",
         },
       });
+
+      // Auto-chain to workspace configuration
+      await configureQueue.add("configure-workspace", { instanceId });
     } catch (error) {
       console.error(`[configure-telegram:${job.id}] Failed:`, error);
 

@@ -6,8 +6,8 @@ export function Footer() {
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <div>
-            <Link href="/" className="text-xl font-bold text-red-500">
-              InstaClaw
+            <Link href="/" className="text-xl font-bold">
+              <span className="text-gray-400">Insta</span><span className="text-red-500">Claw</span>
             </Link>
             <p className="mt-1 text-sm text-gray-500">
               Your personal AI assistant on Telegram.

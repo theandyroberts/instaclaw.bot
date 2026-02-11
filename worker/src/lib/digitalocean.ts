@@ -40,7 +40,7 @@ export async function createDroplet(
       name,
       region: "nyc1",
       size: "s-1vcpu-2gb",
-      image: "docker-24-04",
+      image: "ubuntu-24-04-x64",
       ssh_keys: [DO_SSH_KEY_ID],
       backups: false,
       ipv6: false,

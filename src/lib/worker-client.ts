@@ -32,8 +32,8 @@ export async function enqueueTelegramConfig(instanceId: string, token: string) {
   return callWorker("/jobs/configure-telegram", { instanceId, token });
 }
 
-export async function enqueueLLMConfig(instanceId: string, provider: string, plan: string) {
-  return callWorker("/jobs/configure-llm", { instanceId, provider, plan });
+export async function enqueueWorkspaceConfig(instanceId: string) {
+  return callWorker("/jobs/configure-workspace", { instanceId });
 }
 
 export async function enqueueSuspend(instanceId: string) {

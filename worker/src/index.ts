@@ -3,7 +3,7 @@ import { app } from "./server";
 // Import workers to register them
 import "./workers/provision";
 import "./workers/configure-telegram";
-import "./workers/configure-llm";
+import "./workers/configure-workspace";
 import "./workers/suspend";
 import "./workers/unsuspend";
 import "./workers/terminate";

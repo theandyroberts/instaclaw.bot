@@ -44,6 +44,7 @@ export async function POST(req: Request) {
       customer: customerId,
       line_items: [{ price: priceId, quantity: 1 }],
       mode: "subscription",
+      allow_promotion_codes: true,
       success_url: `${process.env.NEXT_PUBLIC_APP_URL}/onboarding?checkout=success`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/?canceled=true`,
       subscription_data: {

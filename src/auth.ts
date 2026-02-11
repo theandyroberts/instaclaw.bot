@@ -22,8 +22,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Protected routes
       if (
         pathname.startsWith("/dashboard") ||
-        pathname.startsWith("/admin") ||
-        pathname.startsWith("/onboarding")
+        pathname.startsWith("/admin")
       ) {
         return isLoggedIn;
       }

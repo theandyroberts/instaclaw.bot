@@ -25,7 +25,7 @@ export function Hero() {
         </p>
 
         <Button size="lg" className="text-lg px-10 py-6 text-base" asChild>
-          <Link href="/sign-in">
+          <Link href="/onboarding">
             Get Started -- $29/mo
             <ArrowRight className="ml-2 h-5 w-5" />
           </Link>

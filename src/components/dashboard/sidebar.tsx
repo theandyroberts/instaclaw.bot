@@ -48,8 +48,8 @@ export function Sidebar({ onboardingIncomplete, isAdmin }: SidebarProps) {
   return (
     <aside className="flex h-screen w-64 flex-col border-r border-neutral-800 bg-[#0a0a0a]">
       <div className="border-b border-neutral-800 p-4">
-        <Link href="/" className="text-xl font-bold text-red-500">
-          InstaClaw
+        <Link href="/" className="text-xl font-bold">
+          <span className="text-gray-400">Insta</span><span className="text-red-500">Claw</span>
         </Link>
       </div>
 

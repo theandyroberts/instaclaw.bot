@@ -17,6 +17,7 @@ model User {
   updatedAt     DateTime  @updatedAt
   accounts      Account[]
   sessions      Session[]
+  botConfig     Json?
   subscription  Subscription?
   instance      Instance?
 
@@ -133,8 +134,7 @@ enum OnboardingStep {
   provisioning
   awaiting_telegram_token
   configuring_telegram
-  awaiting_llm_choice
-  configuring_llm
+  configuring_workspace
   complete
 }
 

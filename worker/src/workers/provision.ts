@@ -10,6 +10,7 @@ import { connectSSH, execSSH, writeFileSSH } from "../lib/ssh";
 import { generateDockerCompose } from "../lib/openclaw-config";
 import * as fs from "fs";
 import * as path from "path";
+import * as crypto from "crypto";
 
 export const provisionWorker = new Worker(
   "provision",
@@ -53,21 +54,43 @@ export const provisionWorker = new Worker(
       const ipAddress = getDropletPublicIP(activeDroplet);
       console.log(`[provision:${job.id}] Droplet active at ${ipAddress}`);
 
-      // Wait for SSH
-      console.log(`[provision:${job.id}] Waiting for SSH...`);
-      await new Promise((resolve) => setTimeout(resolve, 30000)); // Give cloud-init time
+      // Wait for SSH and cloud-init to finish
+      console.log(`[provision:${job.id}] Waiting for SSH and cloud-init...`);
+      await new Promise((resolve) => setTimeout(resolve, 30000)); // Initial wait for SSH
 
-      // SSH in and set up OpenClaw
       const ssh = await connectSSH(ipAddress);
+
+      // Wait for cloud-init to finish (installs Docker, etc.)
+      console.log(`[provision:${job.id}] Waiting for cloud-init to complete...`);
+      for (let i = 0; i < 60; i++) {
+        try {
+          const status = await execSSH(ssh, "cloud-init status --wait 2>/dev/null || cloud-init status 2>/dev/null || echo 'unknown'", "/");
+          if (status.includes("done") || status.includes("error")) break;
+          if (i > 0 && i % 10 === 0) console.log(`[provision:${job.id}] Still waiting for cloud-init... (${i * 10}s)`);
+        } catch {
+          // cloud-init command might not exist yet
+        }
+        await new Promise((resolve) => setTimeout(resolve, 10000));
+      }
+
+      // Verify Docker is available
+      console.log(`[provision:${job.id}] Verifying Docker...`);
+      await execSSH(ssh, "docker --version", "/");
 
       try {
         console.log(`[provision:${job.id}] Setting up OpenClaw...`);
 
-        // Create directories
-        await execSSH(ssh, "mkdir -p /opt/openclaw/config /opt/openclaw/data", "/");
+        // Create directories (config lives at home/.openclaw for container's node user)
+        await execSSH(ssh, "mkdir -p /opt/openclaw/home/.openclaw /opt/openclaw/data", "/");
+        await execSSH(ssh, "chown -R 1000:1000 /opt/openclaw/home", "/");
 
-        // Write docker-compose.yml
-        const compose = generateDockerCompose();
+        // Write docker-compose.yml with gateway token and API keys
+        const gatewayToken = crypto.randomBytes(32).toString("hex");
+        const compose = generateDockerCompose(gatewayToken, {
+          openrouterApiKey: process.env.OPENROUTER_API_KEY,
+          moonshotApiKey: process.env.KIMI_API_KEY,
+          braveApiKey: process.env.BRAVE_API_KEY,
+        });
         await writeFileSSH(ssh, "/opt/openclaw/docker-compose.yml", compose);
 
         // Pull Docker images
@@ -143,7 +166,11 @@ runcmd:
   - ufw --force enable
   - systemctl enable fail2ban
   - systemctl start fail2ban
+  - curl -fsSL https://get.docker.com | sh
+  - systemctl enable docker
+  - systemctl start docker
   - mkdir -p /opt/openclaw/config /opt/openclaw/data
+  - mkdir -p /etc/docker
   - |
     cat > /etc/docker/daemon.json << 'EOF'
     {

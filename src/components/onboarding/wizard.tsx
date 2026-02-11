@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import { StepProvision } from "./step-provision";
 import { StepTelegram } from "./step-telegram";
-import { StepLLM } from "./step-llm";
 import { StepComplete } from "./step-complete";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -44,7 +43,7 @@ export function OnboardingWizard() {
       "awaiting_provision",
       "provisioning",
       "configuring_telegram",
-      "configuring_llm",
+      "configuring_workspace",
     ];
 
     if (autoSteps.includes(instance.onboardingStep)) {
@@ -75,8 +74,7 @@ export function OnboardingWizard() {
     "provisioning",
     "awaiting_telegram_token",
     "configuring_telegram",
-    "awaiting_llm_choice",
-    "configuring_llm",
+    "configuring_workspace",
     "complete",
   ];
 
@@ -86,12 +84,12 @@ export function OnboardingWizard() {
     <div className="space-y-6">
       {/* Progress indicator */}
       <div className="flex items-center gap-2">
-        {[0, 1, 2, 3].map((step) => {
-          const stepMap = [0, 2, 4, 6]; // map to actual steps
+        {[0, 1, 2].map((step) => {
+          const stepMap = [0, 2, 4]; // map to actual steps
           const isActive = currentStepIndex >= stepMap[step];
           const isCurrent =
             currentStepIndex >= stepMap[step] &&
-            (step === 3 || currentStepIndex < stepMap[step + 1]);
+            (step === 2 || currentStepIndex < stepMap[step + 1]);
           return (
             <div key={step} className="flex items-center gap-2">
               <div
@@ -103,7 +101,7 @@ export function OnboardingWizard() {
               >
                 {step + 1}
               </div>
-              {step < 3 && (
+              {step < 2 && (
                 <div
                   className={`h-0.5 w-12 ${
                     currentStepIndex > stepMap[step]
@@ -132,14 +130,10 @@ export function OnboardingWizard() {
         />
       )}
 
-      {instance.onboardingStep === "awaiting_llm_choice" && (
-        <StepLLM onComplete={fetchStatus} />
-      )}
-
-      {instance.onboardingStep === "configuring_llm" && (
+      {instance.onboardingStep === "configuring_workspace" && (
         <StepProvision
-          message="Configuring your AI model..."
-          submessage="Almost there! This usually takes about 30 seconds."
+          message="Setting up your AI workspace..."
+          submessage="Almost there! Configuring your bot's personality and tools."
         />
       )}
 
