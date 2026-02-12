@@ -1,5 +1,5 @@
 import { Worker } from "bullmq";
-import { redis, configureQueue } from "../queues";
+import { redis } from "../queues";
 import { prisma } from "../lib/prisma";
 import { connectSSH, execSSH, writeFileSSH } from "../lib/ssh";
 
@@ -65,16 +65,13 @@ export const configureTelegramWorker = new Worker(
         ssh.dispose();
       }
 
-      // Update instance and chain to workspace configuration
+      // Workspace is already configured during provisioning, so go straight to complete
       await prisma.instance.update({
         where: { id: instanceId },
         data: {
-          onboardingStep: "configuring_workspace",
+          onboardingStep: "complete",
         },
       });
-
-      // Auto-chain to workspace configuration
-      await configureQueue.add("configure-workspace", { instanceId });
     } catch (error) {
       console.error(`[configure-telegram:${job.id}] Failed:`, error);
 

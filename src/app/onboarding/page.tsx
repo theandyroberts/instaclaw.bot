@@ -45,6 +45,36 @@ export default async function OnboardingPage({ searchParams }: PageProps) {
     prisma.instance.findUnique({ where: { userId } }),
   ]);
 
+  // --- SELF-HEALING: fix contradictory DB state before rendering ---
+  if (instance) {
+    const step = instance.onboardingStep;
+    const status = instance.status;
+
+    // Droplet is active but step is stuck at awaiting_provision/provisioning
+    if (status === "active" && instance.ipAddress && ["awaiting_provision", "provisioning"].includes(step)) {
+      const healedStep = instance.telegramBotToken ? "complete" : "awaiting_telegram_token";
+      await prisma.instance.update({
+        where: { id: instance.id },
+        data: {
+          onboardingStep: healedStep,
+          llmConfigured: true, // If droplet is active, workspace was configured during provisioning
+        },
+      });
+      // Mutate for the rest of this render
+      (instance as { onboardingStep: string }).onboardingStep = healedStep;
+      (instance as { llmConfigured: boolean }).llmConfigured = true;
+    }
+
+    // Telegram token is set but step is still awaiting it
+    if (instance.telegramBotToken && ["awaiting_telegram_token", "configuring_telegram", "configuring_workspace"].includes(step)) {
+      await prisma.instance.update({
+        where: { id: instance.id },
+        data: { onboardingStep: "complete" },
+      });
+      (instance as { onboardingStep: string }).onboardingStep = "complete";
+    }
+  }
+
   // Fully onboarded -- go to dashboard
   if (
     subscription?.status === "active" &&

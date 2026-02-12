@@ -483,7 +483,7 @@ export function OnboardingFunnel({
       )}
 
       {!waitingForPayment && currentStep === "provisioning" && (
-        <StepProvision botConfig={botConfig} />
+        <StepProvision botConfig={botConfig} onComplete={fetchStatus} />
       )}
 
       {!waitingForPayment && currentStep === "telegram" && (

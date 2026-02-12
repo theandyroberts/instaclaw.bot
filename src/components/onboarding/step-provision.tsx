@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   Loader2,
   Server,
@@ -14,7 +13,6 @@ import {
   User,
   Zap,
   FileText,
-  RefreshCw,
   CheckCircle2,
   Circle,
 } from "lucide-react";
@@ -39,6 +37,7 @@ interface StepProvisionProps {
   message?: string;
   submessage?: string;
   botConfig?: BotConfig | null;
+  onComplete?: () => void;
 }
 
 const personalityLabels: Record<string, { label: string; icon: typeof Smile }> = {
@@ -57,19 +56,21 @@ const expectedSteps = [
   { step: "docker_ready", message: "Docker installed and ready" },
   { step: "openclaw_setup", message: "Configuring your AI assistant" },
   { step: "pulling_images", message: "Gathering the latest components" },
-  { step: "base_complete", message: "Base setup complete" },
+  { step: "workspace_setup", message: "Personalizing your bot" },
+  { step: "container_started", message: "Starting your bot" },
+  { step: "base_complete", message: "Setup complete" },
 ];
 
 export function StepProvision({
   message = "Setting up your server...",
   submessage = "We\u2019re provisioning a dedicated server for your AI assistant. This usually takes 3\u20135 minutes.",
   botConfig,
+  onComplete,
 }: StepProvisionProps) {
   const [elapsed, setElapsed] = useState(0);
-  const [checking, setChecking] = useState(false);
   const [logEntries, setLogEntries] = useState<LogEntry[]>([]);
 
-  // Poll for provision log
+  // Poll for provision log + detect completion
   const fetchLog = useCallback(async () => {
     try {
       const res = await fetch("/api/instance/status");
@@ -78,10 +79,14 @@ export function StepProvision({
       if (data?.provisionLog && Array.isArray(data.provisionLog)) {
         setLogEntries(data.provisionLog);
       }
+      // Auto-advance when provisioning completes
+      if (data?.onboardingStep && !["awaiting_provision", "provisioning"].includes(data.onboardingStep)) {
+        onComplete?.();
+      }
     } catch {
       // Ignore
     }
-  }, []);
+  }, [onComplete]);
 
   useEffect(() => {
     fetchLog();
@@ -93,13 +98,6 @@ export function StepProvision({
     const timer = setInterval(() => setElapsed((s) => s + 1), 1000);
     return () => clearInterval(timer);
   }, []);
-
-  const showCheckButton = elapsed >= 30;
-
-  const handleCheck = () => {
-    setChecking(true);
-    window.location.href = "/onboarding";
-  };
 
   // Determine which steps are completed
   const completedSteps = new Set(logEntries.map((e) => e.step));
@@ -173,26 +171,13 @@ export function StepProvision({
         </CardContent>
       </Card>
 
-      {/* Check status / reassurance */}
-      {showCheckButton && (
-        <div className="text-center space-y-3">
+      {/* Reassurance after 60 seconds */}
+      {elapsed >= 60 && (
+        <div className="text-center">
           <p className="text-sm text-gray-500">
-            Taking longer than expected? Your server is still being set up in the background.
-            <br />
+            Your server is being set up in the background.
             You can safely close this page and come back anytime.
           </p>
-          <Button
-            variant="outline"
-            onClick={handleCheck}
-            disabled={checking}
-          >
-            {checking ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <RefreshCw className="mr-2 h-4 w-4" />
-            )}
-            Check Status
-          </Button>
         </div>
       )}
 

@@ -32,7 +32,8 @@ export interface DropletInfo {
 
 export async function createDroplet(
   name: string,
-  userData: string
+  userData: string,
+  extraTags: string[] = []
 ): Promise<DropletInfo> {
   const data = await doFetch("/droplets", {
     method: "POST",
@@ -45,7 +46,7 @@ export async function createDroplet(
       backups: false,
       ipv6: false,
       user_data: userData,
-      tags: ["instaclaw", "customer"],
+      tags: ["instaclaw", "customer", ...extraTags],
     }),
   });
 
