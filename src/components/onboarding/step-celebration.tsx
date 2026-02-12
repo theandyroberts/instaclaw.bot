@@ -9,6 +9,20 @@ interface StepCelebrationProps {
   botUsername: string;
 }
 
+function getTelegramUrl(botUsername: string): string {
+  if (typeof navigator === "undefined") return `https://t.me/${botUsername}`;
+
+  const ua = navigator.userAgent;
+  const isMobile = /iPhone|iPad|iPod|Android/i.test(ua);
+
+  if (isMobile) {
+    return `https://t.me/${botUsername}`;
+  }
+
+  // Desktop: open Telegram web client directly
+  return `https://web.telegram.org/k/#@${botUsername}`;
+}
+
 export function StepCelebration({ botUsername }: StepCelebrationProps) {
   return (
     <Card>
@@ -26,7 +40,7 @@ export function StepCelebration({ botUsername }: StepCelebrationProps) {
           {botUsername && (
             <Button size="lg" asChild>
               <a
-                href={`https://t.me/${botUsername}`}
+                href={getTelegramUrl(botUsername)}
                 target="_blank"
                 rel="noopener noreferrer"
               >
