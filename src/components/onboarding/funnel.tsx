@@ -200,6 +200,20 @@ export function OnboardingFunnel({
     const saved = loadWizardState();
     if (!saved) return;
 
+    // Resolve the priceId from wizard state or from the selected plan key
+    let priceId = saved.selectedPriceId;
+    if (!priceId) {
+      const planFromStorage = loadSelectedPlan();
+      if (planFromStorage) {
+        // Map plan id to priceId using env vars
+        const priceMap: Record<string, string> = {
+          starter: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID || "price_starter",
+          pro: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID || "price_pro",
+        };
+        priceId = priceMap[planFromStorage.id];
+      }
+    }
+
     const run = async () => {
       // Persist bot config to DB
       const configPayload = {
@@ -223,12 +237,12 @@ export function OnboardingFunnel({
       }
 
       // If they had a plan selected, go straight to Stripe
-      if (saved.selectedPriceId) {
+      if (priceId) {
         try {
           const res = await fetch("/api/billing/checkout", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ priceId: saved.selectedPriceId }),
+            body: JSON.stringify({ priceId }),
           });
           const data = await res.json();
           if (data.url) {
@@ -237,12 +251,11 @@ export function OnboardingFunnel({
             return;
           }
         } catch {
-          // Fall through to plan picker
+          // Fall through to plan confirmation
         }
       }
 
-      clearWizardState();
-      // Update local state from saved config
+      // Restore config and show plan confirmation
       setBotConfig({
         botName: saved.botName || "",
         personality: saved.personality || "",
@@ -252,6 +265,11 @@ export function OnboardingFunnel({
         useCases: saved.useCases || [],
         extraContext: saved.extraContext,
       });
+      // Load the selected plan for display
+      const planFromStorage = loadSelectedPlan();
+      if (planFromStorage) {
+        setSelectedPlan(planFromStorage);
+      }
       setCurrentStep("plan");
     };
 
@@ -565,6 +583,7 @@ export function OnboardingFunnel({
             onCheckoutStarted={() => {
               // User will be redirected to Stripe, then back to /onboarding
             }}
+            onBack={() => goBack("plan")}
             wizardState={currentWizardState}
             preselectedPlanId={selectedPlan?.id}
           />

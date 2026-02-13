@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Smile, Briefcase, Sparkles, PenLine } from "lucide-react";
@@ -55,33 +55,29 @@ export function StepPersonality({
   onNext,
   onBack,
 }: StepPersonalityProps) {
-  const [personality, setPersonality] = useState(config.personality);
+  const [personality, setPersonality] = useState(
+    config.personality || "professional"
+  );
   const [customPersonality, setCustomPersonality] = useState(
     config.customPersonality || ""
   );
-  const advanceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleSelect = (id: string) => {
     setPersonality(id);
-
-    if (advanceTimer.current) {
-      clearTimeout(advanceTimer.current);
-      advanceTimer.current = null;
-    }
-
     if (id !== "custom") {
       onUpdate({ personality: id, customPersonality: undefined });
-      advanceTimer.current = setTimeout(() => {
-        onNext();
-      }, 300);
     }
   };
 
-  const canProceedCustom =
-    personality === "custom" && customPersonality.trim().length > 0;
+  const canProceed =
+    personality !== "custom" || customPersonality.trim().length > 0;
 
-  const handleCustomContinue = () => {
-    onUpdate({ personality: "custom", customPersonality: customPersonality.trim() });
+  const handleContinue = () => {
+    if (personality === "custom") {
+      onUpdate({ personality: "custom", customPersonality: customPersonality.trim() });
+    } else {
+      onUpdate({ personality, customPersonality: undefined });
+    }
     onNext();
   };
 
@@ -131,35 +127,29 @@ export function StepPersonality({
       </div>
 
       {personality === "custom" && (
-        <div className="space-y-4">
-          <Input
-            placeholder="e.g. Sarcastic but helpful, like a wise-cracking sidekick"
-            value={customPersonality}
-            onChange={(e) => setCustomPersonality(e.target.value)}
-            maxLength={500}
-            className="h-12"
-          />
-          <Button
-            className="w-full"
-            onClick={handleCustomContinue}
-            disabled={!canProceedCustom}
-          >
-            Continue
-          </Button>
-        </div>
+        <Input
+          placeholder="e.g. Sarcastic but helpful, like a wise-cracking sidekick"
+          value={customPersonality}
+          onChange={(e) => setCustomPersonality(e.target.value)}
+          maxLength={500}
+          className="h-12"
+        />
       )}
 
-      {onBack && (
-        <div className="text-center">
-          <button
-            type="button"
-            onClick={onBack}
-            className="text-sm text-gray-500 hover:text-gray-300"
-          >
-            &larr; Back
-          </button>
-        </div>
-      )}
+      <div className="flex gap-3">
+        {onBack && (
+          <Button variant="outline" className="flex-1" onClick={onBack}>
+            Back
+          </Button>
+        )}
+        <Button
+          className="flex-1"
+          onClick={handleContinue}
+          disabled={!canProceed}
+        >
+          Continue
+        </Button>
+      </div>
     </div>
   );
 }
