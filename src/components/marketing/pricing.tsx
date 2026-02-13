@@ -238,13 +238,13 @@ export function Pricing() {
       {/* Onboarding wizard modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent
-          className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-0 gap-0"
+          className="sm:max-w-3xl max-h-[90vh] overflow-y-auto p-0 gap-0 bg-[#0a0a0a] border-neutral-700"
           showCloseButton={true}
         >
           <VisuallyHidden.Root>
             <DialogTitle>Set up your AI assistant</DialogTitle>
           </VisuallyHidden.Root>
-          <div className="px-6 py-8">
+          <div className="px-8 py-10">
             <OnboardingFunnel
               initialStep="welcome"
               isAuthenticated={false}
