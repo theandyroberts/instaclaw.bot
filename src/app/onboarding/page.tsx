@@ -10,6 +10,7 @@ interface PageProps {
 }
 
 type FunnelStep =
+  | "welcome"
   | "personality"
   | "use-cases"
   | "bot-name"
@@ -30,7 +31,7 @@ export default async function OnboardingPage({ searchParams }: PageProps) {
   if (!isAuthenticated) {
     return (
       <OnboardingFunnel
-        initialStep="personality"
+        initialStep="welcome"
         isAuthenticated={false}
         justSignedIn={false}
       />
@@ -94,7 +95,7 @@ export default async function OnboardingPage({ searchParams }: PageProps) {
   } | null;
 
   // Determine initial step
-  let initialStep: FunnelStep = "personality";
+  let initialStep: FunnelStep = "welcome";
   const checkoutPending = params.checkout === "success" && (!subscription || subscription.status !== "active");
 
   if (justSignedIn) {
@@ -107,7 +108,7 @@ export default async function OnboardingPage({ searchParams }: PageProps) {
     // Paid but not yet provisioned
     initialStep = "provisioning";
   } else if (!botConfig) {
-    initialStep = "personality";
+    initialStep = "welcome";
   } else if (!subscription || subscription.status !== "active") {
     initialStep = "plan";
   } else if (!instance || ["awaiting_provision", "provisioning"].includes(instance.onboardingStep)) {

@@ -10,6 +10,27 @@ export interface WizardState {
   userDescription?: string;
   currentStep: string;
   selectedPriceId?: string;
+  selectedPlanName?: string;
+  selectedPlanPrice?: string;
+}
+
+const SELECTED_PLAN_KEY = "instaclaw-selected-plan";
+
+export interface SelectedPlan {
+  id: string;
+  name: string;
+  price: string;
+}
+
+export function loadSelectedPlan(): SelectedPlan | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem(SELECTED_PLAN_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as SelectedPlan;
+  } catch {
+    return null;
+  }
 }
 
 export function loadWizardState(): WizardState | null {

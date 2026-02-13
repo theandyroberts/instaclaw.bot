@@ -19,6 +19,7 @@ interface StepPersonalityProps {
   config: BotConfig;
   onUpdate: (updates: Partial<BotConfig>) => void;
   onNext: () => void;
+  onBack?: () => void;
 }
 
 const personalities = [
@@ -52,6 +53,7 @@ export function StepPersonality({
   config,
   onUpdate,
   onNext,
+  onBack,
 }: StepPersonalityProps) {
   const [personality, setPersonality] = useState(config.personality);
   const [customPersonality, setCustomPersonality] = useState(
@@ -91,6 +93,9 @@ export function StepPersonality({
         </h2>
         <p className="mt-3 text-lg text-gray-400">
           Pick a personality -- you can always change it later.
+        </p>
+        <p className="mt-1 text-sm text-gray-500">
+          This affects how your bot greets you and responds to casual chat
         </p>
       </div>
 
@@ -143,6 +148,15 @@ export function StepPersonality({
           </Button>
         </div>
       )}
+
+      <div className="text-center">
+        <a
+          href="/#pricing"
+          className="text-sm text-gray-500 hover:text-gray-300"
+        >
+          &larr; Back to pricing
+        </a>
+      </div>
     </div>
   );
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MessageCircle, Zap, Shield } from "lucide-react";
 
@@ -25,10 +24,10 @@ export function Hero() {
         </p>
 
         <Button size="lg" className="text-lg px-10 py-6 text-base" asChild>
-          <Link href="/onboarding">
+          <a href="#pricing">
             Get Started -- $29/mo
             <ArrowRight className="ml-2 h-5 w-5" />
-          </Link>
+          </a>
         </Button>
 
         <div className="mt-12 flex items-center justify-center gap-8 text-sm text-gray-500">

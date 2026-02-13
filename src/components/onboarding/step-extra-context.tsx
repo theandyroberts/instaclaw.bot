@@ -45,6 +45,9 @@ export function StepExtraContext({
         <p className="mt-3 text-lg text-gray-400">
           We wrote a starting point -- tweak it or leave it as-is.
         </p>
+        <p className="mt-1 text-sm text-gray-500">
+          These shape your bot&apos;s default behavior and tone
+        </p>
       </div>
 
       <div className="space-y-2">

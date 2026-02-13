@@ -57,6 +57,9 @@ export function StepAboutYou({
         <p className="mt-3 text-lg text-gray-400">
           We wrote a starting point -- edit it to get better results.
         </p>
+        <p className="mt-1 text-sm text-gray-500">
+          Help your bot personalize responses to you
+        </p>
       </div>
 
       <div className="space-y-4">

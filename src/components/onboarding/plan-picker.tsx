@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSession, signIn } from "next-auth/react";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,8 +15,22 @@ import { Check, Loader2, LogIn } from "lucide-react";
 import type { WizardState } from "@/lib/onboarding-storage";
 import { saveWizardState } from "@/lib/onboarding-storage";
 
-const plans = [
+interface Plan {
+  id: string;
+  name: string;
+  description: string;
+  price: string;
+  period: string;
+  features: string[];
+  priceId: string;
+  highlight: boolean;
+  selectable: boolean;
+  badge?: string;
+}
+
+const plans: Plan[] = [
   {
+    id: "starter",
     name: "Starter",
     description: "Your personal AI assistant on Telegram",
     price: "$29",
@@ -31,53 +45,83 @@ const plans = [
       "24/7 uptime",
     ],
     priceId: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID || "price_starter",
-    cta: "Get Started",
     highlight: false,
+    selectable: true,
   },
   {
+    id: "pro",
     name: "Pro",
     description: "Premium AI tools for power users",
     price: "$49",
     period: "/month",
     features: [
       "Everything in Starter",
-      "Premium AI model",
+      "Access to foundation models",
       "100 AI images per day",
+      "Personal web server*",
       "Advanced AI configuration",
       "Priority support",
-      "Dedicated private server",
-      "24/7 uptime",
     ],
     priceId: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID || "price_pro",
-    cta: "Go Pro",
     highlight: true,
+    selectable: true,
+    badge: "Most Popular",
+  },
+  {
+    id: "enterprise",
+    name: "Enterprise",
+    description: "Custom solutions for teams and businesses",
+    price: "Custom",
+    period: "",
+    features: [
+      "Everything in Pro",
+      "Custom model integrations",
+      "Dedicated account manager",
+      "SLA guarantees",
+    ],
+    priceId: "",
+    highlight: false,
+    selectable: false,
+    badge: "Coming Soon",
   },
 ];
 
 interface PlanPickerProps {
   onCheckoutStarted: () => void;
   wizardState?: WizardState | null;
+  preselectedPlanId?: string;
 }
 
-export function PlanPicker({ onCheckoutStarted, wizardState }: PlanPickerProps) {
+export function PlanPicker({ onCheckoutStarted, wizardState, preselectedPlanId }: PlanPickerProps) {
   const { data: session } = useSession();
   const isAuthenticated = !!session?.user;
 
-  const [selectedPriceId, setSelectedPriceId] = useState<string | null>(null);
+  // Pre-select from landing page choice or default to pro
+  const [selectedPlanId, setSelectedPlanId] = useState<string>(preselectedPlanId || "pro");
   const [loading, setLoading] = useState(false);
 
-  const handleSelectPlan = (priceId: string) => {
-    setSelectedPriceId(priceId);
+  // Update selection if preselectedPlanId changes
+  useEffect(() => {
+    if (preselectedPlanId) {
+      setSelectedPlanId(preselectedPlanId);
+    }
+  }, [preselectedPlanId]);
+
+  const selectedPlan = plans.find((p) => p.id === selectedPlanId && p.selectable);
+
+  const handleSelectPlan = (plan: Plan) => {
+    if (!plan.selectable) return;
+    setSelectedPlanId(plan.id);
   };
 
   const handleGo = async () => {
-    if (!selectedPriceId) return;
+    if (!selectedPlan) return;
     setLoading(true);
 
     if (!isAuthenticated) {
       // Save wizard state + selected plan to localStorage, then sign in
       if (wizardState) {
-        saveWizardState({ ...wizardState, selectedPriceId });
+        saveWizardState({ ...wizardState, selectedPriceId: selectedPlan.priceId });
       }
       signIn("google", { callbackUrl: "/onboarding?from=auth" });
       return;
@@ -108,7 +152,7 @@ export function PlanPicker({ onCheckoutStarted, wizardState }: PlanPickerProps) 
       const response = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId: selectedPriceId }),
+        body: JSON.stringify({ priceId: selectedPlan.priceId }),
       });
 
       const data = await response.json();
@@ -133,24 +177,38 @@ export function PlanPicker({ onCheckoutStarted, wizardState }: PlanPickerProps) 
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2">
+      <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
         {plans.map((plan) => {
-          const isSelected = selectedPriceId === plan.priceId;
+          const isSelected = selectedPlanId === plan.id;
+          const isEnterprise = !plan.selectable;
+
           return (
             <Card
-              key={plan.name}
-              className={`relative cursor-pointer transition-all ${
-                isSelected
-                  ? "border-2 border-red-600 ring-2 ring-red-600/30 shadow-lg"
-                  : plan.highlight
-                    ? "border-2 border-red-600/50 shadow-lg"
-                    : "border-2 border-neutral-600 hover:border-neutral-500"
+              key={plan.id}
+              onClick={() => handleSelectPlan(plan)}
+              className={`relative transition-all ${
+                isEnterprise
+                  ? "opacity-60 cursor-default"
+                  : "cursor-pointer"
+              } ${
+                isSelected && !isEnterprise
+                  ? "border-2 border-red-600 ring-2 ring-red-600/30 shadow-lg shadow-red-900/20"
+                  : isEnterprise
+                    ? "border border-neutral-800"
+                    : "border-2 border-neutral-700 hover:border-neutral-600"
               }`}
-              onClick={() => handleSelectPlan(plan.priceId)}
             >
-              {plan.highlight && (
+              {plan.badge && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                  <Badge className="bg-red-600 text-white">Most Popular</Badge>
+                  <Badge
+                    className={
+                      plan.badge === "Most Popular"
+                        ? "bg-red-600 text-white"
+                        : "bg-neutral-700 text-gray-300"
+                    }
+                  >
+                    {plan.badge}
+                  </Badge>
                 </div>
               )}
               <CardHeader>
@@ -160,29 +218,59 @@ export function PlanPicker({ onCheckoutStarted, wizardState }: PlanPickerProps) 
                   <span className="text-3xl font-bold text-gray-100">
                     {plan.price}
                   </span>
-                  <span className="text-gray-500">{plan.period}</span>
+                  {plan.period && (
+                    <span className="text-gray-500">{plan.period}</span>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
-                <ul className="mb-6 space-y-2">
+                <ul className="space-y-2">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2">
-                      <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
-                      <span className="text-sm text-gray-300">{feature}</span>
+                      <Check
+                        className={`mt-0.5 h-4 w-4 shrink-0 ${
+                          isEnterprise ? "text-gray-600" : "text-green-500"
+                        }`}
+                      />
+                      <span
+                        className={`text-sm ${
+                          isSelected && !isEnterprise
+                            ? "text-gray-100"
+                            : isEnterprise
+                              ? "text-gray-600"
+                              : "text-gray-500"
+                        }`}
+                      >
+                        {feature}
+                      </span>
                     </li>
                   ))}
                 </ul>
+
+                {isEnterprise && (
+                  <a
+                    href="mailto:andy@sparkpoint.studio?subject=InstaClaw Enterprise"
+                    className="mt-4 block text-center text-sm text-red-400 hover:text-red-300 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Contact us for pricing
+                  </a>
+                )}
               </CardContent>
             </Card>
           );
         })}
       </div>
 
+      <p className="text-center text-xs text-gray-600">
+        *Personal web server coming soon
+      </p>
+
       <Button
         className="w-full h-14 text-lg"
         size="lg"
         onClick={handleGo}
-        disabled={!selectedPriceId || loading}
+        disabled={!selectedPlan || loading}
       >
         {loading ? (
           <>

@@ -53,6 +53,9 @@ export function StepBotName({
         <p className="mt-3 text-lg text-gray-400">
           We picked a name. Keep it or make it your own.
         </p>
+        <p className="mt-1 text-sm text-gray-500">
+          Your bot needs a name -- you can always change it later
+        </p>
       </div>
 
       <div className="space-y-3">

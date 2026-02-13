@@ -10,17 +10,22 @@ import { StepAboutYou } from "./step-about-you";
 import { StepUseCases } from "./step-use-cases";
 import { StepExtraContext } from "./step-extra-context";
 import { StepBotName } from "./step-bot-name";
+import { StepWelcome } from "./step-welcome";
 import { StepTransition } from "./step-transition";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Loader2, CreditCard } from "lucide-react";
 import {
   loadWizardState,
   saveWizardState,
   clearWizardState,
+  loadSelectedPlan,
   type WizardState,
+  type SelectedPlan,
 } from "@/lib/onboarding-storage";
 
 type FunnelStep =
+  | "welcome"
   | "personality"
   | "use-cases"
   | "bot-name"
@@ -33,12 +38,23 @@ type FunnelStep =
 
 // Wizard steps (pre-auth) in order
 const wizardSteps: FunnelStep[] = [
+  "welcome",
   "personality",
   "use-cases",
   "bot-name",
   "extra-context",
   "about-you",
   "plan",
+];
+
+// Step metadata for numbered progress (excludes welcome and plan)
+const stepMeta: { key: FunnelStep; label: string; description: string }[] = [
+  { key: "personality", label: "Personality", description: "Choose your bot's vibe" },
+  { key: "use-cases", label: "Use Cases", description: "What will your bot help with?" },
+  { key: "bot-name", label: "Name", description: "Give your bot an identity" },
+  { key: "extra-context", label: "Instructions", description: "Customize how it behaves" },
+  { key: "about-you", label: "About You", description: "Help your bot know you" },
+  { key: "plan", label: "Plan", description: "Choose your plan" },
 ];
 
 // Post-auth progress segments
@@ -88,6 +104,7 @@ export function OnboardingFunnel({
   const [botUsername, setBotUsername] = useState(initialBotUsername || "");
   const [waitingForPayment, setWaitingForPayment] = useState(!!checkoutPending);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
+  const [selectedPlan, setSelectedPlan] = useState<SelectedPlan | null>(null);
   const [botConfig, setBotConfig] = useState<BotConfig>(() => {
     // Priority: DB config > localStorage > defaults
     if (initialBotConfig) return initialBotConfig;
@@ -110,6 +127,14 @@ export function OnboardingFunnel({
 
   const justSignedInHandled = useRef(false);
 
+  // Load selected plan from localStorage on mount
+  useEffect(() => {
+    const plan = loadSelectedPlan();
+    if (plan) {
+      setSelectedPlan(plan);
+    }
+  }, []);
+
   const updateBotConfig = (updates: Partial<BotConfig>) => {
     setBotConfig((prev) => ({ ...prev, ...updates }));
   };
@@ -127,9 +152,11 @@ export function OnboardingFunnel({
         userName: config.userName,
         userDescription: config.userDescription,
         currentStep: step,
+        selectedPlanName: selectedPlan?.name,
+        selectedPlanPrice: selectedPlan?.price,
       });
     },
-    [isAuthenticated, justSignedIn]
+    [isAuthenticated, justSignedIn, selectedPlan]
   );
 
   // Navigate forward
@@ -163,7 +190,7 @@ export function OnboardingFunnel({
     persistToLocalStorage(botConfig, currentStep);
   }, [currentStep, botConfig, persistToLocalStorage]);
 
-  // justSignedIn effect: read localStorage → save to DB → redirect to Stripe
+  // justSignedIn effect: read localStorage -> save to DB -> redirect to Stripe
   useEffect(() => {
     if (!justSignedIn || !isAuthenticated || justSignedInHandled.current) return;
     justSignedInHandled.current = true;
@@ -241,10 +268,10 @@ export function OnboardingFunnel({
     }
   }, [isAuthenticated, initialBotConfig]);
 
-  // beforeunload warning for unauthenticated users past step 1
+  // beforeunload warning for unauthenticated users past welcome/personality
   useEffect(() => {
     if (isAuthenticated) return;
-    if (currentStep === "personality") return;
+    if (currentStep === "welcome" || currentStep === "personality") return;
 
     const handler = (e: BeforeUnloadEvent) => {
       e.preventDefault();
@@ -319,6 +346,10 @@ export function OnboardingFunnel({
   const wizardIndex = wizardSteps.indexOf(currentStep);
   const isInWizard = wizardIndex >= 0;
   const isPostAuth = ["provisioning", "telegram", "complete"].includes(currentStep);
+  const showNumberedProgress = isInWizard && currentStep !== "welcome" && !waitingForPayment;
+
+  // Find the current step in stepMeta for numbered progress
+  const currentStepMetaIndex = stepMeta.findIndex((s) => s.key === currentStep);
 
   // Post-auth progress segment
   const activeSegmentIndex = progressSegments.findIndex((seg) =>
@@ -335,21 +366,64 @@ export function OnboardingFunnel({
     userName: botConfig.userName,
     userDescription: botConfig.userDescription,
     currentStep,
+    selectedPlanName: selectedPlan?.name,
+    selectedPlanPrice: selectedPlan?.price,
   };
 
   return (
     <div className="space-y-8">
-      {/* Wizard progress dots (steps 1-6) */}
-      {isInWizard && !waitingForPayment && (
-        <div className="flex items-center justify-center gap-2">
-          {wizardSteps.map((_, i) => (
-            <div
-              key={i}
-              className={`h-2.5 w-2.5 rounded-full transition-colors ${
-                i <= wizardIndex ? "bg-red-500" : "bg-neutral-700"
-              }`}
-            />
-          ))}
+      {/* Plan badge (shown during wizard steps, not welcome) */}
+      {showNumberedProgress && selectedPlan && (
+        <div className="flex justify-center">
+          <Badge className="bg-red-600/20 text-red-400 border border-red-600/30 px-3 py-1 text-sm">
+            {selectedPlan.name} {selectedPlan.price}/mo
+          </Badge>
+        </div>
+      )}
+
+      {/* Numbered wizard progress (steps 1-6, excludes welcome) */}
+      {showNumberedProgress && (
+        <div className="flex items-center justify-center gap-1 sm:gap-2">
+          {stepMeta.map((meta, i) => {
+            const isCompleted = i < currentStepMetaIndex;
+            const isCurrent = i === currentStepMetaIndex;
+            return (
+              <div key={meta.key} className="flex items-center gap-1 sm:gap-2">
+                <div className="flex flex-col items-center gap-1">
+                  <div
+                    className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full text-xs sm:text-sm font-medium transition-colors ${
+                      isCompleted
+                        ? "bg-red-600 text-white"
+                        : isCurrent
+                          ? "bg-red-600 text-white ring-2 ring-red-400 ring-offset-2 ring-offset-background"
+                          : "bg-neutral-800 text-gray-500"
+                    }`}
+                  >
+                    {i + 1}
+                  </div>
+                  {/* Show label only for current step on mobile, all on desktop */}
+                  <span
+                    className={`text-[10px] sm:text-xs whitespace-nowrap ${
+                      isCurrent
+                        ? "text-gray-300"
+                        : isCompleted
+                          ? "text-gray-400 hidden sm:block"
+                          : "text-gray-600 hidden sm:block"
+                    }`}
+                  >
+                    {isCurrent ? meta.description : meta.label}
+                  </span>
+                </div>
+                {i < stepMeta.length - 1 && (
+                  <div
+                    className={`mb-5 h-0.5 w-4 sm:w-6 ${
+                      isCompleted ? "bg-red-600" : "bg-neutral-800"
+                    }`}
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -416,12 +490,23 @@ export function OnboardingFunnel({
       )}
 
       {/* Step content with slide transitions */}
+      {!waitingForPayment && currentStep === "welcome" && (
+        <StepTransition stepKey="welcome" direction={direction}>
+          <StepWelcome
+            planName={selectedPlan?.name}
+            planPrice={selectedPlan?.price}
+            onNext={() => goNext("welcome")}
+          />
+        </StepTransition>
+      )}
+
       {!waitingForPayment && currentStep === "personality" && (
         <StepTransition stepKey="personality" direction={direction}>
           <StepPersonality
             config={botConfig}
             onUpdate={updateBotConfig}
             onNext={() => goNext("personality")}
+            onBack={() => goBack("personality")}
           />
         </StepTransition>
       )}
@@ -478,6 +563,7 @@ export function OnboardingFunnel({
               // User will be redirected to Stripe, then back to /onboarding
             }}
             wizardState={currentWizardState}
+            preselectedPlanId={selectedPlan?.id}
           />
         </StepTransition>
       )}

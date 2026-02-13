@@ -83,6 +83,9 @@ export function StepUseCases({
         <p className="mt-3 text-lg text-gray-400">
           Pick as many as you like
         </p>
+        <p className="mt-1 text-sm text-gray-500">
+          This helps customize your bot&apos;s tools and capabilities
+        </p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
