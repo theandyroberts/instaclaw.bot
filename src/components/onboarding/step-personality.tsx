@@ -149,14 +149,17 @@ export function StepPersonality({
         </div>
       )}
 
-      <div className="text-center">
-        <a
-          href="/#pricing"
-          className="text-sm text-gray-500 hover:text-gray-300"
-        >
-          &larr; Back to pricing
-        </a>
-      </div>
+      {onBack && (
+        <div className="text-center">
+          <button
+            type="button"
+            onClick={onBack}
+            className="text-sm text-gray-500 hover:text-gray-300"
+          >
+            &larr; Back
+          </button>
+        </div>
+      )}
     </div>
   );
 }

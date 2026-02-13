@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight, MessageCircle, Zap, Shield } from "lucide-react";
+import { smoothScrollTo } from "@/lib/smooth-scroll";
 
 export function Hero() {
   return (
@@ -23,11 +24,13 @@ export function Hero() {
           active OpenClaw instance. Live in minutes, no technical skills needed.
         </p>
 
-        <Button size="lg" className="text-lg px-10 py-6 text-base" asChild>
-          <a href="#pricing">
-            Get Started -- $29/mo
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </a>
+        <Button
+          size="lg"
+          className="text-lg px-10 py-6 text-base"
+          onClick={() => smoothScrollTo("#pricing")}
+        >
+          Get Started -- $29/mo
+          <ArrowRight className="ml-2 h-5 w-5" />
         </Button>
 
         <div className="mt-12 flex items-center justify-center gap-8 text-sm text-gray-500">

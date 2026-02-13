@@ -89,6 +89,7 @@ interface OnboardingFunnelProps {
   sessionName?: string;
   isAuthenticated: boolean;
   justSignedIn: boolean;
+  onClose?: () => void;
 }
 
 export function OnboardingFunnel({
@@ -99,6 +100,7 @@ export function OnboardingFunnel({
   sessionName,
   isAuthenticated,
   justSignedIn,
+  onClose,
 }: OnboardingFunnelProps) {
   const [currentStep, setCurrentStep] = useState<FunnelStep>(initialStep);
   const [botUsername, setBotUsername] = useState(initialBotUsername || "");
@@ -496,6 +498,7 @@ export function OnboardingFunnel({
             planName={selectedPlan?.name}
             planPrice={selectedPlan?.price}
             onNext={() => goNext("welcome")}
+            onClose={onClose}
           />
         </StepTransition>
       )}

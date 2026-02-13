@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { smoothScrollTo } from "@/lib/smooth-scroll";
 
 export function Navbar() {
   return (
@@ -12,29 +13,29 @@ export function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-6 md:flex">
-          <Link
-            href="#features"
+          <button
+            onClick={() => smoothScrollTo("#features")}
             className="text-sm text-gray-400 hover:text-gray-100"
           >
             Features
-          </Link>
-          <Link
-            href="#pricing"
+          </button>
+          <button
+            onClick={() => smoothScrollTo("#pricing")}
             className="text-sm text-gray-400 hover:text-gray-100"
           >
             Pricing
-          </Link>
-          <Link
-            href="#faq"
+          </button>
+          <button
+            onClick={() => smoothScrollTo("#faq")}
             className="text-sm text-gray-400 hover:text-gray-100"
           >
             FAQ
-          </Link>
+          </button>
         </div>
 
         <div className="flex items-center gap-3">
-          <Button asChild>
-            <a href="#pricing">Get Started</a>
+          <Button onClick={() => smoothScrollTo("#pricing")}>
+            Get Started
           </Button>
         </div>
       </div>

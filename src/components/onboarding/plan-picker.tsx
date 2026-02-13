@@ -81,7 +81,7 @@ const plans: Plan[] = [
     ],
     priceId: "",
     highlight: false,
-    selectable: false,
+    selectable: true,
     badge: "Coming Soon",
   },
 ];
@@ -107,15 +107,15 @@ export function PlanPicker({ onCheckoutStarted, wizardState, preselectedPlanId }
     }
   }, [preselectedPlanId]);
 
-  const selectedPlan = plans.find((p) => p.id === selectedPlanId && p.selectable);
+  const selectedPlan = plans.find((p) => p.id === selectedPlanId);
+  const isEnterprisePlan = selectedPlanId === "enterprise";
 
   const handleSelectPlan = (plan: Plan) => {
-    if (!plan.selectable) return;
     setSelectedPlanId(plan.id);
   };
 
   const handleGo = async () => {
-    if (!selectedPlan) return;
+    if (!selectedPlan || isEnterprisePlan) return;
     setLoading(true);
 
     if (!isAuthenticated) {
@@ -180,23 +180,19 @@ export function PlanPicker({ onCheckoutStarted, wizardState, preselectedPlanId }
       <div className="grid gap-6 grid-cols-1 md:grid-cols-3">
         {plans.map((plan) => {
           const isSelected = selectedPlanId === plan.id;
-          const isEnterprise = !plan.selectable;
+          const isEnterprise = plan.id === "enterprise";
 
           return (
             <Card
               key={plan.id}
               onClick={() => handleSelectPlan(plan)}
-              className={`relative transition-all ${
-                isEnterprise
-                  ? "opacity-60 cursor-default"
-                  : "cursor-pointer"
-              } ${
-                isSelected && !isEnterprise
-                  ? "border-2 border-red-600 ring-2 ring-red-600/30 shadow-lg shadow-red-900/20"
-                  : isEnterprise
-                    ? "border border-neutral-800"
-                    : "border-2 border-neutral-700 hover:border-neutral-600"
-              }`}
+              className={`relative cursor-pointer transition-all ${
+                isSelected
+                  ? isEnterprise
+                    ? "border-2 border-neutral-500 ring-2 ring-neutral-500/30 shadow-lg"
+                    : "border-2 border-red-600 ring-2 ring-red-600/30 shadow-lg shadow-red-900/20"
+                  : "border-2 border-neutral-700 hover:border-neutral-600"
+              } ${isEnterprise ? "opacity-75" : ""}`}
             >
               {plan.badge && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -251,7 +247,7 @@ export function PlanPicker({ onCheckoutStarted, wizardState, preselectedPlanId }
                   <a
                     href="mailto:andy@sparkpoint.studio?subject=InstaClaw Enterprise"
                     className="mt-4 block text-center text-sm text-red-400 hover:text-red-300 hover:underline"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e: React.MouseEvent) => e.stopPropagation()}
                   >
                     Contact us for pricing
                   </a>
@@ -270,9 +266,11 @@ export function PlanPicker({ onCheckoutStarted, wizardState, preselectedPlanId }
         className="w-full h-14 text-lg"
         size="lg"
         onClick={handleGo}
-        disabled={!selectedPlan || loading}
+        disabled={!selectedPlan || isEnterprisePlan || loading}
       >
-        {loading ? (
+        {isEnterprisePlan ? (
+          "Coming Soon"
+        ) : loading ? (
           <>
             <Loader2 className="mr-2 h-5 w-5 animate-spin" />
             {isAuthenticated ? "Loading..." : "Signing in..."}

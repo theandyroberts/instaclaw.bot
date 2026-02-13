@@ -8,9 +8,10 @@ interface StepWelcomeProps {
   planName?: string;
   planPrice?: string;
   onNext: () => void;
+  onClose?: () => void;
 }
 
-export function StepWelcome({ planName, planPrice, onNext }: StepWelcomeProps) {
+export function StepWelcome({ planName, planPrice, onNext, onClose }: StepWelcomeProps) {
   return (
     <div className="mx-auto max-w-lg space-y-8 text-center">
       <div>
@@ -27,12 +28,13 @@ export function StepWelcome({ planName, planPrice, onNext }: StepWelcomeProps) {
           <Badge className="bg-red-600/20 text-red-400 border border-red-600/30 px-3 py-1 text-sm">
             {planName} {planPrice ? `${planPrice}/mo` : ""}
           </Badge>
-          <a
-            href="/#pricing"
+          <button
+            type="button"
+            onClick={onClose}
             className="text-sm text-gray-500 hover:text-gray-300 underline"
           >
             Change plan
-          </a>
+          </button>
         </div>
       )}
 
