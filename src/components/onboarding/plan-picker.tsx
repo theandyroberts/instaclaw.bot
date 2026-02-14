@@ -139,7 +139,7 @@ export function PlanPicker({
     <div className="mx-auto max-w-lg space-y-8">
       <div className="text-center">
         <h2 className="text-3xl font-bold text-gray-100">
-          Confirm Your Plan
+          Review and Purchase
         </h2>
         <p className="mt-3 text-lg text-gray-400">
           Review your selection, then let&apos;s get started.

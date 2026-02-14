@@ -54,7 +54,7 @@ const stepMeta: { key: FunnelStep; label: string; description: string }[] = [
   { key: "bot-name", label: "Name", description: "Give your bot an identity" },
   { key: "extra-context", label: "Instructions", description: "Customize how it behaves" },
   { key: "about-you", label: "About You", description: "Help your bot know you" },
-  { key: "plan", label: "Plan", description: "Choose your plan" },
+  { key: "plan", label: "Plan", description: "Review choices" },
 ];
 
 // Post-auth progress segments
