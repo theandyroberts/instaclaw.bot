@@ -106,6 +106,7 @@ export function OnboardingFunnel({
   const [botUsername, setBotUsername] = useState(initialBotUsername || "");
   const [waitingForPayment, setWaitingForPayment] = useState(!!checkoutPending);
   const [direction, setDirection] = useState<"forward" | "back">("forward");
+  const [redirectingToCheckout, setRedirectingToCheckout] = useState(justSignedIn);
   const [selectedPlan, setSelectedPlan] = useState<SelectedPlan | null>(null);
   const [botConfig, setBotConfig] = useState<BotConfig>(() => {
     // Priority: DB config > localStorage > defaults
@@ -255,7 +256,8 @@ export function OnboardingFunnel({
         }
       }
 
-      // Restore config and show plan confirmation
+      // Redirect failed -- fall back to showing plan picker
+      setRedirectingToCheckout(false);
       setBotConfig({
         botName: saved.botName || "",
         personality: saved.personality || "",
@@ -577,12 +579,24 @@ export function OnboardingFunnel({
         </StepTransition>
       )}
 
-      {!waitingForPayment && currentStep === "plan" && (
+      {!waitingForPayment && currentStep === "plan" && redirectingToCheckout && (
+        <Card>
+          <CardContent className="flex flex-col items-center py-12 text-center">
+            <Loader2 className="mb-4 h-10 w-10 animate-spin text-red-500" />
+            <h2 className="mb-2 text-xl font-semibold text-gray-100">
+              Preparing checkout...
+            </h2>
+            <p className="text-gray-500">
+              Hang tight -- setting up your Stripe session.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {!waitingForPayment && currentStep === "plan" && !redirectingToCheckout && (
         <StepTransition stepKey="plan" direction={direction}>
           <PlanPicker
-            onCheckoutStarted={() => {
-              // User will be redirected to Stripe, then back to /onboarding
-            }}
+            onCheckoutStarted={() => setWaitingForPayment(true)}
             onBack={() => goBack("plan")}
             wizardState={currentWizardState}
             preselectedPlanId={selectedPlan?.id}

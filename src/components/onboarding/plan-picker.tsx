@@ -191,7 +191,7 @@ export function PlanPicker({
           {loading ? (
             <>
               <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-              {isAuthenticated ? "Loading..." : "Signing in..."}
+              {isAuthenticated ? "Preparing checkout..." : "Signing in..."}
             </>
           ) : !isAuthenticated ? (
             <>
