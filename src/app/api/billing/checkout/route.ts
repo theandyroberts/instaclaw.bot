@@ -16,7 +16,7 @@ export async function POST(req: Request) {
 
     const plan = getPlanFromPriceId(priceId);
     if (!plan) {
-      return new NextResponse("Invalid price", { status: 400 });
+      return NextResponse.json({ error: "Invalid price" }, { status: 400 });
     }
 
     // Check if user already has a subscription
@@ -25,7 +25,7 @@ export async function POST(req: Request) {
     });
 
     if (existing && existing.status === "active") {
-      return new NextResponse("Already subscribed", { status: 400 });
+      return NextResponse.json({ error: "Already subscribed" }, { status: 400 });
     }
 
     // Get or create Stripe customer
@@ -55,6 +55,6 @@ export async function POST(req: Request) {
     return NextResponse.json({ url: checkoutSession.url });
   } catch (error) {
     console.error("Checkout error:", error);
-    return new NextResponse("Internal error", { status: 500 });
+    return NextResponse.json({ error: "Internal error" }, { status: 500 });
   }
 }

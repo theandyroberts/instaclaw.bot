@@ -68,11 +68,13 @@ export function PlanPicker({
   const { data: session } = useSession();
   const isAuthenticated = !!session?.user;
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const plan = planData[preselectedPlanId || "pro"] || planData.pro;
 
   const handleGo = async () => {
     setLoading(true);
+    setError(null);
 
     if (!isAuthenticated) {
       // Save wizard state + selected plan to localStorage, then sign in
@@ -113,13 +115,22 @@ export function PlanPicker({
 
       const data = await response.json();
 
+      if (!response.ok) {
+        setError(data.error || `Checkout failed (${response.status})`);
+        setLoading(false);
+        return;
+      }
+
       if (data.url) {
         onCheckoutStarted();
         window.location.href = data.url;
+      } else {
+        setError("No checkout URL returned");
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("Checkout error:", error);
-    } finally {
+    } catch (err) {
+      console.error("Checkout error:", err);
+      setError("Failed to start checkout. Please try again.");
       setLoading(false);
     }
   };
@@ -160,6 +171,10 @@ export function PlanPicker({
           </ul>
         </CardContent>
       </Card>
+
+      {error && (
+        <p className="text-center text-sm text-red-400">{error}</p>
+      )}
 
       <div className="flex gap-3">
         {onBack && (
