@@ -37,7 +37,7 @@ export function Hero() {
           Powered by OpenClaw -- the #1 open-source AI assistant
         </div>
 
-        <h1 className="mb-6 h-[5.5rem] md:h-[8rem] lg:h-[10rem] text-4xl font-bold tracking-tight text-foreground md:text-6xl lg:text-7xl">
+        <h1 className="mb-6 h-[7rem] md:h-[10rem] lg:h-[12rem] text-4xl font-bold leading-[1.3] tracking-tight text-foreground md:text-6xl lg:text-7xl">
           <span
             className="inline-block transition-all duration-500 ease-in-out"
             style={{ opacity: visible ? 1 : 0, transform: visible ? "translateY(0)" : "translateY(12px)" }}
