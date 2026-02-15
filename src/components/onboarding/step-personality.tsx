@@ -106,13 +106,13 @@ export function StepPersonality({
               onClick={() => handleSelect(p.id)}
               className={`flex flex-col items-center gap-3 rounded-xl border-2 p-6 text-center transition-all ${
                 isSelected
-                  ? "border-red-600 bg-red-950/30 scale-[1.02]"
-                  : "border-neutral-800 hover:border-neutral-700 hover:bg-neutral-800/50"
+                  ? "border-primary bg-primary/10 scale-[1.02]"
+                  : "border-border hover:border-neutral-700 hover:bg-neutral-800/50"
               }`}
             >
               <Icon
                 className={`h-8 w-8 ${
-                  isSelected ? "text-red-400" : "text-gray-500"
+                  isSelected ? "text-primary" : "text-gray-500"
                 }`}
               />
               <span className="text-base font-medium text-gray-100">

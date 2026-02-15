@@ -69,7 +69,7 @@ export function StepBotName({
           <button
             type="button"
             onClick={handleRegenerate}
-            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md border border-neutral-800 text-gray-400 transition-colors hover:border-neutral-700 hover:bg-neutral-800/50 hover:text-gray-100"
+            className="flex h-14 w-14 shrink-0 items-center justify-center rounded-md border border-border text-gray-400 transition-colors hover:border-neutral-700 hover:bg-neutral-800/50 hover:text-gray-100"
             title="Generate a new name"
           >
             <RefreshCw className="h-5 w-5" />

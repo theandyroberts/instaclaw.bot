@@ -8,6 +8,8 @@ export interface WizardState {
   extraContext?: string;
   userName: string;
   userDescription?: string;
+  timezone?: string;
+  jobTitle?: string;
   currentStep: string;
   selectedPriceId?: string;
   selectedPlanName?: string;

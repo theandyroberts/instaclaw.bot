@@ -70,6 +70,8 @@ interface BotConfig {
   customPersonality?: string;
   userName: string;
   userDescription?: string;
+  timezone?: string;
+  jobTitle?: string;
   useCases: string[];
   extraContext?: string;
 }
@@ -120,6 +122,8 @@ export function OnboardingFunnel({
           customPersonality: saved.customPersonality,
           userName: saved.userName || "",
           userDescription: saved.userDescription,
+          timezone: saved.timezone,
+          jobTitle: saved.jobTitle,
           useCases: saved.useCases || [],
           extraContext: saved.extraContext,
         };
@@ -154,6 +158,8 @@ export function OnboardingFunnel({
         extraContext: config.extraContext,
         userName: config.userName,
         userDescription: config.userDescription,
+        timezone: config.timezone,
+        jobTitle: config.jobTitle,
         currentStep: step,
         selectedPlanName: selectedPlan?.name,
         selectedPlanPrice: selectedPlan?.price,
@@ -223,6 +229,8 @@ export function OnboardingFunnel({
         customPersonality: saved.customPersonality,
         userName: saved.userName,
         userDescription: saved.userDescription,
+        timezone: saved.timezone,
+        jobTitle: saved.jobTitle,
         useCases: saved.useCases,
         extraContext: saved.extraContext,
       };
@@ -264,6 +272,8 @@ export function OnboardingFunnel({
         customPersonality: saved.customPersonality,
         userName: saved.userName || "",
         userDescription: saved.userDescription,
+        timezone: saved.timezone,
+        jobTitle: saved.jobTitle,
         useCases: saved.useCases || [],
         extraContext: saved.extraContext,
       });
@@ -387,6 +397,8 @@ export function OnboardingFunnel({
     extraContext: botConfig.extraContext,
     userName: botConfig.userName,
     userDescription: botConfig.userDescription,
+    timezone: botConfig.timezone,
+    jobTitle: botConfig.jobTitle,
     currentStep,
     selectedPlanName: selectedPlan?.name,
     selectedPlanPrice: selectedPlan?.price,
@@ -397,7 +409,7 @@ export function OnboardingFunnel({
       {/* Plan badge (shown during wizard steps, not welcome) */}
       {showNumberedProgress && selectedPlan && (
         <div className="flex justify-center">
-          <Badge className="bg-red-600/20 text-red-400 border border-red-600/30 px-3 py-1 text-sm">
+          <Badge className="bg-primary/10 text-primary border border-primary/30 px-3 py-1 text-sm">
             {selectedPlan.name} {selectedPlan.price}/mo
           </Badge>
         </div>
@@ -411,14 +423,14 @@ export function OnboardingFunnel({
             const isCurrent = i === currentStepMetaIndex;
             return (
               <div key={meta.key} className="flex items-center gap-1 sm:gap-2">
-                <div className="flex flex-col items-center gap-1">
+                <div className="flex flex-col items-center gap-2.5">
                   <div
                     className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full text-xs sm:text-sm font-medium transition-colors ${
                       isCompleted
-                        ? "bg-red-600 text-white"
+                        ? "bg-primary text-white"
                         : isCurrent
-                          ? "bg-red-600 text-white ring-2 ring-red-400 ring-offset-2 ring-offset-background"
-                          : "bg-neutral-800 text-gray-500"
+                          ? "bg-primary text-white ring-2 ring-yellow-400 ring-offset-2 ring-offset-background"
+                          : "bg-muted text-gray-500"
                     }`}
                   >
                     {i + 1}
@@ -438,8 +450,8 @@ export function OnboardingFunnel({
                 </div>
                 {i < stepMeta.length - 1 && (
                   <div
-                    className={`mb-5 h-0.5 w-4 sm:w-6 ${
-                      isCompleted ? "bg-red-600" : "bg-neutral-800"
+                    className={`mb-7 h-0.5 w-4 sm:w-6 ${
+                      isCompleted ? "bg-primary" : "bg-muted"
                     }`}
                   />
                 )}
@@ -461,9 +473,9 @@ export function OnboardingFunnel({
                   <div
                     className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
                       isActive
-                        ? "bg-red-600 text-white"
-                        : "bg-neutral-800 text-gray-500"
-                    } ${isCurrent ? "ring-2 ring-red-400 ring-offset-2 ring-offset-background" : ""}`}
+                        ? "bg-primary text-white"
+                        : "bg-muted text-gray-500"
+                    } ${isCurrent ? "ring-2 ring-yellow-400 ring-offset-2 ring-offset-background" : ""}`}
                   >
                     {i + 1}
                   </div>
@@ -478,7 +490,7 @@ export function OnboardingFunnel({
                 {i < progressSegments.length - 1 && (
                   <div
                     className={`mb-5 h-0.5 w-8 sm:w-12 ${
-                      i < activeSegmentIndex ? "bg-red-600" : "bg-neutral-800"
+                      i < activeSegmentIndex ? "bg-primary" : "bg-muted"
                     }`}
                   />
                 )}
@@ -493,8 +505,8 @@ export function OnboardingFunnel({
         <Card>
           <CardContent className="flex flex-col items-center py-12 text-center">
             <div className="relative mb-6">
-              <CreditCard className="h-16 w-16 text-red-400" />
-              <Loader2 className="absolute -bottom-1 -right-1 h-6 w-6 animate-spin text-red-500" />
+              <CreditCard className="h-16 w-16 text-primary" />
+              <Loader2 className="absolute -bottom-1 -right-1 h-6 w-6 animate-spin text-primary" />
             </div>
             <h2 className="mb-2 text-xl font-semibold text-gray-100">
               Processing your payment...
@@ -582,7 +594,7 @@ export function OnboardingFunnel({
       {!waitingForPayment && currentStep === "plan" && redirectingToCheckout && (
         <Card>
           <CardContent className="flex flex-col items-center py-12 text-center">
-            <Loader2 className="mb-4 h-10 w-10 animate-spin text-red-500" />
+            <Loader2 className="mb-4 h-10 w-10 animate-spin text-primary" />
             <h2 className="mb-2 text-xl font-semibold text-gray-100">
               Preparing checkout...
             </h2>
@@ -609,11 +621,11 @@ export function OnboardingFunnel({
       )}
 
       {!waitingForPayment && currentStep === "telegram" && (
-        <StepTelegram onComplete={fetchStatus} />
+        <StepTelegram onComplete={fetchStatus} botName={botConfig.botName || undefined} />
       )}
 
       {!waitingForPayment && currentStep === "complete" && (
-        <StepCelebration botUsername={botUsername} />
+        <StepCelebration botUsername={botUsername} botName={botConfig.botName || undefined} />
       )}
     </div>
   );

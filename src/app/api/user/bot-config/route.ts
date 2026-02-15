@@ -11,6 +11,8 @@ const botConfigSchema = z.object({
   customPersonality: z.string().max(500).optional(),
   userName: z.string().min(1).max(100),
   userDescription: z.string().max(1000).optional(),
+  timezone: z.string().max(50).optional(),
+  jobTitle: z.string().max(100).optional(),
   useCases: z.array(z.string()).min(1),
   extraContext: z.string().max(2000).optional(),
 });

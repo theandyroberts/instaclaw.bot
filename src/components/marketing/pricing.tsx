@@ -119,13 +119,13 @@ export function Pricing() {
 
   return (
     <>
-      <section id="pricing" className="bg-[#0a0a0a] px-4 py-20">
+      <section id="pricing" className="bg-background px-4 py-20">
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-gray-100 md:text-4xl">
+            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
               Simple, Transparent Pricing
             </h2>
-            <p className="mx-auto max-w-2xl text-gray-400">
+            <p className="mx-auto max-w-2xl text-muted-foreground">
               No hidden fees. No usage limits on Starter. Cancel anytime.
             </p>
           </div>
@@ -142,9 +142,9 @@ export function Pricing() {
                   className={`relative cursor-pointer transition-all ${
                     isSelected
                       ? isEnterprise
-                        ? "border-2 border-neutral-500 ring-2 ring-neutral-500/30 shadow-lg"
-                        : "border-2 border-red-600 ring-2 ring-red-600/30 shadow-lg shadow-red-900/20"
-                      : "border-2 border-neutral-700 hover:border-neutral-600"
+                        ? "border-2 border-muted-foreground/40 ring-2 ring-muted-foreground/20 shadow-lg"
+                        : "border-2 border-primary ring-2 ring-primary/30 shadow-lg shadow-primary/10"
+                      : "border-2 border-border hover:border-muted-foreground/30"
                   } ${isEnterprise ? "opacity-75" : ""}`}
                 >
                   {plan.badge && (
@@ -152,8 +152,8 @@ export function Pricing() {
                       <Badge
                         className={
                           plan.badge === "Most Popular"
-                            ? "bg-red-600 text-white"
-                            : "bg-neutral-700 text-gray-300"
+                            ? "bg-primary text-white"
+                            : "bg-muted text-muted-foreground"
                         }
                       >
                         {plan.badge}
@@ -164,11 +164,11 @@ export function Pricing() {
                     <CardTitle className="text-2xl">{plan.name}</CardTitle>
                     <CardDescription>{plan.description}</CardDescription>
                     <div className="mt-4">
-                      <span className="text-4xl font-bold text-gray-100">
+                      <span className="text-4xl font-bold text-foreground">
                         {plan.price}
                       </span>
                       {plan.period && (
-                        <span className="text-gray-500">{plan.period}</span>
+                        <span className="text-muted-foreground">{plan.period}</span>
                       )}
                     </div>
                   </CardHeader>
@@ -178,16 +178,16 @@ export function Pricing() {
                         <li key={feature} className="flex items-start gap-2">
                           <Check
                             className={`mt-0.5 h-4 w-4 shrink-0 ${
-                              isEnterprise ? "text-gray-600" : "text-green-500"
+                              isEnterprise ? "text-muted-foreground/50" : "text-green-500"
                             }`}
                           />
                           <span
                             className={`text-sm ${
                               isSelected && !isEnterprise
-                                ? "text-gray-100"
+                                ? "text-foreground"
                                 : isEnterprise
-                                  ? "text-gray-600"
-                                  : "text-gray-500"
+                                  ? "text-muted-foreground/50"
+                                  : "text-muted-foreground"
                             }`}
                           >
                             {feature}
@@ -199,7 +199,7 @@ export function Pricing() {
                     {isEnterprise && (
                       <a
                         href="mailto:andy@sparkpoint.studio?subject=InstaClaw Enterprise"
-                        className="mt-6 block text-center text-sm text-red-400 hover:text-red-300 hover:underline"
+                        className="mt-6 block text-center text-sm text-primary hover:text-primary/80 hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >
                         Contact us for pricing
@@ -211,7 +211,7 @@ export function Pricing() {
             })}
           </div>
 
-          <p className="mt-3 text-center text-xs text-gray-600">
+          <p className="mt-3 text-center text-xs text-muted-foreground/60">
             *Personal web server coming soon
           </p>
 
@@ -238,7 +238,7 @@ export function Pricing() {
       {/* Onboarding wizard modal */}
       <Dialog open={modalOpen} onOpenChange={setModalOpen}>
         <DialogContent
-          className="sm:max-w-3xl max-h-[90vh] overflow-y-auto p-0 gap-0 bg-[#0a0a0a] border-neutral-700"
+          className="sm:max-w-3xl max-h-[90vh] overflow-y-auto p-0 gap-0 bg-background border-border"
           showCloseButton={true}
         >
           <VisuallyHidden.Root>

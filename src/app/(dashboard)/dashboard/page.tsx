@@ -77,7 +77,7 @@ export default async function DashboardPage() {
                   href={`https://t.me/${instance.telegramBotUsername}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="font-medium text-red-400 hover:underline"
+                  className="font-medium text-primary hover:underline"
                 >
                   @{instance.telegramBotUsername}
                 </a>

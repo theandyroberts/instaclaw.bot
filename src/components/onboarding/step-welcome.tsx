@@ -25,7 +25,7 @@ export function StepWelcome({ planName, planPrice, onNext, onClose }: StepWelcom
 
       {planName && (
         <div className="flex items-center justify-center gap-2">
-          <Badge className="bg-red-600/20 text-red-400 border border-red-600/30 px-3 py-1 text-sm">
+          <Badge className="bg-primary/10 text-primary border border-primary/30 px-3 py-1 text-sm">
             {planName} {planPrice ? `${planPrice}/mo` : ""}
           </Badge>
           <button

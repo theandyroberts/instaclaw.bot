@@ -46,10 +46,10 @@ export function Sidebar({ onboardingIncomplete, isAdmin }: SidebarProps) {
   ];
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-neutral-800 bg-[#0a0a0a]">
-      <div className="border-b border-neutral-800 p-4">
+    <aside className="flex h-screen w-64 flex-col border-r border-border bg-sidebar">
+      <div className="border-b border-border p-4">
         <Link href="/" className="text-xl font-bold">
-          <span className="text-gray-400">Insta</span><span className="text-red-500">Claw</span>
+          <span className="text-white">Insta</span><span className="text-primary">Claw</span>
         </Link>
       </div>
 
@@ -62,8 +62,8 @@ export function Sidebar({ onboardingIncomplete, isAdmin }: SidebarProps) {
               href={link.href}
               className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-red-950/30 text-red-400"
-                  : "text-gray-400 hover:bg-neutral-800 hover:text-gray-100"
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
               }`}
             >
               <link.icon className="h-4 w-4" />
@@ -77,13 +77,13 @@ export function Sidebar({ onboardingIncomplete, isAdmin }: SidebarProps) {
 
         {isAdmin && (
           <>
-            <div className="my-2 border-t border-neutral-800" />
+            <div className="my-2 border-t border-border" />
             <Link
               href="/admin/instances"
               className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
                 pathname.startsWith("/admin")
-                  ? "bg-red-950/30 text-red-400"
-                  : "text-gray-400 hover:bg-neutral-800 hover:text-gray-100"
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
               }`}
             >
               <Shield className="h-4 w-4" />
@@ -93,7 +93,7 @@ export function Sidebar({ onboardingIncomplete, isAdmin }: SidebarProps) {
         )}
       </nav>
 
-      <div className="border-t border-neutral-800 p-3">
+      <div className="border-t border-border p-3">
         <Button
           variant="ghost"
           className="w-full justify-start text-gray-400"

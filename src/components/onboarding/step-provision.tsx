@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Loader2,
-  Server,
   Smile,
   Briefcase,
   Sparkles,
@@ -23,6 +22,8 @@ interface BotConfig {
   customPersonality?: string;
   userName: string;
   userDescription?: string;
+  timezone?: string;
+  jobTitle?: string;
   useCases: string[];
   extraContext?: string;
 }
@@ -53,9 +54,9 @@ const expectedSteps = [
   { step: "droplet_created", message: "Server created -- waiting for boot" },
   { step: "droplet_active", message: "Server online" },
   { step: "cloud_init", message: "Installing system software" },
-  { step: "docker_ready", message: "Docker installed and ready" },
-  { step: "openclaw_setup", message: "Configuring your AI assistant" },
-  { step: "pulling_images", message: "Gathering the latest components" },
+  { step: "docker_ready", message: "Docker ready" },
+  { step: "openclaw_setup", message: "Writing configuration" },
+  { step: "pulling_images", message: "Downloading system image -- this is a big one" },
   { step: "workspace_setup", message: "Personalizing your bot" },
   { step: "container_started", message: "Starting your bot" },
   { step: "base_complete", message: "Setup complete" },
@@ -115,9 +116,13 @@ export function StepProvision({
     <div className="space-y-6">
       <Card>
         <CardContent className="flex flex-col items-center py-10 text-center">
-          <div className="relative mb-6">
-            <Server className="h-14 w-14 text-red-400" />
-            <Loader2 className="absolute -bottom-1 -right-1 h-6 w-6 animate-spin text-red-500" />
+          <div className="mb-6 w-full max-w-md">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-800">
+              <div
+                className="h-full w-1/3 rounded-full bg-red-500"
+                style={{ animation: "indeterminate 2.5s ease-in-out infinite" }}
+              />
+            </div>
           </div>
           <h2 className="mb-2 text-xl font-semibold text-gray-100">{message}</h2>
           <p className="max-w-md text-gray-500">{submessage}</p>
@@ -149,7 +154,7 @@ export function StepProvision({
                   {isCompleted ? (
                     <CheckCircle2 className="h-5 w-5 shrink-0 text-green-500" />
                   ) : isActive ? (
-                    <Loader2 className="h-5 w-5 shrink-0 animate-spin text-red-400" />
+                    <Loader2 className="h-5 w-5 shrink-0 animate-spin text-primary" />
                   ) : (
                     <Circle className="h-5 w-5 shrink-0 text-neutral-700" />
                   )}
@@ -191,7 +196,7 @@ export function StepProvision({
             <div className="space-y-3">
               {botConfig.botName && (
                 <div className="flex items-center gap-3">
-                  <Bot className="h-4 w-4 shrink-0 text-red-400" />
+                  <Bot className="h-4 w-4 shrink-0 text-primary" />
                   <span className="text-sm text-gray-400">Name</span>
                   <span className="ml-auto text-sm font-medium text-gray-100">
                     {botConfig.botName}
@@ -200,7 +205,7 @@ export function StepProvision({
               )}
               {personality && (
                 <div className="flex items-center gap-3">
-                  <PersonalityIcon className="h-4 w-4 shrink-0 text-red-400" />
+                  <PersonalityIcon className="h-4 w-4 shrink-0 text-primary" />
                   <span className="text-sm text-gray-400">Personality</span>
                   <span className="ml-auto text-sm font-medium text-gray-100">
                     {botConfig.personality === "custom"
@@ -211,7 +216,7 @@ export function StepProvision({
               )}
               {botConfig.userName && (
                 <div className="flex items-center gap-3">
-                  <User className="h-4 w-4 shrink-0 text-red-400" />
+                  <User className="h-4 w-4 shrink-0 text-primary" />
                   <span className="text-sm text-gray-400">Owner</span>
                   <span className="ml-auto text-sm font-medium text-gray-100">
                     {botConfig.userName}
@@ -220,7 +225,7 @@ export function StepProvision({
               )}
               {botConfig.useCases.length > 0 && (
                 <div className="flex items-start gap-3">
-                  <Zap className="mt-0.5 h-4 w-4 shrink-0 text-red-400" />
+                  <Zap className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
                   <span className="text-sm text-gray-400">Use cases</span>
                   <span className="ml-auto text-right text-sm font-medium text-gray-100">
                     {botConfig.useCases.join(", ")}
@@ -229,7 +234,7 @@ export function StepProvision({
               )}
               {botConfig.extraContext && (
                 <div className="flex items-center gap-3">
-                  <FileText className="h-4 w-4 shrink-0 text-red-400" />
+                  <FileText className="h-4 w-4 shrink-0 text-primary" />
                   <span className="text-sm text-gray-400">Custom instructions</span>
                   <span className="ml-auto text-sm font-medium text-green-400">
                     Included

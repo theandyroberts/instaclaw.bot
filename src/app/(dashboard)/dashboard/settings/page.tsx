@@ -59,7 +59,7 @@ export default async function SettingsPage() {
                     href={`https://t.me/${instance.telegramBotUsername}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="text-sm font-medium text-red-400 hover:underline"
+                    className="text-sm font-medium text-primary hover:underline"
                   >
                     @{instance.telegramBotUsername}
                   </a>

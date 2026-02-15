@@ -10,7 +10,7 @@ export default function SignInPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 text-3xl font-bold">
-            <span className="text-gray-400">Insta</span><span className="text-red-500">Claw</span>
+            <span className="text-white">Insta</span><span className="text-primary">Claw</span>
           </div>
           <CardTitle className="text-2xl">Welcome back</CardTitle>
           <CardDescription>

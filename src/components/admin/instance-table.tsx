@@ -168,7 +168,7 @@ export function InstanceTable() {
                         href={`https://t.me/${instance.telegramBotUsername}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-red-400 hover:underline"
+                        className="text-primary hover:underline"
                       >
                         @{instance.telegramBotUsername}
                       </a>
@@ -222,7 +222,7 @@ export function InstanceTable() {
                         <Button
                           variant="outline"
                           size="sm"
-                          className="text-red-500 hover:text-red-700"
+                          className="text-destructive hover:text-destructive/80"
                           onClick={() =>
                             performAction(instance.id, "terminate")
                           }

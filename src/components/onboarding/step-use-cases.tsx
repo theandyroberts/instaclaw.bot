@@ -99,20 +99,20 @@ export function StepUseCases({
               onClick={() => toggleUseCase(uc.id)}
               className={`relative flex items-center gap-3 rounded-xl border-2 p-4 text-left transition-all ${
                 isSelected
-                  ? "border-red-600 bg-red-950/30"
-                  : "border-neutral-800 hover:border-neutral-700 hover:bg-neutral-800/50"
+                  ? "border-primary bg-primary/10"
+                  : "border-border hover:border-neutral-700 hover:bg-neutral-800/50"
               }`}
             >
               <Icon
                 className={`h-5 w-5 shrink-0 ${
-                  isSelected ? "text-red-400" : "text-gray-500"
+                  isSelected ? "text-primary" : "text-gray-500"
                 }`}
               />
               <span className="text-sm font-medium text-gray-100">
                 {uc.label}
               </span>
               {isSelected && (
-                <Check className="absolute right-2 top-2 h-4 w-4 text-red-400" />
+                <Check className="absolute right-2 top-2 h-4 w-4 text-primary" />
               )}
             </button>
           );

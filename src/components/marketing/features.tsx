@@ -62,13 +62,13 @@ const features = [
 
 export function Features() {
   return (
-    <section id="features" className="bg-[#111111] px-4 py-20">
+    <section id="features" className="bg-card px-4 py-20">
       <div className="mx-auto max-w-6xl">
         <div className="mb-12 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-gray-100 md:text-4xl">
+          <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
             Everything You Need in a Chat
           </h2>
-          <p className="mx-auto max-w-2xl text-gray-400">
+          <p className="mx-auto max-w-2xl text-muted-foreground">
             Your personal AI assistant can handle research, writing, coding, and more --
             all from Telegram.
           </p>
@@ -78,15 +78,15 @@ export function Features() {
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="rounded-xl border border-neutral-800 bg-background p-6 transition-shadow hover:shadow-md"
+              className="rounded-xl border border-border bg-background p-6 transition-shadow hover:shadow-md"
             >
-              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-red-950/50">
-                <feature.icon className="h-5 w-5 text-red-500" />
+              <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                <feature.icon className="h-5 w-5 text-primary" />
               </div>
-              <h3 className="mb-2 font-semibold text-gray-100">
+              <h3 className="mb-2 font-semibold text-foreground">
                 {feature.title}
               </h3>
-              <p className="text-sm text-gray-400">{feature.description}</p>
+              <p className="text-sm text-muted-foreground">{feature.description}</p>
             </div>
           ))}
         </div>

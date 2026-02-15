@@ -11,9 +11,9 @@ export default async function OnboardingLayout({
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-neutral-800 bg-[#0a0a0a] px-6 py-4">
+      <header className="border-b border-border bg-background px-6 py-4">
         <div className="mx-auto flex max-w-2xl items-center justify-between">
-          <a href="/" className="text-xl font-bold hover:opacity-80 transition-opacity"><span className="text-white">Insta</span><span className="text-red-500">Claw</span></a>
+          <a href="/" className="text-xl font-bold hover:opacity-80 transition-opacity"><span className="text-white">Insta</span><span className="text-primary">Claw</span></a>
           {session?.user?.email && (
             <span className="text-sm text-gray-500">{session.user.email}</span>
           )}
