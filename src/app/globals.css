@@ -49,37 +49,37 @@
 
 :root {
   --radius: 0.625rem;
-  /* Warm dark palette — flat gray/cream inspired by zenbrowser.app */
-  --background: #141413;
-  --foreground: #e8e5de;
-  --card: #1c1b1a;
-  --card-foreground: #e8e5de;
-  --popover: #1c1b1a;
-  --popover-foreground: #e8e5de;
+  /* Cool dark palette — flat neutral gray inspired by zenbrowser.app */
+  --background: #1f1f1f;
+  --foreground: #e5e7eb;
+  --card: #262626;
+  --card-foreground: #e5e7eb;
+  --popover: #262626;
+  --popover-foreground: #e5e7eb;
   --primary: rgb(247 73 33);
   --primary-foreground: #ffffff;
-  --secondary: #23221f;
-  --secondary-foreground: #e8e5de;
-  --muted: #1e1d1b;
-  --muted-foreground: #a09a90;
-  --accent: #23221f;
-  --accent-foreground: #e8e5de;
+  --secondary: #2a2a2a;
+  --secondary-foreground: #e5e7eb;
+  --muted: #252525;
+  --muted-foreground: #9ca3af;
+  --accent: #2a2a2a;
+  --accent-foreground: #e5e7eb;
   --destructive: rgb(247 73 33);
-  --border: rgba(232 229 222 / 10%);
-  --input: rgba(232 229 222 / 12%);
+  --border: rgba(229 231 235 / 10%);
+  --input: rgba(229 231 235 / 12%);
   --ring: rgb(247 73 33);
   --chart-1: rgb(247 73 33);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: #131312;
-  --sidebar-foreground: #e8e5de;
+  --sidebar: #1a1a1a;
+  --sidebar-foreground: #e5e7eb;
   --sidebar-primary: rgb(247 73 33);
   --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1e1d1b;
-  --sidebar-accent-foreground: #e8e5de;
-  --sidebar-border: rgba(232 229 222 / 10%);
+  --sidebar-accent: #252525;
+  --sidebar-accent-foreground: #e5e7eb;
+  --sidebar-border: rgba(229 231 235 / 10%);
   --sidebar-ring: rgb(247 73 33);
 }
 
