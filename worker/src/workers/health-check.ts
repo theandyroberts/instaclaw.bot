@@ -42,7 +42,7 @@ export const healthCheckWorker = new Worker(
       if (!instance.ipAddress) continue;
 
       try {
-        const ssh = await connectSSH(instance.ipAddress);
+        const ssh = await connectSSH(instance.tailscaleIp || instance.ipAddress);
 
         try {
           // Check if gateway container is running
@@ -125,7 +125,7 @@ export const healthCheckWorker = new Worker(
           continue;
         }
 
-        const ip = stuck.ipAddress || getDropletPublicIP(droplet);
+        const ip = stuck.tailscaleIp || stuck.ipAddress || getDropletPublicIP(droplet);
 
         // SSH in and check if Docker + container are running
         const ssh = await connectSSH(ip);

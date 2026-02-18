@@ -3,6 +3,7 @@ import { redis } from "../queues";
 import { prisma } from "../lib/prisma";
 import { deleteDroplet, createSnapshot } from "../lib/digitalocean";
 import { deleteAPIKey } from "../lib/openrouter";
+import { removeTailscaleDevice } from "../lib/tailscale";
 
 export const terminateWorker = new Worker(
   "lifecycle",
@@ -44,6 +45,16 @@ export const terminateWorker = new Worker(
         }
       }
 
+      // Remove Tailscale device
+      if (instance.tailscaleDeviceId) {
+        try {
+          await removeTailscaleDevice(instance.tailscaleDeviceId);
+          console.log(`[terminate:${job.id}] Tailscale device removed`);
+        } catch (err) {
+          console.error(`[terminate:${job.id}] Tailscale device removal failed:`, err);
+        }
+      }
+
       // Delete OpenRouter API key if exists
       if (instance.openrouterKeyId) {
         try {
@@ -61,6 +72,8 @@ export const terminateWorker = new Worker(
           status: "terminated",
           dropletId: null,
           ipAddress: null,
+          tailscaleIp: null,
+          tailscaleDeviceId: null,
         },
       });
 

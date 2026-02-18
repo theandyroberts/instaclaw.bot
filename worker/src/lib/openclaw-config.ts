@@ -6,7 +6,24 @@ export interface OpenClawConfig {
 }
 
 /**
+ * Generate a Dockerfile that extends the base OpenClaw image with Chromium
+ * and its dependencies for browser-based skills.
+ */
+export function generateDockerfile(): string {
+  return `FROM alpine/openclaw:latest
+USER root
+RUN apt-get update && apt-get install -y --no-install-recommends \\
+    chromium \\
+    chromium-driver \\
+    fonts-freefont-ttf \\
+    && rm -rf /var/lib/apt/lists/*
+USER node
+`;
+}
+
+/**
  * Generate docker-compose.yml for an OpenClaw customer droplet.
+ * Builds from a local Dockerfile that adds Chromium to the base image.
  * Volume mounts config to /home/node/.openclaw (where OpenClaw reads it).
  * Passes OPENROUTER_API_KEY for OpenRouter-based models.
  */
@@ -16,6 +33,7 @@ export function generateDockerCompose(
     openrouterApiKey?: string;
     moonshotApiKey?: string;
     braveApiKey?: string;
+    geminiApiKey?: string;
   }
 ): string {
   const envLines = [
@@ -30,18 +48,31 @@ export function generateDockerCompose(
   if (opts?.braveApiKey) {
     envLines.push(`      - BRAVE_API_KEY=${opts.braveApiKey}`);
   }
+  if (opts?.geminiApiKey) {
+    envLines.push(`      - GEMINI_API_KEY=${opts.geminiApiKey}`);
+  }
+
+  // PATH includes .local/bin so skills like nano-banana-pro can find uv
+  envLines.push(`      - PATH=/home/node/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin`);
+  // Chromium env vars so tools/skills can locate the browser
+  envLines.push(`      - CHROME_BIN=/usr/bin/chromium`);
+  envLines.push(`      - CHROMIUM_FLAGS=--no-sandbox --headless=new --disable-gpu --disable-dev-shm-usage`);
+  envLines.push(`      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium`);
+  envLines.push(`      - SELENIUM_BROWSER_PATH=/usr/bin/chromium`);
 
   return `services:
   openclaw-gateway:
-    image: alpine/openclaw:latest
+    build: .
     restart: unless-stopped
+    network_mode: host
+    shm_size: "256m"
     volumes:
       - ./home/.openclaw:/home/node/.openclaw
+      - ./home/.local:/home/node/.local
       - ./data:/app/data
     environment:
+      - HOST=0.0.0.0
 ${envLines.join("\n")}
-    ports:
-      - "8080:8080"
     logging:
       driver: json-file
       options:

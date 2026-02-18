@@ -3,7 +3,7 @@ import * as fs from "fs";
 
 const SSH_KEY_PATH = process.env.SSH_PRIVATE_KEY_PATH || "/root/.ssh/id_rsa";
 
-export async function connectSSH(ipAddress: string): Promise<NodeSSH> {
+export async function connectSSH(ipAddress: string, username = "instaclaw"): Promise<NodeSSH> {
   const ssh = new NodeSSH();
 
   // Retry SSH connection (droplet may not be ready immediately)
@@ -11,7 +11,7 @@ export async function connectSSH(ipAddress: string): Promise<NodeSSH> {
     try {
       await ssh.connect({
         host: ipAddress,
-        username: "root",
+        username,
         privateKeyPath: SSH_KEY_PATH,
         readyTimeout: 10000,
       });
@@ -53,13 +53,13 @@ export async function writeFileSSH(
   });
 }
 
-export async function waitForSSH(ipAddress: string, maxAttempts = 30): Promise<void> {
+export async function waitForSSH(ipAddress: string, maxAttempts = 30, username = "instaclaw"): Promise<void> {
   for (let i = 0; i < maxAttempts; i++) {
     try {
       const ssh = new NodeSSH();
       await ssh.connect({
         host: ipAddress,
-        username: "root",
+        username,
         privateKeyPath: SSH_KEY_PATH,
         readyTimeout: 5000,
       });

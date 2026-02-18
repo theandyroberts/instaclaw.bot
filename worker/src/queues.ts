@@ -38,3 +38,13 @@ export const healthQueue = new Queue("health", {
     removeOnComplete: 10,
   },
 });
+
+export const poolQueue = new Queue("pool", {
+  connection: redis,
+  defaultJobOptions: {
+    attempts: 2,
+    backoff: { type: "exponential" as const, delay: 60000 },
+    removeOnComplete: 20,
+    removeOnFail: 10,
+  },
+});

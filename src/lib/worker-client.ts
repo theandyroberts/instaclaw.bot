@@ -28,6 +28,10 @@ export async function enqueueProvision(instanceId: string, userId: string) {
   return callWorker("/jobs/provision", { instanceId, userId });
 }
 
+export async function enqueueAllocate(instanceId: string, userId: string) {
+  return callWorker("/jobs/allocate", { instanceId, userId });
+}
+
 export async function enqueueTelegramConfig(instanceId: string, token: string) {
   return callWorker("/jobs/configure-telegram", { instanceId, token });
 }
@@ -46,4 +50,25 @@ export async function enqueueUnsuspend(instanceId: string) {
 
 export async function enqueueTerminate(instanceId: string) {
   return callWorker("/jobs/terminate", { instanceId });
+}
+
+export async function getConsoleUrl(
+  instanceId: string,
+  userId: string
+): Promise<{ consoleUrl: string; token: string; expiresAt: number }> {
+  const response = await fetch(`${WORKER_URL}/console/${instanceId}/token`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${WORKER_SECRET}`,
+    },
+    body: JSON.stringify({ userId }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`Worker API error: ${response.status} ${error}`);
+  }
+
+  return response.json();
 }

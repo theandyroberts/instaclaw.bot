@@ -50,13 +50,12 @@ const personalityLabels: Record<string, { label: string; icon: typeof Smile }> =
 
 // The expected steps in order -- used to show upcoming steps as dimmed
 const expectedSteps = [
-  { step: "started", message: "Creating your server" },
-  { step: "droplet_created", message: "Server created -- waiting for boot" },
+  { step: "started", message: "Allocating your server" },
+  { step: "droplet_created", message: "Server reserved" },
   { step: "droplet_active", message: "Server online" },
-  { step: "cloud_init", message: "Installing system software" },
+  { step: "cloud_init", message: "System ready" },
   { step: "docker_ready", message: "Docker ready" },
-  { step: "openclaw_setup", message: "Writing configuration" },
-  { step: "pulling_images", message: "Downloading system image -- this is a big one" },
+  { step: "pulling_images", message: "System image ready" },
   { step: "workspace_setup", message: "Personalizing your bot" },
   { step: "container_started", message: "Starting your bot" },
   { step: "base_complete", message: "Setup complete" },
@@ -64,7 +63,7 @@ const expectedSteps = [
 
 export function StepProvision({
   message = "Setting up your server...",
-  submessage = "We\u2019re provisioning a dedicated server for your AI assistant. This usually takes 3\u20135 minutes.",
+  submessage = "We\u2019re configuring your dedicated server. This usually takes less than a minute.",
   botConfig,
   onComplete,
 }: StepProvisionProps) {
@@ -177,7 +176,7 @@ export function StepProvision({
       </Card>
 
       {/* Reassurance after 60 seconds */}
-      {elapsed >= 60 && (
+      {elapsed >= 120 && (
         <div className="text-center">
           <p className="text-sm text-gray-500">
             Your server is being set up in the background.

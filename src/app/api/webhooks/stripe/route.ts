@@ -1,6 +1,6 @@
 import { stripe, getPlanFromPriceId } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
-import { enqueueProvision, enqueueSuspend, enqueueUnsuspend } from "@/lib/worker-client";
+import { enqueueAllocate, enqueueSuspend, enqueueUnsuspend } from "@/lib/worker-client";
 import { sendEmail, instanceSuspendedEmail } from "@/lib/email";
 import { headers } from "next/headers";
 import type Stripe from "stripe";
@@ -94,11 +94,11 @@ export async function POST(req: Request) {
             },
           });
 
-          // Enqueue provisioning job
+          // Enqueue allocation (uses pool if available, falls back to standard provision)
           try {
-            await enqueueProvision(instance.id, userId);
+            await enqueueAllocate(instance.id, userId);
           } catch (err) {
-            console.error("Failed to enqueue provision job:", err);
+            console.error("Failed to enqueue allocate job:", err);
           }
         }
         break;

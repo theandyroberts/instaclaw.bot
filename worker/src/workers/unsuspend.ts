@@ -22,7 +22,7 @@ export const unsuspendWorker = new Worker(
         return;
       }
 
-      const ssh = await connectSSH(instance.ipAddress);
+      const ssh = await connectSSH(instance.tailscaleIp || instance.ipAddress);
 
       try {
         // Start the OpenClaw gateway container

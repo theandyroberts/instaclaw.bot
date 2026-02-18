@@ -23,7 +23,7 @@ export const configureTelegramWorker = new Worker(
         throw new Error("Instance not found or not provisioned");
       }
 
-      const ssh = await connectSSH(instance.ipAddress);
+      const ssh = await connectSSH(instance.tailscaleIp || instance.ipAddress);
 
       try {
         // Read existing config or create new one
@@ -45,12 +45,11 @@ export const configureTelegramWorker = new Worker(
         };
         config.channels = channels;
 
-        // Ensure config directory exists with correct ownership
-        await execSSH(ssh, "mkdir -p /opt/openclaw/home/.openclaw && chown -R 1000:1000 /opt/openclaw/home");
+        // Ensure config directory exists
+        await execSSH(ssh, "mkdir -p /opt/openclaw/home/.openclaw");
 
         // Write updated config
         await writeFileSSH(ssh, CONFIG_PATH, JSON.stringify(config, null, 2));
-        await execSSH(ssh, `chown 1000:1000 ${CONFIG_PATH}`);
 
         // Restart gateway if running
         try {

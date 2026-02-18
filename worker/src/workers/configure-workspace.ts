@@ -34,6 +34,7 @@ export const configureWorkspaceWorker = new Worker(
         throw new Error("Instance not found or not provisioned");
       }
 
+      const sshHost = instance.tailscaleIp || instance.ipAddress;
       const user = instance.user;
       const botConfig = user.botConfig as {
         botName: string;
@@ -68,7 +69,7 @@ export const configureWorkspaceWorker = new Worker(
         `[configure-workspace:${job.id}] Plan: ${plan}, Model: ${model}`
       );
 
-      const ssh = await connectSSH(instance.ipAddress);
+      const ssh = await connectSSH(sshHost);
 
       try {
         // Read existing config
@@ -97,7 +98,6 @@ export const configureWorkspaceWorker = new Worker(
           CONFIG_PATH,
           JSON.stringify(config, null, 2)
         );
-        await execSSH(ssh, `chown 1000:1000 ${CONFIG_PATH}`);
 
         // Create workspace directory
         await execSSH(
@@ -115,12 +115,6 @@ export const configureWorkspaceWorker = new Worker(
         await writeFileSSH(ssh, `${WORKSPACE_DIR}/USER.md`, userMd);
         await writeFileSSH(ssh, `${WORKSPACE_DIR}/AGENTS.md`, agentsMd);
         await writeFileSSH(ssh, `${WORKSPACE_DIR}/MEMORY.md`, memoryMd);
-
-        // Fix ownership
-        await execSSH(
-          ssh,
-          "chown -R 1000:1000 /opt/openclaw/home"
-        );
 
         // Regenerate docker-compose with API keys
         const currentCompose = await execSSH(

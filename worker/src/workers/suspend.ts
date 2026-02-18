@@ -22,7 +22,7 @@ export const suspendWorker = new Worker(
         return;
       }
 
-      const ssh = await connectSSH(instance.ipAddress);
+      const ssh = await connectSSH(instance.tailscaleIp || instance.ipAddress);
 
       try {
         // Stop the OpenClaw gateway container

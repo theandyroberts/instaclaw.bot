@@ -96,6 +96,9 @@ model Instance {
   provisionLog        Json?
   provisionedAt       DateTime?
   suspendedAt         DateTime?
+  tailscaleIp         String?
+  tailscaleDeviceId   String?
+  gatewayToken        String?        @db.Text
   lastHealthCheck     DateTime?
   healthStatus        HealthStatus   @default(unknown)
   createdAt           DateTime       @default(now())
@@ -152,4 +155,31 @@ enum HealthStatus {
   healthy
   unhealthy
   unreachable
+}
+
+enum PoolDropletStatus {
+  creating
+  ready
+  allocating
+  allocated
+  failed
+  destroying
+}
+
+model PoolDroplet {
+  id                String            @id @default(cuid())
+  dropletId         String?           @unique
+  ipAddress         String?
+  tailscaleIp       String?
+  tailscaleHostname String?           @unique
+  tailscaleDeviceId String?
+  gatewayToken      String?           @db.Text
+  status            PoolDropletStatus @default(creating)
+  provisionLog      Json?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  allocatedAt       DateTime?
+  allocatedTo       String?
+
+  @@map("pool_droplets")
 }

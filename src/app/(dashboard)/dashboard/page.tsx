@@ -10,7 +10,9 @@ import {
   CreditCard,
   ArrowRight,
   MessageCircle,
+  Monitor,
 } from "lucide-react";
+import { ConsoleButton } from "@/components/dashboard/console-button";
 
 export const dynamic = 'force-dynamic';
 
@@ -125,6 +127,20 @@ export default async function DashboardPage() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </a>
               </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {instance.status === "active" && (
+          <Card className="mt-6">
+            <CardContent className="flex items-center justify-between py-6">
+              <div>
+                <h3 className="font-semibold">Control Panel</h3>
+                <p className="text-sm text-gray-500">
+                  Manage skills, view logs, and configure your bot directly
+                </p>
+              </div>
+              <ConsoleButton />
             </CardContent>
           </Card>
         )}
