@@ -145,12 +145,16 @@ export default async function DashboardPage() {
           </Card>
         )}
 
-        {instance.gatewayToken && (
-          <p className="mt-8 text-center text-xs text-gray-400 font-mono select-all">
-            GW: {instance.gatewayToken}
+        {instance.gatewayToken ? (
+          <p className="mt-8 text-center text-xs text-gray-400">
+            GW: <code className="font-mono select-all">{instance.gatewayToken}</code>
+          </p>
+        ) : (
+          <p className="mt-8 text-center text-xs text-red-400">
+            GW token missing from database
           </p>
         )}
-        <p className="mt-2 text-center text-xs text-gray-300">v0.4.0</p>
+        <p className="mt-2 text-center text-xs text-gray-300">v0.4.1</p>
       </div>
     </>
   );
