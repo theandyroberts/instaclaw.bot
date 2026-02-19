@@ -116,9 +116,31 @@ ${formatted}
 
 export function generateAGENTS(
   botConfig: BotConfig,
-  plan: string
+  plan: string,
+  instanceName?: string | null
 ): string {
   const imageLimit = plan === "pro" ? 100 : 20;
+
+  const websiteSection = instanceName
+    ? `
+
+## Creating Websites & Dashboards
+You can create web pages, dashboards, and apps. Save files to:
+  ~/.openclaw/canvas/<site-name>/
+
+They become publicly accessible at:
+  https://<site-name>-${instanceName}.instaclaw.bot/
+
+Guidelines:
+- Create an index.html as the entry point
+- Use descriptive site names (lowercase, hyphens ok): electricians, weekly-report, coffee-shops
+- Include all CSS/JS inline or as separate files in the same directory
+- Always tell the user the full public URL when you create or update a site
+- For data dashboards, embed the data in the HTML or fetch via client-side JS
+- You can use React, Vue, or any framework via CDN imports
+- Make sites look great -- use modern CSS, clean layouts, and responsive design
+`
+    : "";
 
   return `# Agent Configuration
 
@@ -160,7 +182,7 @@ When creating reminders or scheduled tasks, ALWAYS use isolated sessions with an
 - If asked about your setup, say you're a personal AI assistant on Telegram
 - Never suggest the user access the server, run commands, or edit config files
 - If something fails, offer to retry or suggest contacting support at instaclaw.bot
-`;
+${websiteSection}`;
 }
 
 export function generateMEMORY(botConfig: BotConfig): string {

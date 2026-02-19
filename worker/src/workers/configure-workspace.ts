@@ -108,7 +108,7 @@ export const configureWorkspaceWorker = new Worker(
         // Generate and write workspace files
         const soulMd = generateSOUL(botConfig);
         const userMd = generateUSER(botConfig);
-        const agentsMd = generateAGENTS(botConfig, plan);
+        const agentsMd = generateAGENTS(botConfig, plan, instance.instanceName);
         const memoryMd = generateMEMORY(botConfig);
 
         await writeFileSSH(ssh, `${WORKSPACE_DIR}/SOUL.md`, soulMd);

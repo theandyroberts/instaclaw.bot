@@ -85,6 +85,7 @@ export const provisionWorker = new Worker(
       });
       const botConfig = instanceRecord?.user?.botConfig as BotConfig | null;
       const botName = botConfig?.botName;
+      const instanceName = instanceRecord?.instanceName || null;
 
       const subscription = await prisma.subscription.findUnique({
         where: { userId },
@@ -268,9 +269,12 @@ export const provisionWorker = new Worker(
           await execSSH(ssh, `mkdir -p ${WORKSPACE_DIR}`, "/");
           await writeFileSSH(ssh, `${WORKSPACE_DIR}/SOUL.md`, generateSOUL(botConfig));
           await writeFileSSH(ssh, `${WORKSPACE_DIR}/USER.md`, generateUSER(botConfig));
-          await writeFileSSH(ssh, `${WORKSPACE_DIR}/AGENTS.md`, generateAGENTS(botConfig, plan));
+          await writeFileSSH(ssh, `${WORKSPACE_DIR}/AGENTS.md`, generateAGENTS(botConfig, plan, instanceName));
           await writeFileSSH(ssh, `${WORKSPACE_DIR}/MEMORY.md`, generateMEMORY(botConfig));
         }
+
+        // Ensure canvas directory exists for public sites
+        await execSSH(ssh, "mkdir -p /opt/openclaw/home/.openclaw/canvas", "/");
 
         // Symlink media → workspace so OpenClaw allows sending generated images
         // (OpenClaw only serves files from ~/.openclaw/media, but skills write to workspace)

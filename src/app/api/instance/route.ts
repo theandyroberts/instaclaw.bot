@@ -29,6 +29,7 @@ export async function GET() {
       healthStatus: instance.healthStatus,
       provisionedAt: instance.provisionedAt,
       ipAddress: instance.ipAddress,
+      instanceName: instance.instanceName,
     });
   } catch (error) {
     console.error("Get instance error:", error);

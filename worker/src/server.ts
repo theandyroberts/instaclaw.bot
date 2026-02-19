@@ -47,16 +47,37 @@ function verifyConsoleToken(token: string): { instanceId: string } | null {
 // Helpers: detect subdomain requests
 // ---------------------------------------------------------------------------
 
-function getSubdomainSlug(host: string | undefined): string | null {
+type SubdomainRoute =
+  | { type: "control"; slug: string }             // cmlsj9x8.instaclaw.bot
+  | { type: "site"; name: string; site: string }  // electricians-bigbadbot.instaclaw.bot
+  | null;
+
+function parseSubdomain(host: string | undefined): SubdomainRoute {
   if (!host) return null;
-  // Strip port if present
   const hostname = host.split(":")[0];
-  const match = hostname.match(/^([a-z0-9]+)\.instaclaw\.bot$/);
+  const match = hostname.match(/^(.+)\.instaclaw\.bot$/);
   if (!match) return null;
-  // Exclude "worker" and "www" — those are not instance slugs
-  const slug = match[1];
-  if (slug === "worker" || slug === "www") return null;
-  return slug;
+  const sub = match[1];
+  if (sub === "worker" || sub === "www") return null;
+
+  // If contains hyphen: split on LAST hyphen → site + instance name
+  // Instance names are alphanumeric only (no hyphens), site names can have hyphens
+  const lastDash = sub.lastIndexOf("-");
+  if (lastDash > 0) {
+    return {
+      type: "site",
+      site: sub.slice(0, lastDash),     // "electricians" or "my-dashboard"
+      name: sub.slice(lastDash + 1),    // "bigbadbot"
+    };
+  }
+
+  // No hyphen: 8-char alphanumeric starting with 'c' → control panel (CUID prefix)
+  if (/^c[a-z0-9]{7}$/.test(sub)) {
+    return { type: "control", slug: sub };
+  }
+
+  // Otherwise treat as instance name (future: instance homepage)
+  return null;
 }
 
 function parseCookies(header: string | undefined): Record<string, string> {
@@ -77,8 +98,43 @@ const app = express();
 
 // --- Subdomain proxy middleware (runs BEFORE json parsing + bearer auth) ---
 app.use(async (req, res, next) => {
-  const slug = getSubdomainSlug(req.headers.host);
-  if (!slug) return next();
+  const route = parseSubdomain(req.headers.host);
+  if (!route) return next();
+
+  // ---- PUBLIC SITE ROUTE (no auth required) ----
+  if (route.type === "site") {
+    const instance = await prisma.instance.findFirst({
+      where: { instanceName: route.name, status: "active" },
+      select: { id: true, tailscaleIp: true, gatewayToken: true },
+    });
+
+    if (!instance?.tailscaleIp || !instance.gatewayToken) {
+      res.status(404).send("Site not found");
+      return;
+    }
+
+    // Rewrite path to canvas sub-path: / → /__openclaw__/canvas/<site>/
+    const originalPath = req.url || "/";
+    req.url = `/__openclaw__/canvas/${route.site}${originalPath}`;
+
+    // Authenticate to gateway with stored gateway token
+    req.headers.authorization = `Bearer ${instance.gatewayToken}`;
+
+    // Strip proxy headers + rewrite Host/Origin
+    delete req.headers["x-forwarded-for"];
+    delete req.headers["x-forwarded-proto"];
+    delete req.headers["x-forwarded-host"];
+    delete req.headers["x-forwarded-port"];
+    delete req.headers["x-real-ip"];
+    req.headers.host = "127.0.0.1:18789";
+    req.headers.origin = "http://127.0.0.1:18789";
+
+    (req as any).__proxyTarget = `http://${instance.tailscaleIp}:18789`;
+    return next();
+  }
+
+  // ---- CONTROL PANEL ROUTE (auth required) ----
+  const slug = route.slug;
 
   // Authenticate via ?ct= query param or console_token cookie
   // (?token= is reserved for the OpenClaw gateway token, passed through to the SPA)
@@ -354,11 +410,45 @@ async function handleConsoleUpgrade(
   socket: any,
   head: Buffer
 ) {
-  const slug = getSubdomainSlug(req.headers.host);
-  if (!slug) {
+  const route = parseSubdomain(req.headers.host);
+  if (!route) {
     socket.destroy();
     return;
   }
+
+  // ---- PUBLIC SITE WEBSOCKET (for canvas live reload) ----
+  if (route.type === "site") {
+    const instance = await prisma.instance.findFirst({
+      where: { instanceName: route.name, status: "active" },
+      select: { id: true, tailscaleIp: true, gatewayToken: true },
+    });
+
+    if (!instance?.tailscaleIp || !instance.gatewayToken) {
+      socket.destroy();
+      return;
+    }
+
+    // Rewrite path to canvas sub-path
+    const originalUrl = req.url || "/";
+    req.url = `/__openclaw__/canvas/${route.site}${originalUrl}`;
+    req.headers.authorization = `Bearer ${instance.gatewayToken}`;
+
+    delete req.headers["x-forwarded-for"];
+    delete req.headers["x-forwarded-proto"];
+    delete req.headers["x-forwarded-host"];
+    delete req.headers["x-forwarded-port"];
+    delete req.headers["x-real-ip"];
+    req.headers.host = "127.0.0.1:18789";
+    req.headers.origin = "http://127.0.0.1:18789";
+
+    wsProxy.ws(req, socket, head, {
+      target: `http://${instance.tailscaleIp}:18789`,
+    });
+    return;
+  }
+
+  // ---- CONTROL PANEL WEBSOCKET (auth required) ----
+  const slug = route.slug;
 
   // Parse console token from ?ct= param or cookie
   const cookies = parseCookies(req.headers.cookie);

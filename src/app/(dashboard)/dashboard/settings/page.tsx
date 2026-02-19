@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { InstanceNameForm } from "@/components/dashboard/instance-name-form";
 
 export const dynamic = 'force-dynamic';
 
@@ -17,7 +18,7 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <DashboardHeader title="Settings" description="View your instance details" />
+      <DashboardHeader title="Settings" description="Manage your instance" />
       <div className="mx-auto max-w-2xl space-y-6 p-8">
         <Card>
           <CardHeader>
@@ -34,6 +35,21 @@ export default async function SettingsPage() {
             </div>
           </CardContent>
         </Card>
+
+        {instance && instance.status === "active" && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Public Site Name</CardTitle>
+              <CardDescription>
+                Choose a name for your bot&apos;s public websites. Your bot can create
+                sites that are accessible at <code className="text-xs">&lt;site&gt;-&lt;name&gt;.instaclaw.bot</code>
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <InstanceNameForm currentName={instance.instanceName} />
+            </CardContent>
+          </Card>
+        )}
 
         {instance && (
           <Card>

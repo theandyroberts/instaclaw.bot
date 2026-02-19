@@ -122,6 +122,7 @@ export const poolAllocateWorker = new Worker(
         include: { user: { select: { id: true, botConfig: true } } },
       });
       const botConfig = instanceRecord?.user?.botConfig as BotConfig | null;
+      const instanceName = instanceRecord?.instanceName || null;
 
       const subscription = await prisma.subscription.findUnique({
         where: { userId },
@@ -170,9 +171,12 @@ export const poolAllocateWorker = new Worker(
           await execSSH(ssh, `mkdir -p ${WORKSPACE_DIR}`, "/");
           await writeFileSSH(ssh, `${WORKSPACE_DIR}/SOUL.md`, generateSOUL(botConfig));
           await writeFileSSH(ssh, `${WORKSPACE_DIR}/USER.md`, generateUSER(botConfig));
-          await writeFileSSH(ssh, `${WORKSPACE_DIR}/AGENTS.md`, generateAGENTS(botConfig, plan));
+          await writeFileSSH(ssh, `${WORKSPACE_DIR}/AGENTS.md`, generateAGENTS(botConfig, plan, instanceName));
           await writeFileSSH(ssh, `${WORKSPACE_DIR}/MEMORY.md`, generateMEMORY(botConfig));
         }
+
+        // Ensure canvas directory exists for public sites
+        await execSSH(ssh, "mkdir -p /opt/openclaw/home/.openclaw/canvas", "/");
 
         log("Workspace configured");
 

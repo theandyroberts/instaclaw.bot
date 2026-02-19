@@ -154,9 +154,10 @@ export const poolCreateWorker = new Worker(
           "/opt/openclaw"
         );
 
-        // 10. Create workspace directory + media symlink
+        // 10. Create workspace directory, canvas directory + media symlink
         log("Creating workspace and media symlink...");
         await execSSH(ssh, "mkdir -p /opt/openclaw/home/.openclaw/workspace", "/");
+        await execSSH(ssh, "mkdir -p /opt/openclaw/home/.openclaw/canvas", "/");
         await execSSH(
           ssh,
           "ln -sfn /opt/openclaw/home/.openclaw/workspace /opt/openclaw/home/.openclaw/media",

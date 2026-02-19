@@ -10,7 +10,7 @@ import {
   CreditCard,
   ArrowRight,
   MessageCircle,
-  Monitor,
+  Globe,
 } from "lucide-react";
 import { ConsoleButton } from "@/components/dashboard/console-button";
 
@@ -145,6 +145,52 @@ export default async function DashboardPage() {
           </Card>
         )}
 
+        {instance.status === "active" && instance.instanceName && (
+          <Card className="mt-6">
+            <CardContent className="py-6">
+              <div className="flex items-start gap-3">
+                <Globe className="mt-0.5 h-5 w-5 text-gray-400" />
+                <div className="space-y-1">
+                  <h3 className="font-semibold">Your Public Sites</h3>
+                  <p className="text-sm text-gray-500">
+                    Any site your bot creates is publicly accessible at{" "}
+                    <code className="rounded bg-gray-100 px-1 py-0.5 font-mono text-xs">
+                      &lt;site&gt;-{instance.instanceName}.instaclaw.bot
+                    </code>
+                  </p>
+                  <p className="text-sm text-gray-400">
+                    Try asking your bot: &quot;Build me a dashboard of coffee shops in Austin&quot;
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {instance.status === "active" && !instance.instanceName && (
+          <Card className="mt-6 border-dashed">
+            <CardContent className="py-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-start gap-3">
+                  <Globe className="mt-0.5 h-5 w-5 text-gray-400" />
+                  <div>
+                    <h3 className="font-semibold">Enable Public Sites</h3>
+                    <p className="text-sm text-gray-500">
+                      Set an instance name in Settings to let your bot create shareable websites
+                    </p>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" asChild>
+                  <a href="/dashboard/settings">
+                    Settings
+                    <ArrowRight className="ml-1 h-3 w-3" />
+                  </a>
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {instance.gatewayToken ? (
           <p className="mt-8 text-center text-xs text-gray-400">
             GW: <code className="font-mono select-all">{instance.gatewayToken}</code>
@@ -154,7 +200,7 @@ export default async function DashboardPage() {
             GW token missing from database
           </p>
         )}
-        <p className="mt-2 text-center text-xs text-gray-300">v0.4.1</p>
+        <p className="mt-2 text-center text-xs text-gray-300">v0.5.0</p>
       </div>
     </>
   );
