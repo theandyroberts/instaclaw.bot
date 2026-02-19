@@ -1,4 +1,4 @@
-import { app, consoleProxy } from "./server";
+import { app, handleConsoleUpgrade } from "./server";
 
 // Import workers to register them
 import "./workers/provision";
@@ -40,7 +40,10 @@ const server = app.listen(PORT, async () => {
 
 // WebSocket upgrade handling for console proxy
 server.on("upgrade", (req, socket, head) => {
-  consoleProxy.upgrade(req, socket as any, head);
+  handleConsoleUpgrade(req, socket, head).catch((err) => {
+    console.error("[console-ws] Upgrade error:", err);
+    socket.destroy();
+  });
 });
 
 // Graceful shutdown

@@ -247,6 +247,10 @@ export const provisionWorker = new Worker(
               subagents: { maxConcurrent: 8 },
             },
           },
+          gateway: {
+            trustedProxies: ["127.0.0.1", "::1"],
+            controlUi: { allowedOrigins: ["*"] },
+          },
           messages: { ackReactionScope: "group-mentions" },
           plugins: { entries: { telegram: { enabled: true } } },
           cron: { enabled: true },

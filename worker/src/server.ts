@@ -1,6 +1,7 @@
 import express from "express";
 import * as crypto from "crypto";
 import * as http from "http";
+import httpProxy from "http-proxy";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import { provisionQueue, configureQueue, lifecycleQueue, poolQueue } from "./queues";
 import { prisma } from "./lib/prisma";
@@ -130,6 +131,14 @@ app.use(async (req, res, next) => {
 
   // Store target for the proxy
   (req as any).__proxyTarget = `http://${instance.tailscaleIp}:18789`;
+  // Strip proxy headers so the gateway treats the connection as local
+  delete req.headers["x-forwarded-for"];
+  delete req.headers["x-forwarded-proto"];
+  delete req.headers["x-forwarded-host"];
+  delete req.headers["x-forwarded-port"];
+  delete req.headers["x-real-ip"];
+  req.headers.host = "127.0.0.1:18789";
+  req.headers.origin = "http://127.0.0.1:18789";
   next();
 });
 
@@ -327,4 +336,61 @@ app.post("/jobs/pool-replenish", async (req, res) => {
   }
 });
 
-export { app, consoleProxy };
+// ---------------------------------------------------------------------------
+// WebSocket proxy (using http-proxy directly — http-proxy-middleware's
+// upgrade() doesn't support dynamic router targets properly)
+// ---------------------------------------------------------------------------
+const wsProxy = httpProxy.createProxyServer({ ws: true, changeOrigin: true });
+wsProxy.on("error", (err, _req, res) => {
+  console.error("[console-ws] Error:", err.message);
+});
+
+async function handleConsoleUpgrade(
+  req: http.IncomingMessage,
+  socket: any,
+  head: Buffer
+) {
+  const slug = getSubdomainSlug(req.headers.host);
+  if (!slug) {
+    socket.destroy();
+    return;
+  }
+
+  // Parse token from cookie or query string
+  const cookies = parseCookies(req.headers.cookie);
+  const url = new URL(req.url || "/", `http://${req.headers.host}`);
+  const tokenParam = url.searchParams.get("token");
+  const rawToken = tokenParam || cookies["console_token"];
+
+  if (!rawToken || !verifyConsoleToken(rawToken)) {
+    socket.destroy();
+    return;
+  }
+
+  // Look up instance
+  const instance = await prisma.instance.findFirst({
+    where: { id: { startsWith: slug }, status: "active" },
+    select: { id: true, tailscaleIp: true },
+  });
+
+  if (!instance?.tailscaleIp) {
+    socket.destroy();
+    return;
+  }
+
+  // Strip proxy headers so the gateway treats the connection as local
+  delete req.headers["x-forwarded-for"];
+  delete req.headers["x-forwarded-proto"];
+  delete req.headers["x-forwarded-host"];
+  delete req.headers["x-forwarded-port"];
+  delete req.headers["x-real-ip"];
+  req.headers.host = "127.0.0.1:18789";
+  req.headers.origin = "http://127.0.0.1:18789";
+
+  // Proxy the WebSocket upgrade directly to the instance
+  wsProxy.ws(req, socket, head, {
+    target: `http://${instance.tailscaleIp}:18789`,
+  });
+}
+
+export { app, consoleProxy, handleConsoleUpgrade };
