@@ -249,7 +249,11 @@ export const provisionWorker = new Worker(
           },
           gateway: {
             trustedProxies: ["127.0.0.1", "::1"],
-            controlUi: { allowedOrigins: ["*"] },
+            controlUi: {
+              allowedOrigins: ["*"],
+              allowInsecureAuth: true,
+              dangerouslyDisableDeviceAuth: true,
+            },
           },
           messages: { ackReactionScope: "group-mentions" },
           plugins: { entries: { telegram: { enabled: true } } },

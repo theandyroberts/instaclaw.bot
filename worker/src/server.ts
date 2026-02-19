@@ -80,9 +80,10 @@ app.use(async (req, res, next) => {
   const slug = getSubdomainSlug(req.headers.host);
   if (!slug) return next();
 
-  // Authenticate via ?token= query param or console_token cookie
+  // Authenticate via ?ct= query param or console_token cookie
+  // (?token= is reserved for the OpenClaw gateway token, passed through to the SPA)
   const tokenParam =
-    typeof req.query.token === "string" ? req.query.token : null;
+    typeof req.query.ct === "string" ? req.query.ct : null;
   const cookies = parseCookies(req.headers.cookie);
   const cookieToken = cookies["console_token"] || null;
   const rawToken = tokenParam || cookieToken;
@@ -142,12 +143,12 @@ app.use(async (req, res, next) => {
   next();
 });
 
-// Create the proxy middleware instance
+// Create the proxy middleware instance (HTTP only — WebSocket upgrades
+// are handled separately via handleConsoleUpgrade in index.ts)
 const consoleProxy = createProxyMiddleware({
   router: (req) => (req as any).__proxyTarget,
-  changeOrigin: true,
-  ws: true,
-  // Don't rewrite the path — pass it straight through
+  changeOrigin: false,
+  ws: false,
   pathRewrite: undefined,
   on: {
     error: (err, _req, res) => {
@@ -199,7 +200,7 @@ app.post("/console/:instanceId/token", async (req, res) => {
     // Verify instance belongs to user
     const instance = await prisma.instance.findUnique({
       where: { id: instanceId },
-      select: { id: true, userId: true, status: true },
+      select: { id: true, userId: true, status: true, gatewayToken: true },
     });
 
     if (!instance) {
@@ -217,13 +218,16 @@ app.post("/console/:instanceId/token", async (req, res) => {
       return;
     }
 
-    // Generate signed token
+    // Generate signed console token (for proxy auth)
     const expiresAt = Math.floor(Date.now() / 1000) + CONSOLE_TOKEN_TTL;
-    const token = signConsoleToken(instanceId, expiresAt);
+    const consoleToken = signConsoleToken(instanceId, expiresAt);
     const slug = instanceId.slice(0, 8);
-    const consoleUrl = `https://${slug}.instaclaw.bot/?token=${token}`;
+    // ?token= is the OpenClaw gateway token (SPA reads it for WebSocket auth)
+    // ?ct= is our signed console token (proxy reads it for access control)
+    const gwToken = (instance as any).gatewayToken || "";
+    const consoleUrl = `https://${slug}.instaclaw.bot/?token=${gwToken}&ct=${consoleToken}`;
 
-    res.json({ consoleUrl, token, expiresAt });
+    res.json({ consoleUrl, token: consoleToken, expiresAt });
   } catch (error) {
     console.error("Failed to generate console token:", error);
     res.status(500).json({ error: "Failed to generate token" });
@@ -340,7 +344,7 @@ app.post("/jobs/pool-replenish", async (req, res) => {
 // WebSocket proxy (using http-proxy directly — http-proxy-middleware's
 // upgrade() doesn't support dynamic router targets properly)
 // ---------------------------------------------------------------------------
-const wsProxy = httpProxy.createProxyServer({ ws: true, changeOrigin: true });
+const wsProxy = httpProxy.createProxyServer({ ws: true, changeOrigin: false, xfwd: false });
 wsProxy.on("error", (err, _req, res) => {
   console.error("[console-ws] Error:", err.message);
 });
@@ -356,10 +360,10 @@ async function handleConsoleUpgrade(
     return;
   }
 
-  // Parse token from cookie or query string
+  // Parse console token from ?ct= param or cookie
   const cookies = parseCookies(req.headers.cookie);
   const url = new URL(req.url || "/", `http://${req.headers.host}`);
-  const tokenParam = url.searchParams.get("token");
+  const tokenParam = url.searchParams.get("ct");
   const rawToken = tokenParam || cookies["console_token"];
 
   if (!rawToken || !verifyConsoleToken(rawToken)) {

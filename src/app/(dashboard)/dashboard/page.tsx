@@ -144,6 +144,8 @@ export default async function DashboardPage() {
             </CardContent>
           </Card>
         )}
+
+        <p className="mt-8 text-center text-xs text-gray-300">v0.3.0</p>
       </div>
     </>
   );
