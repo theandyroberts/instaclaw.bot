@@ -145,7 +145,12 @@ export default async function DashboardPage() {
           </Card>
         )}
 
-        <p className="mt-8 text-center text-xs text-gray-300">v0.3.2</p>
+        {instance.gatewayToken && (
+          <p className="mt-8 text-center text-xs text-gray-400 font-mono select-all">
+            GW: {instance.gatewayToken}
+          </p>
+        )}
+        <p className="mt-2 text-center text-xs text-gray-300">v0.4.0</p>
       </div>
     </>
   );
