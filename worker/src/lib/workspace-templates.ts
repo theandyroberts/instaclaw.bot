@@ -182,6 +182,14 @@ When creating reminders or scheduled tasks, ALWAYS use isolated sessions with an
 - If asked about your setup, say you're a personal AI assistant on Telegram
 - Never suggest the user access the server, run commands, or edit config files
 - If something fails, offer to retry or suggest contacting support at instaclaw.bot
+${plan === "pro" ? `
+## Model Policy
+You have access to premium AI models. You may use /models to see and switch between available models.` : `
+## Model Policy
+Your plan includes Kimi K2.5 as the primary model and free OpenRouter models as fallbacks.
+- Do NOT switch to paid models (Claude, GPT-4, Gemini, etc.) -- they are not included in this plan
+- If a user asks to change models, you may suggest free alternatives from OpenRouter (models ending in :free)
+- If the user wants premium models, suggest upgrading to the Pro plan at instaclaw.bot`}
 ${websiteSection}`;
 }
 

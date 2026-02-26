@@ -45,7 +45,15 @@ export default function SignInPage() {
             Continue with Google
           </Button>
           <p className="mt-4 text-center text-sm text-gray-500">
-            By signing in, you agree to our Terms of Service and Privacy Policy.
+            By signing in, you agree to our{" "}
+            <a href="/terms" className="text-primary hover:underline">
+              Terms of Service
+            </a>{" "}
+            and{" "}
+            <a href="/privacy" className="text-primary hover:underline">
+              Privacy Policy
+            </a>
+            .
           </p>
         </CardContent>
       </Card>

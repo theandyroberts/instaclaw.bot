@@ -14,7 +14,7 @@ export function Footer() {
             </p>
           </div>
 
-          <div className="flex gap-6 text-sm text-muted-foreground">
+          <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
             <Link href="#pricing" className="hover:text-foreground">
               Pricing
             </Link>
@@ -23,6 +23,15 @@ export function Footer() {
             </Link>
             <Link href="/sign-in" className="hover:text-foreground">
               Sign In
+            </Link>
+            <Link href="/terms" className="hover:text-foreground">
+              Terms
+            </Link>
+            <Link href="/privacy" className="hover:text-foreground">
+              Privacy
+            </Link>
+            <Link href="/acceptable-use" className="hover:text-foreground">
+              Acceptable Use
             </Link>
           </div>
         </div>

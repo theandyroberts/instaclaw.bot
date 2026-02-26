@@ -10,7 +10,7 @@ export interface OpenClawConfig {
  * and its dependencies for browser-based skills.
  */
 export function generateDockerfile(): string {
-  return `FROM alpine/openclaw:latest
+  return `FROM alpine/openclaw:2026.2.21
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \\
     chromium \\
