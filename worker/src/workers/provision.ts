@@ -8,17 +8,19 @@ import {
   getDropletPublicIP,
 } from "../lib/digitalocean";
 import { connectSSH, execSSH, writeFileSSH } from "../lib/ssh";
-import { generateDockerCompose, generateDockerfile } from "../lib/openclaw-config";
+import { generateDockerCompose, generateDockerfile, PLAN_MODELS } from "../lib/openclaw-config";
 import {
   generateSOUL,
   generateUSER,
   generateAGENTS,
   generateMEMORY,
+  generateCronJobs,
 } from "../lib/workspace-templates";
 import { ensureFirewall } from "../lib/firewall";
 import { setupConsoleBridge } from "../lib/console-bridge";
 import { waitForTailscaleDevice, getTailscaleDeviceByHostname } from "../lib/tailscale";
 import { generateCloudInit } from "../lib/cloud-init";
+import { createAPIKey, deleteAPIKey, PLAN_BUDGETS } from "../lib/openrouter";
 import * as crypto from "crypto";
 
 interface LogEntry {
@@ -35,6 +37,8 @@ interface BotConfig {
   userDescription?: string;
   useCases: string[];
   extraContext?: string;
+  loop?: string;
+  timezone?: string;
 }
 
 const CONFIG_PATH = "/opt/openclaw/home/.openclaw/openclaw.json";
@@ -59,6 +63,7 @@ export const provisionWorker = new Worker(
   async (job) => {
     const { instanceId, userId } = job.data;
 
+    const provisionStart = Date.now();
     console.log(`[provision:${job.id}] Starting provisioning for instance ${instanceId}`);
 
     try {
@@ -69,6 +74,7 @@ export const provisionWorker = new Worker(
           status: "provisioning",
           onboardingStep: "provisioning",
           provisionLog: [],
+          provisionStartedAt: new Date(),
         },
       });
 
@@ -211,13 +217,32 @@ export const provisionWorker = new Worker(
 
         // Directories already created by cloud-init and owned by instaclaw (uid 1000)
 
+        // Create per-instance OpenRouter API key
+        // On retry: delete stale key (secret is unrecoverable) and create fresh one
+        const freshInstance = await prisma.instance.findUnique({
+          where: { id: instanceId },
+          select: { openrouterKeyId: true },
+        });
+        if (freshInstance?.openrouterKeyId) {
+          console.log(`[provision:${job.id}] Deleting stale OpenRouter key from previous attempt`);
+          try { await deleteAPIKey(freshInstance.openrouterKeyId); } catch { /* may already be gone */ }
+        }
+        const budget = PLAN_BUDGETS[plan] || PLAN_BUDGETS.starter;
+        console.log(`[provision:${job.id}] Creating OpenRouter key (plan=${plan}, budget=$${budget})`);
+        const orKey = await createAPIKey(`instaclaw-${instanceId.slice(0, 8)}`, budget);
+        // Save hash immediately so terminate can clean up on failure
+        await prisma.instance.update({
+          where: { id: instanceId },
+          data: { openrouterKeyId: orKey.hash },
+        });
+        console.log(`[provision:${job.id}] Created OpenRouter key ${orKey.hash}`);
+
         // Write Dockerfile (extends base image with Chromium for browser skills)
         await writeFileSSH(ssh, "/opt/openclaw/Dockerfile", generateDockerfile());
 
-        // Write docker-compose.yml
+        // Write docker-compose.yml with per-instance OpenRouter key
         const compose = generateDockerCompose(gatewayToken, {
-          openrouterApiKey: process.env.OPENROUTER_API_KEY,
-          moonshotApiKey: process.env.KIMI_API_KEY,
+          openrouterApiKey: orKey.key,
           braveApiKey: process.env.BRAVE_API_KEY,
           geminiApiKey: process.env.GEMINI_API_KEY,
         });
@@ -233,16 +258,17 @@ export const provisionWorker = new Worker(
         await appendLog(instanceId, "workspace_setup", "Personalizing your bot");
 
         // Determine model based on plan
-        const model = plan === "pro" ? "openrouter/anthropic/claude-sonnet-4.5" : "moonshot/kimi-k2.5";
-        const llmProvider = plan === "pro" ? "claude" : "kimi";
-        const fallbackModel = "openrouter/meta-llama/llama-3.3-70b-instruct:free";
+        const planConfig = PLAN_MODELS[plan] || PLAN_MODELS.starter;
+        const model = planConfig.primary;
+        const llmProvider = planConfig.llmProvider;
+        const fallbackModels = planConfig.fallbacks;
 
         // Write OpenClaw config
         const openclawConfig = {
           commands: { native: "auto", nativeSkills: "auto" },
           agents: {
             defaults: {
-              model: { primary: model, fallbacks: [fallbackModel] },
+              model: { primary: model, fallbacks: fallbackModels },
               workspace: "~/.openclaw/workspace",
               maxConcurrent: 4,
               subagents: { maxConcurrent: 8 },
@@ -273,12 +299,23 @@ export const provisionWorker = new Worker(
           await writeFileSSH(ssh, `${WORKSPACE_DIR}/MEMORY.md`, generateMEMORY(botConfig));
         }
 
+        // Write cron jobs if loop is set
+        if (botConfig?.loop && botConfig.loop !== "just-exploring") {
+          const cronJson = generateCronJobs(botConfig.loop, botConfig.timezone);
+          if (cronJson) {
+            const cronDir = "/opt/openclaw/home/.openclaw/cron";
+            await execSSH(ssh, `mkdir -p ${cronDir}`, "/");
+            await writeFileSSH(ssh, `${cronDir}/jobs.json`, cronJson);
+            console.log(`[provision:${job.id}] Wrote cron/jobs.json for loop: ${botConfig.loop}`);
+          }
+        }
+
         // Ensure canvas directory exists for public sites
         await execSSH(ssh, "mkdir -p /opt/openclaw/home/.openclaw/canvas", "/");
 
-        // Symlink media → workspace so OpenClaw allows sending generated images
-        // (OpenClaw only serves files from ~/.openclaw/media, but skills write to workspace)
-        await execSSH(ssh, `ln -sfn ${WORKSPACE_DIR} /opt/openclaw/home/.openclaw/media`, "/");
+        // Create media directory for OpenClaw to store downloaded/generated media
+        // (Must be a real directory, not a symlink — symlinks break inside Docker container)
+        await execSSH(ssh, "mkdir -p /opt/openclaw/home/.openclaw/media", "/");
 
         // --- INSTALL UV (needed by nano-banana-pro image generation skill) ---
         console.log(`[provision:${job.id}] Installing uv...`);
@@ -325,7 +362,9 @@ export const provisionWorker = new Worker(
         },
       });
 
-      console.log(`[provision:${job.id}] Provisioning complete!`);
+      const provisionDuration = ((Date.now() - provisionStart) / 1000).toFixed(1);
+      console.log(`[provision:${job.id}] Provisioning complete in ${provisionDuration}s`);
+      console.log(`[provision:${job.id}] [TIMING] provision: ${provisionDuration}s (standard path)`);
     } catch (error) {
       console.error(`[provision:${job.id}] Failed:`, error);
 

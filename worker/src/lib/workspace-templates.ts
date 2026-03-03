@@ -6,7 +6,29 @@ interface BotConfig {
   userDescription?: string;
   useCases: string[];
   extraContext?: string;
+  loop?: string;
 }
+
+const LOOP_LABELS: Record<string, string> = {
+  "better-writer": "Better Writer",
+  "grow-business": "Grow My Business",
+  "work-assistant": "Work Assistant",
+  "health-habits": "Better Habits",
+  "learn-explore": "Learn Something New",
+};
+
+const LOOP_PROMPTS: Record<string, string> = {
+  "better-writer":
+    "Review our recent conversations and any writing projects. Suggest one short writing exercise for today. If there's a draft in progress, propose a next step.",
+  "grow-business":
+    "Check in on business projects or goals we've discussed. Suggest one actionable task for today -- specific and achievable in under an hour.",
+  "work-assistant":
+    "Review pending tasks, deadlines, or projects from our conversations. Give me 2-3 priorities for today and offer to help with the first one.",
+  "health-habits":
+    "Check in on habits or health goals we've discussed. Ask how yesterday went, suggest one small action for today, and offer encouragement.",
+  "learn-explore":
+    "Pick an interesting topic related to my interests and teach me something new in 2-3 paragraphs. Suggest a follow-up question or activity.",
+};
 
 const personalityTraits: Record<string, { tone: string; style: string }> = {
   friendly: {
@@ -190,7 +212,13 @@ Your plan includes Kimi K2.5 as the primary model and free OpenRouter models as 
 - Do NOT switch to paid models (Claude, GPT-4, Gemini, etc.) -- they are not included in this plan
 - If a user asks to change models, you may suggest free alternatives from OpenRouter (models ending in :free)
 - If the user wants premium models, suggest upgrading to the Pro plan at instaclaw.bot`}
-${websiteSection}`;
+${websiteSection}${botConfig.loop && botConfig.loop !== "just-exploring" && LOOP_LABELS[botConfig.loop] ? `
+
+## Your Loop: ${LOOP_LABELS[botConfig.loop]}
+The user has an active daily Loop. Each morning, a cron job sends a check-in prompt based on their "${LOOP_LABELS[botConfig.loop]}" focus.
+- Use your memory of past conversations to make each check-in relevant and personal
+- Keep daily messages short and actionable
+- The user can ask you to change or remove their Loop at any time` : ""}`;
 }
 
 export function generateMEMORY(botConfig: BotConfig): string {
@@ -208,6 +236,14 @@ export function generateMEMORY(botConfig: BotConfig): string {
     content += `- Primary interests: ${botConfig.useCases.join(", ")}\n`;
   }
 
+  if (botConfig.loop && botConfig.loop !== "just-exploring" && LOOP_LABELS[botConfig.loop]) {
+    content += `
+## Focus Loop
+- Active loop: ${LOOP_LABELS[botConfig.loop]}
+- Daily check-in enabled -- the user chose this focus area during onboarding
+`;
+  }
+
   if (botConfig.extraContext) {
     content += `
 ## Additional Context
@@ -216,4 +252,28 @@ ${botConfig.extraContext}
   }
 
   return content;
+}
+
+export function generateCronJobs(loop: string, timezone?: string): string | null {
+  const prompt = LOOP_PROMPTS[loop];
+  if (!prompt) return null;
+
+  // Default: 9 AM in user's timezone, fallback to 14:00 UTC
+  const schedule = timezone
+    ? { cron: "0 9 * * *", timezone }
+    : { cron: "0 14 * * *" };
+
+  const jobs = [
+    {
+      id: `loop-${loop}`,
+      description: `Daily ${LOOP_LABELS[loop] || loop} check-in`,
+      schedule,
+      prompt,
+      sessionTarget: "isolated",
+      delivery: { mode: "announce" },
+      wakeMode: "next-heartbeat",
+    },
+  ];
+
+  return JSON.stringify(jobs, null, 2);
 }

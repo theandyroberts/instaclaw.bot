@@ -8,7 +8,7 @@ import { StepCelebration } from "./step-celebration";
 import { StepPersonality } from "./step-personality";
 import { StepAboutYou } from "./step-about-you";
 import { StepUseCases } from "./step-use-cases";
-import { StepExtraContext } from "./step-extra-context";
+import { StepLoop } from "./step-loop";
 import { StepBotName } from "./step-bot-name";
 import { StepWelcome } from "./step-welcome";
 import { StepTransition } from "./step-transition";
@@ -29,7 +29,7 @@ type FunnelStep =
   | "personality"
   | "use-cases"
   | "bot-name"
-  | "extra-context"
+  | "loop"
   | "about-you"
   | "plan"
   | "provisioning"
@@ -42,7 +42,7 @@ const wizardSteps: FunnelStep[] = [
   "personality",
   "use-cases",
   "bot-name",
-  "extra-context",
+  "loop",
   "about-you",
   "plan",
 ];
@@ -52,7 +52,7 @@ const stepMeta: { key: FunnelStep; label: string; description: string }[] = [
   { key: "personality", label: "Personality", description: "Choose your bot's vibe" },
   { key: "use-cases", label: "Use Cases", description: "What will your bot help with?" },
   { key: "bot-name", label: "Name", description: "Give your bot an identity" },
-  { key: "extra-context", label: "Instructions", description: "Customize how it behaves" },
+  { key: "loop", label: "Loop", description: "Pick your daily focus" },
   { key: "about-you", label: "About You", description: "Help your bot know you" },
   { key: "plan", label: "Plan", description: "Review choices" },
 ];
@@ -74,6 +74,7 @@ interface BotConfig {
   jobTitle?: string;
   useCases: string[];
   extraContext?: string;
+  loop?: string;
 }
 
 const defaultBotConfig: BotConfig = {
@@ -126,6 +127,7 @@ export function OnboardingFunnel({
           jobTitle: saved.jobTitle,
           useCases: saved.useCases || [],
           extraContext: saved.extraContext,
+          loop: saved.loop,
         };
       }
     }
@@ -156,6 +158,7 @@ export function OnboardingFunnel({
         useCases: config.useCases,
         botName: config.botName,
         extraContext: config.extraContext,
+        loop: config.loop,
         userName: config.userName,
         userDescription: config.userDescription,
         timezone: config.timezone,
@@ -233,6 +236,7 @@ export function OnboardingFunnel({
         jobTitle: saved.jobTitle,
         useCases: saved.useCases,
         extraContext: saved.extraContext,
+        loop: saved.loop,
       };
 
       try {
@@ -276,6 +280,7 @@ export function OnboardingFunnel({
         jobTitle: saved.jobTitle,
         useCases: saved.useCases || [],
         extraContext: saved.extraContext,
+        loop: saved.loop,
       });
       // Load the selected plan for display
       const planFromStorage = loadSelectedPlan();
@@ -395,6 +400,7 @@ export function OnboardingFunnel({
     useCases: botConfig.useCases,
     botName: botConfig.botName,
     extraContext: botConfig.extraContext,
+    loop: botConfig.loop,
     userName: botConfig.userName,
     userDescription: botConfig.userDescription,
     timezone: botConfig.timezone,
@@ -568,13 +574,13 @@ export function OnboardingFunnel({
         </StepTransition>
       )}
 
-      {!waitingForPayment && currentStep === "extra-context" && (
-        <StepTransition stepKey="extra-context" direction={direction}>
-          <StepExtraContext
+      {!waitingForPayment && currentStep === "loop" && (
+        <StepTransition stepKey="loop" direction={direction}>
+          <StepLoop
             config={botConfig}
             onUpdate={updateBotConfig}
-            onNext={() => goNext("extra-context")}
-            onBack={() => goBack("extra-context")}
+            onNext={() => goNext("loop")}
+            onBack={() => goBack("loop")}
           />
         </StepTransition>
       )}

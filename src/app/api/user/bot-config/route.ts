@@ -15,6 +15,7 @@ const botConfigSchema = z.object({
   jobTitle: z.string().max(100).optional(),
   useCases: z.array(z.string()).min(1),
   extraContext: z.string().max(2000).optional(),
+  loop: z.string().max(50).optional(),
 });
 
 export async function PATCH(req: Request) {

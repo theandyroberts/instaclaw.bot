@@ -2,11 +2,14 @@ import { Worker } from "bullmq";
 import { redis, provisionQueue, poolQueue } from "../queues";
 import { prisma } from "../lib/prisma";
 import { connectSSH, execSSH, writeFileSSH } from "../lib/ssh";
+import { generateDockerCompose, PLAN_MODELS } from "../lib/openclaw-config";
+import { createAPIKey, deleteAPIKey, PLAN_BUDGETS } from "../lib/openrouter";
 import {
   generateSOUL,
   generateUSER,
   generateAGENTS,
   generateMEMORY,
+  generateCronJobs,
 } from "../lib/workspace-templates";
 
 interface LogEntry {
@@ -23,6 +26,8 @@ interface BotConfig {
   userDescription?: string;
   useCases: string[];
   extraContext?: string;
+  loop?: string;
+  timezone?: string;
 }
 
 const CONFIG_PATH = "/opt/openclaw/home/.openclaw/openclaw.json";
@@ -66,7 +71,9 @@ export const poolAllocateWorker = new Worker(
     const { instanceId, userId } = job.data as { instanceId: string; userId: string };
     const log = (msg: string) => console.log(`[pool-allocate:${job.id}] ${msg}`);
 
+    const allocateStart = Date.now();
     log(`Allocating pool droplet for instance ${instanceId}`);
+    let orKeyHash: string | null = null;
 
     try {
       // 1. Update instance status
@@ -76,6 +83,7 @@ export const poolAllocateWorker = new Worker(
           status: "provisioning",
           onboardingStep: "provisioning",
           provisionLog: [],
+          provisionStartedAt: new Date(),
         },
       });
 
@@ -129,7 +137,14 @@ export const poolAllocateWorker = new Worker(
       });
       const plan = subscription?.plan || "starter";
 
-      // 6. SSH to pool droplet via Tailscale IP
+      // 6. Create per-instance OpenRouter key (before SSH, so cleanup is simpler on failure)
+      const budget = PLAN_BUDGETS[plan] || PLAN_BUDGETS.starter;
+      log(`Creating OpenRouter key (plan=${plan}, budget=$${budget})`);
+      const orKey = await createAPIKey(`instaclaw-${instanceId.slice(0, 8)}`, budget);
+      orKeyHash = orKey.hash;
+      log(`Created OpenRouter key ${orKey.hash}`);
+
+      // 6b. SSH to pool droplet via Tailscale IP
       log(`Connecting to pool droplet at ${poolDroplet.tailscaleIp}...`);
       const ssh = await connectSSH(poolDroplet.tailscaleIp!);
 
@@ -137,14 +152,15 @@ export const poolAllocateWorker = new Worker(
         // 7. Write customer-specific config
         await appendLog(instanceId, "workspace_setup", "Personalizing your bot");
 
-        const model = plan === "pro" ? "openrouter/anthropic/claude-sonnet-4.5" : "moonshot/kimi-k2.5";
-        const fallbackModel = "openrouter/meta-llama/llama-3.3-70b-instruct:free";
+        const planConfig = PLAN_MODELS[plan] || PLAN_MODELS.starter;
+        const model = planConfig.primary;
+        const fallbackModels = planConfig.fallbacks;
 
         const openclawConfig = {
           commands: { native: "auto", nativeSkills: "auto" },
           agents: {
             defaults: {
-              model: { primary: model, fallbacks: [fallbackModel] },
+              model: { primary: model, fallbacks: fallbackModels },
               workspace: "~/.openclaw/workspace",
               maxConcurrent: 4,
               subagents: { maxConcurrent: 8 },
@@ -175,10 +191,29 @@ export const poolAllocateWorker = new Worker(
           await writeFileSSH(ssh, `${WORKSPACE_DIR}/MEMORY.md`, generateMEMORY(botConfig));
         }
 
+        // Write cron jobs if loop is set
+        if (botConfig?.loop && botConfig.loop !== "just-exploring") {
+          const cronJson = generateCronJobs(botConfig.loop, botConfig.timezone);
+          if (cronJson) {
+            const cronDir = "/opt/openclaw/home/.openclaw/cron";
+            await execSSH(ssh, `mkdir -p ${cronDir}`, "/");
+            await writeFileSSH(ssh, `${cronDir}/jobs.json`, cronJson);
+            log(`Wrote cron/jobs.json for loop: ${botConfig.loop}`);
+          }
+        }
+
         // Ensure canvas directory exists for public sites
         await execSSH(ssh, "mkdir -p /opt/openclaw/home/.openclaw/canvas", "/");
 
         log("Workspace configured");
+
+        // 7b. Regenerate docker-compose with per-instance key (pool-create wrote it with master key)
+        const compose = generateDockerCompose(poolDroplet.gatewayToken!, {
+          openrouterApiKey: orKey.key,
+          braveApiKey: process.env.BRAVE_API_KEY,
+          geminiApiKey: process.env.GEMINI_API_KEY,
+        });
+        await writeFileSSH(ssh, "/opt/openclaw/docker-compose.yml", compose);
 
         // 8. Start container
         await appendLog(instanceId, "container_started", "Starting your bot");
@@ -208,9 +243,10 @@ export const poolAllocateWorker = new Worker(
           tailscaleIp: poolDroplet.tailscaleIp,
           tailscaleDeviceId: poolDroplet.tailscaleDeviceId,
           gatewayToken: poolDroplet.gatewayToken,
+          openrouterKeyId: orKey.hash,
           status: "active",
           onboardingStep: "awaiting_telegram_token",
-          llmProvider: plan === "pro" ? "claude" : "kimi",
+          llmProvider: planConfig.llmProvider,
           llmConfigured: true,
           provisionedAt: new Date(),
         },
@@ -227,9 +263,21 @@ export const poolAllocateWorker = new Worker(
         jobId: `pool-maintain-after-allocate-${Date.now()}`,
       });
 
-      log(`Instance ${instanceId} provisioned via pool in fast path`);
+      const allocateDuration = ((Date.now() - allocateStart) / 1000).toFixed(1);
+      log(`Instance ${instanceId} provisioned via pool in fast path (${allocateDuration}s)`);
+      log(`[TIMING] provision: ${allocateDuration}s (pool fast path)`);
     } catch (error) {
       console.error(`[pool-allocate:${job.id}] Failed:`, error);
+
+      // Clean up per-instance OpenRouter key if we created one
+      try {
+        if (orKeyHash) {
+          await deleteAPIKey(orKeyHash);
+          log(`Cleaned up OpenRouter key ${orKeyHash}`);
+        }
+      } catch {
+        // Best effort
+      }
 
       // Try to mark pool droplet as failed if we claimed one
       try {

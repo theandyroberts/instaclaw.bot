@@ -2,12 +2,13 @@ import { Worker } from "bullmq";
 import { redis } from "../queues";
 import { prisma } from "../lib/prisma";
 import { connectSSH, execSSH, writeFileSSH } from "../lib/ssh";
-import { generateDockerCompose } from "../lib/openclaw-config";
+import { generateDockerCompose, PLAN_MODELS } from "../lib/openclaw-config";
 import {
   generateSOUL,
   generateUSER,
   generateAGENTS,
   generateMEMORY,
+  generateCronJobs,
 } from "../lib/workspace-templates";
 
 const CONFIG_PATH = "/opt/openclaw/home/.openclaw/openclaw.json";
@@ -44,6 +45,8 @@ export const configureWorkspaceWorker = new Worker(
         userDescription?: string;
         useCases: string[];
         extraContext?: string;
+        loop?: string;
+        timezone?: string;
       } | null;
 
       if (!botConfig) {
@@ -57,13 +60,10 @@ export const configureWorkspaceWorker = new Worker(
       const plan = subscription?.plan || "starter";
 
       // Auto-select LLM based on plan
-      const model =
-        plan === "pro"
-          ? "openrouter/anthropic/claude-sonnet-4.5"
-          : "moonshot/kimi-k2.5";
-      const llmProvider = plan === "pro" ? "claude" : "kimi";
-      const fallbackModel =
-        "openrouter/meta-llama/llama-3.3-70b-instruct:free";
+      const planConfig = PLAN_MODELS[plan] || PLAN_MODELS.starter;
+      const model = planConfig.primary;
+      const llmProvider = planConfig.llmProvider;
+      const fallbackModels = planConfig.fallbacks;
 
       console.log(
         `[configure-workspace:${job.id}] Plan: ${plan}, Model: ${model}`
@@ -86,7 +86,7 @@ export const configureWorkspaceWorker = new Worker(
           defaults: {
             model: {
               primary: model,
-              fallback: fallbackModel,
+              fallbacks: fallbackModels,
             },
             workspace: "~/.openclaw/workspace",
           },
@@ -116,7 +116,18 @@ export const configureWorkspaceWorker = new Worker(
         await writeFileSSH(ssh, `${WORKSPACE_DIR}/AGENTS.md`, agentsMd);
         await writeFileSSH(ssh, `${WORKSPACE_DIR}/MEMORY.md`, memoryMd);
 
-        // Regenerate docker-compose with API keys
+        // Write cron jobs if loop is set
+        if (botConfig.loop && botConfig.loop !== "just-exploring") {
+          const cronJson = generateCronJobs(botConfig.loop, botConfig.timezone);
+          if (cronJson) {
+            const cronDir = "/opt/openclaw/home/.openclaw/cron";
+            await execSSH(ssh, `mkdir -p ${cronDir}`);
+            await writeFileSSH(ssh, `${cronDir}/jobs.json`, cronJson);
+            console.log(`[configure-workspace:${job.id}] Wrote cron/jobs.json for loop: ${botConfig.loop}`);
+          }
+        }
+
+        // Regenerate docker-compose preserving per-instance keys
         const currentCompose = await execSSH(
           ssh,
           "cat /opt/openclaw/docker-compose.yml"
@@ -126,9 +137,12 @@ export const configureWorkspaceWorker = new Worker(
         );
         const gatewayToken = tokenMatch ? tokenMatch[1] : "";
 
+        // Preserve the per-instance OpenRouter key (not the master key)
+        const orKeyMatch = currentCompose.match(/OPENROUTER_API_KEY=(\S+)/);
+        const instanceOrKey = orKeyMatch ? orKeyMatch[1] : process.env.OPENROUTER_API_KEY;
+
         const compose = generateDockerCompose(gatewayToken, {
-          openrouterApiKey: process.env.OPENROUTER_API_KEY,
-          moonshotApiKey: process.env.KIMI_API_KEY,
+          openrouterApiKey: instanceOrKey,
           braveApiKey: process.env.BRAVE_API_KEY,
         });
         await writeFileSSH(ssh, "/opt/openclaw/docker-compose.yml", compose);

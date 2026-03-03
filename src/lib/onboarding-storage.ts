@@ -6,6 +6,7 @@ export interface WizardState {
   useCases: string[];
   botName: string;
   extraContext?: string;
+  loop?: string;
   userName: string;
   userDescription?: string;
   timezone?: string;
