@@ -143,6 +143,9 @@ export const poolAllocateWorker = new Worker(
       orKeyHash = orKey.hash;
       log(`Created OpenRouter key ${orKey.hash}`);
 
+      // Resolve plan config before SSH block so it's in scope for instance update
+      const planConfig = PLAN_MODELS[plan] || PLAN_MODELS.starter;
+
       // 6b. SSH to pool droplet via Tailscale IP
       log(`Connecting to pool droplet at ${poolDroplet.tailscaleIp}...`);
       const ssh = await connectSSH(poolDroplet.tailscaleIp!);
@@ -151,7 +154,6 @@ export const poolAllocateWorker = new Worker(
         // 7. Write customer-specific config
         await appendLog(instanceId, "workspace_setup", "Personalizing your bot");
 
-        const planConfig = PLAN_MODELS[plan] || PLAN_MODELS.starter;
         const model = planConfig.primary;
         const fallbackModels = planConfig.fallbacks;
 
