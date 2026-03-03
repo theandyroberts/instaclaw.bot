@@ -64,9 +64,8 @@ async function appendLogs(instanceId: string, entries: Array<{ step: string; mes
 }
 
 export const poolAllocateWorker = new Worker(
-  "pool",
+  "pool-allocate",
   async (job) => {
-    if (job.name !== "pool-allocate") return;
 
     const { instanceId, userId } = job.data as { instanceId: string; userId: string };
     const log = (msg: string) => console.log(`[pool-allocate:${job.id}] ${msg}`);

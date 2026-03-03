@@ -3,7 +3,7 @@ import * as crypto from "crypto";
 import * as http from "http";
 import httpProxy from "http-proxy";
 import { createProxyMiddleware } from "http-proxy-middleware";
-import { provisionQueue, configureQueue, lifecycleQueue, poolQueue } from "./queues";
+import { provisionQueue, configureQueue, lifecycleQueue, poolQueue, poolAllocateQueue, auditQueue } from "./queues";
 import { prisma } from "./lib/prisma";
 
 const SHARED_SECRET = process.env.WORKER_SHARED_SECRET!;
@@ -375,10 +375,38 @@ app.post("/jobs/terminate", async (req, res) => {
 app.post("/jobs/allocate", async (req, res) => {
   try {
     const { instanceId, userId } = req.body;
-    const job = await poolQueue.add("pool-allocate", { instanceId, userId });
-    res.json({ jobId: job.id, queue: "pool" });
+    const job = await poolAllocateQueue.add("pool-allocate", { instanceId, userId });
+    res.json({ jobId: job.id, queue: "pool-allocate" });
   } catch (error) {
     console.error("Failed to enqueue allocate:", error);
+    res.status(500).json({ error: "Failed to enqueue job" });
+  }
+});
+
+// Update plan (OpenRouter key limit + model config)
+app.post("/jobs/update-plan", async (req, res) => {
+  try {
+    const { instanceId, newPlan } = req.body;
+    const job = await configureQueue.add("update-plan", {
+      instanceId,
+      newPlan,
+    });
+    res.json({ jobId: job.id, queue: "configure" });
+  } catch (error) {
+    console.error("Failed to enqueue update-plan:", error);
+    res.status(500).json({ error: "Failed to enqueue job" });
+  }
+});
+
+// Model audit (manual trigger)
+app.post("/jobs/model-audit", async (req, res) => {
+  try {
+    const job = await auditQueue.add("model-audit", {}, {
+      jobId: `model-audit-manual-${Date.now()}`,
+    });
+    res.json({ jobId: job.id, queue: "audit" });
+  } catch (error) {
+    console.error("Failed to enqueue model-audit:", error);
     res.status(500).json({ error: "Failed to enqueue job" });
   }
 });

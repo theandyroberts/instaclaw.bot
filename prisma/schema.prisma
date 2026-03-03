@@ -94,7 +94,10 @@ model Instance {
   openrouterKeyId     String?
   llmConfigured       Boolean        @default(false)
   provisionLog        Json?
+  provisionStartedAt  DateTime?
   provisionedAt       DateTime?
+  telegramConfiguredAt DateTime?
+  onboardingCompletedAt DateTime?
   suspendedAt         DateTime?
   tailscaleIp         String?
   tailscaleDeviceId   String?
