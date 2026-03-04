@@ -96,12 +96,13 @@ export function StepTelegram({ onComplete, botName }: StepTelegramProps) {
         </button>
 
         {showTutorial && (
-          <div className="aspect-video rounded-lg border border-border bg-neutral-900 flex items-center justify-center">
-            {/* When video exists: <video src="/tutorial/botfather-guide.mp4" controls className="w-full rounded-lg" /> */}
-            <div className="text-center text-gray-500">
-              <PlayCircle className="mx-auto mb-2 h-12 w-12" />
-              <p className="text-sm">Tutorial video coming soon</p>
-            </div>
+          <div className="rounded-lg border border-border bg-neutral-900 overflow-hidden">
+            <video
+              src="/tutorial/botfather-guide.mp4"
+              controls
+              playsInline
+              className="w-full"
+            />
           </div>
         )}
 
