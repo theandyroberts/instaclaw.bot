@@ -186,7 +186,7 @@ export const provisionWorker = new Worker(
 
       // --- SSH VIA TAILSCALE + CLOUD-INIT ---
       console.log(`[provision:${job.id}] Connecting via Tailscale at ${tailscaleIp}...`);
-      await appendLog(instanceId, "cloud_init", "Installing system software");
+      await appendLog(instanceId, "cloud_init", "Configuring server");
 
       const ssh = await connectSSH(tailscaleIp);
       const gatewayToken = crypto.randomBytes(32).toString("hex");

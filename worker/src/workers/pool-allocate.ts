@@ -3,6 +3,7 @@ import { redis, provisionQueue, poolQueue } from "../queues";
 import { prisma } from "../lib/prisma";
 import { connectSSH, execSSH, writeFileSSH } from "../lib/ssh";
 import { generateDockerCompose, PLAN_MODELS } from "../lib/openclaw-config";
+import { renameDroplet } from "../lib/digitalocean";
 import { createAPIKey, deleteAPIKey, PLAN_BUDGETS } from "../lib/openrouter";
 import {
   generateSOUL,
@@ -118,7 +119,7 @@ export const poolAllocateWorker = new Worker(
         { step: "started", message: "Allocating your server" },
         { step: "droplet_created", message: "Server reserved" },
         { step: "droplet_active", message: "Server online" },
-        { step: "cloud_init", message: "System ready" },
+        { step: "cloud_init", message: "Configuring server" },
         { step: "docker_ready", message: "Docker ready" },
         { step: "pulling_images", message: "System image ready" },
       ]);
@@ -253,13 +254,22 @@ export const poolAllocateWorker = new Worker(
         },
       });
 
-      // 10. Mark pool droplet as allocated
+      // 10. Rename droplet from pool-xxx to instaclaw-xxx for DO dashboard clarity
+      try {
+        const safeName = `instaclaw-${instanceId.slice(0, 8)}`;
+        await renameDroplet(parseInt(poolDroplet.dropletId!), safeName);
+        log(`Renamed droplet to ${safeName}`);
+      } catch {
+        // Non-critical -- don't fail allocation over a rename
+      }
+
+      // 11. Mark pool droplet as allocated
       await prisma.poolDroplet.update({
         where: { id: poolDroplet.id },
         data: { status: "allocated" },
       });
 
-      // 11. Trigger pool replenishment
+      // 12. Trigger pool replenishment
       await poolQueue.add("pool-maintain", {}, {
         jobId: `pool-maintain-after-allocate-${Date.now()}`,
       });

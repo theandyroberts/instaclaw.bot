@@ -58,6 +58,13 @@ export async function getDroplet(dropletId: number): Promise<DropletInfo> {
   return data.droplet;
 }
 
+export async function renameDroplet(dropletId: number, name: string): Promise<void> {
+  await doFetch(`/droplets/${dropletId}`, {
+    method: "PUT",
+    body: JSON.stringify({ name }),
+  });
+}
+
 export async function deleteDroplet(dropletId: number): Promise<void> {
   await doFetch(`/droplets/${dropletId}`, { method: "DELETE" });
 }
