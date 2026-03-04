@@ -150,8 +150,7 @@ export function StepTelegram({ onComplete, botName }: StepTelegramProps) {
                 4
               </span>
               <span>
-                Choose a username ending in &quot;bot&quot; (e.g.,
-                &quot;myai_helper_bot&quot;)
+                Choose a username ending in &quot;bot&quot;{botName ? <> (e.g., <code className="rounded bg-neutral-800 px-1">{botName}_bot</code>)</> : <> (e.g., &quot;myai_helper_bot&quot;)</>}
               </span>
             </li>
             <li className="flex gap-3">

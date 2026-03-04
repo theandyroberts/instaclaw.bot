@@ -31,5 +31,5 @@ function pick<T>(arr: T[]): T {
 }
 
 export function generateBotName(): string {
-  return `${pick(adjectives)}_${pick(names)}_bot`;
+  return `${pick(adjectives)}_${pick(names)}`;
 }
