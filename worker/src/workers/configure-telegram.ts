@@ -6,11 +6,11 @@ import { connectSSH, execSSH, writeFileSSH } from "../lib/ssh";
 const CONFIG_PATH = "/opt/openclaw/home/.openclaw/openclaw.json";
 
 export const configureTelegramWorker = new Worker(
-  "configure",
+  "configure-telegram",
   async (job) => {
-    if (job.name !== "configure-telegram") return;
 
     const { instanceId, token } = job.data;
+    const configStart = Date.now();
 
     console.log(`[configure-telegram:${job.id}] Configuring Telegram for instance ${instanceId}`);
 
@@ -65,12 +65,28 @@ export const configureTelegramWorker = new Worker(
       }
 
       // Workspace is already configured during provisioning, so go straight to complete
+      const now = new Date();
       await prisma.instance.update({
         where: { id: instanceId },
         data: {
           onboardingStep: "complete",
+          telegramConfiguredAt: now,
+          onboardingCompletedAt: now,
         },
       });
+
+      // Timing summary
+      const configDuration = ((Date.now() - configStart) / 1000).toFixed(1);
+      console.log(`[configure-telegram:${job.id}] [TIMING] telegram-config: ${configDuration}s`);
+
+      // Calculate total onboarding time if provisionStartedAt is available
+      if (instance.provisionStartedAt) {
+        const totalDuration = ((now.getTime() - instance.provisionStartedAt.getTime()) / 1000).toFixed(1);
+        const provisionDuration = instance.provisionedAt
+          ? ((instance.provisionedAt.getTime() - instance.provisionStartedAt.getTime()) / 1000).toFixed(1)
+          : "?";
+        console.log(`[configure-telegram:${job.id}] [TIMING] total-onboarding: ${totalDuration}s (provision: ${provisionDuration}s + user-wait + telegram: ${configDuration}s)`);
+      }
     } catch (error) {
       console.error(`[configure-telegram:${job.id}] Failed:`, error);
 

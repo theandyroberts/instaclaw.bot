@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, ExternalLink, CheckCircle, PlayCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, ExternalLink, CheckCircle, X, Play } from "lucide-react";
 
 interface StepTelegramProps {
   onComplete: () => void;
@@ -24,7 +24,23 @@ export function StepTelegram({ onComplete, botName }: StepTelegramProps) {
   const [loading, setLoading] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const [error, setError] = useState("");
-  const [showTutorial, setShowTutorial] = useState(false);
+  const [showVideo, setShowVideo] = useState(false);
+
+  // Close modal on Escape key
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (e.key === "Escape") setShowVideo(false);
+  }, []);
+
+  useEffect(() => {
+    if (showVideo) {
+      document.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.removeEventListener("keydown", handleKeyDown);
+        document.body.style.overflow = "";
+      };
+    }
+  }, [showVideo, handleKeyDown]);
 
   const tokenRegex = /^\d{8,10}:[A-Za-z0-9_-]{34,}$/;
   const isValidFormat = tokenRegex.test(token);
@@ -80,29 +96,60 @@ export function StepTelegram({ onComplete, botName }: StepTelegramProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* Video tutorial toggle */}
+        {/* Video tutorial thumbnail */}
         <button
           type="button"
-          onClick={() => setShowTutorial(!showTutorial)}
-          className="flex w-full items-center gap-2 rounded-lg border border-border bg-neutral-900/50 px-4 py-3 text-sm font-medium text-gray-300 transition-colors hover:bg-neutral-800"
+          onClick={() => setShowVideo(true)}
+          className="group relative w-full overflow-hidden rounded-lg border border-border"
+          style={{ aspectRatio: "4/3" }}
         >
-          <PlayCircle className="h-5 w-5 text-primary" />
-          {showTutorial ? "Hide tutorial" : "Watch how to do this"}
-          {showTutorial ? (
-            <ChevronUp className="ml-auto h-4 w-4 text-gray-500" />
-          ) : (
-            <ChevronDown className="ml-auto h-4 w-4 text-gray-500" />
-          )}
+          {/* Dark screen background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-neutral-800 to-neutral-900" />
+
+          {/* Screen text */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-gray-500">
+              Video tutorial
+            </span>
+            <span className="text-center text-lg font-bold tracking-wide text-gray-100 sm:text-xl">
+              HOW TO SET UP TELEGRAM
+            </span>
+
+            {/* Play button */}
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/90 shadow-lg shadow-primary/20 transition-transform group-hover:scale-110">
+              <Play className="h-7 w-7 text-white" style={{ marginLeft: 3 }} />
+            </div>
+
+            <span className="text-sm text-gray-500">1 min watch</span>
+          </div>
         </button>
 
-        {showTutorial && (
-          <div className="rounded-lg border border-border bg-neutral-900 overflow-hidden">
-            <video
-              src="/tutorial/botfather-guide.mp4"
-              controls
-              playsInline
-              className="w-full"
-            />
+        {/* Video modal */}
+        {showVideo && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+            onClick={(e) => { if (e.target === e.currentTarget) setShowVideo(false); }}
+          >
+            <div className="relative w-full max-w-3xl px-4">
+              {/* Close button */}
+              <button
+                type="button"
+                onClick={() => setShowVideo(false)}
+                className="absolute -top-12 right-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+              >
+                <X className="h-6 w-6" />
+              </button>
+
+              <div className="overflow-hidden rounded-lg bg-black">
+                <video
+                  src="/tutorial/botfather-guide.mp4"
+                  controls
+                  autoPlay
+                  playsInline
+                  className="w-full"
+                />
+              </div>
+            </div>
           </div>
         )}
 

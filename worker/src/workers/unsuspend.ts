@@ -4,9 +4,8 @@ import { prisma } from "../lib/prisma";
 import { connectSSH, execSSH } from "../lib/ssh";
 
 export const unsuspendWorker = new Worker(
-  "lifecycle",
+  "unsuspend",
   async (job) => {
-    if (job.name !== "unsuspend") return;
 
     const { instanceId } = job.data;
 

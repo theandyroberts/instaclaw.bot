@@ -101,8 +101,31 @@ export function StepProvision({
 
   // Determine which steps are completed
   const completedSteps = new Set(logEntries.map((e) => e.step));
+  const actualCompletedCount = expectedSteps.filter((s) => completedSteps.has(s.step)).length;
+
+  // Staggered reveal: reveal one completed step every 800ms
+  const [revealedCount, setRevealedCount] = useState(0);
+  useEffect(() => {
+    if (revealedCount < actualCompletedCount) {
+      const timer = setTimeout(() => setRevealedCount((c) => c + 1), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [revealedCount, actualCompletedCount]);
+
+  // Build the visible set: only show first N completed steps
+  let revealed = 0;
+  const visibleCompleted = new Set<string>();
+  for (const s of expectedSteps) {
+    if (completedSteps.has(s.step)) {
+      revealed++;
+      if (revealed <= revealedCount) {
+        visibleCompleted.add(s.step);
+      }
+    }
+  }
+
   const lastCompletedIndex = expectedSteps.reduce(
-    (max, s, i) => (completedSteps.has(s.step) ? i : max),
+    (max, s, i) => (visibleCompleted.has(s.step) ? i : max),
     -1
   );
 
@@ -136,7 +159,7 @@ export function StepProvision({
           </h3>
           <div className="space-y-2.5">
             {expectedSteps.map((s, i) => {
-              const isCompleted = completedSteps.has(s.step);
+              const isCompleted = visibleCompleted.has(s.step);
               const isActive = i === lastCompletedIndex + 1 && lastCompletedIndex >= 0;
               const isFuture = i > lastCompletedIndex + 1;
               // Use the actual log message if available, otherwise the expected message

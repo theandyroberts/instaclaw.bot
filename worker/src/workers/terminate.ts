@@ -6,9 +6,8 @@ import { deleteAPIKey } from "../lib/openrouter";
 import { removeTailscaleDevice } from "../lib/tailscale";
 
 export const terminateWorker = new Worker(
-  "lifecycle",
+  "terminate",
   async (job) => {
-    if (job.name !== "terminate") return;
 
     const { instanceId } = job.data;
 

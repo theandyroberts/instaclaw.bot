@@ -59,9 +59,9 @@ export async function getDroplet(dropletId: number): Promise<DropletInfo> {
 }
 
 export async function renameDroplet(dropletId: number, name: string): Promise<void> {
-  await doFetch(`/droplets/${dropletId}`, {
-    method: "PUT",
-    body: JSON.stringify({ name }),
+  await doFetch(`/droplets/${dropletId}/actions`, {
+    method: "POST",
+    body: JSON.stringify({ type: "rename", name }),
   });
 }
 

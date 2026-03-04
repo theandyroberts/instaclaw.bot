@@ -3,7 +3,18 @@ import * as crypto from "crypto";
 import * as http from "http";
 import httpProxy from "http-proxy";
 import { createProxyMiddleware } from "http-proxy-middleware";
-import { provisionQueue, configureQueue, lifecycleQueue, poolQueue, poolAllocateQueue, auditQueue } from "./queues";
+import {
+  provisionQueue,
+  configureTelegramQueue,
+  configureWorkspaceQueue,
+  updatePlanQueue,
+  suspendQueue,
+  unsuspendQueue,
+  terminateQueue,
+  poolQueue,
+  poolAllocateQueue,
+  auditQueue,
+} from "./queues";
 import { prisma } from "./lib/prisma";
 
 const SHARED_SECRET = process.env.WORKER_SHARED_SECRET!;
@@ -310,11 +321,11 @@ app.post("/jobs/provision", async (req, res) => {
 app.post("/jobs/configure-telegram", async (req, res) => {
   try {
     const { instanceId, token } = req.body;
-    const job = await configureQueue.add("configure-telegram", {
+    const job = await configureTelegramQueue.add("configure-telegram", {
       instanceId,
       token,
     });
-    res.json({ jobId: job.id, queue: "configure" });
+    res.json({ jobId: job.id, queue: "configure-telegram" });
   } catch (error) {
     console.error("Failed to enqueue configure-telegram:", error);
     res.status(500).json({ error: "Failed to enqueue job" });
@@ -325,10 +336,10 @@ app.post("/jobs/configure-telegram", async (req, res) => {
 app.post("/jobs/configure-workspace", async (req, res) => {
   try {
     const { instanceId } = req.body;
-    const job = await configureQueue.add("configure-workspace", {
+    const job = await configureWorkspaceQueue.add("configure-workspace", {
       instanceId,
     });
-    res.json({ jobId: job.id, queue: "configure" });
+    res.json({ jobId: job.id, queue: "configure-workspace" });
   } catch (error) {
     console.error("Failed to enqueue configure-workspace:", error);
     res.status(500).json({ error: "Failed to enqueue job" });
@@ -339,8 +350,8 @@ app.post("/jobs/configure-workspace", async (req, res) => {
 app.post("/jobs/suspend", async (req, res) => {
   try {
     const { instanceId } = req.body;
-    const job = await lifecycleQueue.add("suspend", { instanceId });
-    res.json({ jobId: job.id, queue: "lifecycle" });
+    const job = await suspendQueue.add("suspend", { instanceId });
+    res.json({ jobId: job.id, queue: "suspend" });
   } catch (error) {
     console.error("Failed to enqueue suspend:", error);
     res.status(500).json({ error: "Failed to enqueue job" });
@@ -351,8 +362,8 @@ app.post("/jobs/suspend", async (req, res) => {
 app.post("/jobs/unsuspend", async (req, res) => {
   try {
     const { instanceId } = req.body;
-    const job = await lifecycleQueue.add("unsuspend", { instanceId });
-    res.json({ jobId: job.id, queue: "lifecycle" });
+    const job = await unsuspendQueue.add("unsuspend", { instanceId });
+    res.json({ jobId: job.id, queue: "unsuspend" });
   } catch (error) {
     console.error("Failed to enqueue unsuspend:", error);
     res.status(500).json({ error: "Failed to enqueue job" });
@@ -363,8 +374,8 @@ app.post("/jobs/unsuspend", async (req, res) => {
 app.post("/jobs/terminate", async (req, res) => {
   try {
     const { instanceId } = req.body;
-    const job = await lifecycleQueue.add("terminate", { instanceId });
-    res.json({ jobId: job.id, queue: "lifecycle" });
+    const job = await terminateQueue.add("terminate", { instanceId });
+    res.json({ jobId: job.id, queue: "terminate" });
   } catch (error) {
     console.error("Failed to enqueue terminate:", error);
     res.status(500).json({ error: "Failed to enqueue job" });
@@ -387,11 +398,11 @@ app.post("/jobs/allocate", async (req, res) => {
 app.post("/jobs/update-plan", async (req, res) => {
   try {
     const { instanceId, newPlan } = req.body;
-    const job = await configureQueue.add("update-plan", {
+    const job = await updatePlanQueue.add("update-plan", {
       instanceId,
       newPlan,
     });
-    res.json({ jobId: job.id, queue: "configure" });
+    res.json({ jobId: job.id, queue: "update-plan" });
   } catch (error) {
     console.error("Failed to enqueue update-plan:", error);
     res.status(500).json({ error: "Failed to enqueue job" });

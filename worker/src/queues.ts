@@ -20,12 +20,32 @@ export const provisionQueue = new Queue("provision", {
   defaultJobOptions,
 });
 
-export const configureQueue = new Queue("configure", {
+export const configureTelegramQueue = new Queue("configure-telegram", {
   connection: redis,
   defaultJobOptions,
 });
 
-export const lifecycleQueue = new Queue("lifecycle", {
+export const configureWorkspaceQueue = new Queue("configure-workspace", {
+  connection: redis,
+  defaultJobOptions,
+});
+
+export const updatePlanQueue = new Queue("update-plan", {
+  connection: redis,
+  defaultJobOptions,
+});
+
+export const suspendQueue = new Queue("suspend", {
+  connection: redis,
+  defaultJobOptions,
+});
+
+export const unsuspendQueue = new Queue("unsuspend", {
+  connection: redis,
+  defaultJobOptions,
+});
+
+export const terminateQueue = new Queue("terminate", {
   connection: redis,
   defaultJobOptions,
 });

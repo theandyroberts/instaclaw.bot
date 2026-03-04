@@ -15,9 +15,8 @@ const CONFIG_PATH = "/opt/openclaw/home/.openclaw/openclaw.json";
 const WORKSPACE_DIR = "/opt/openclaw/home/.openclaw/workspace";
 
 export const configureWorkspaceWorker = new Worker(
-  "configure",
+  "configure-workspace",
   async (job) => {
-    if (job.name !== "configure-workspace") return;
 
     const { instanceId } = job.data;
 
