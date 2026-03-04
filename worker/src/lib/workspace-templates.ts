@@ -30,18 +30,30 @@ const LOOP_PROMPTS: Record<string, string> = {
     "Pick an interesting topic related to my interests and teach me something new in 2-3 paragraphs. Suggest a follow-up question or activity.",
 };
 
-const personalityTraits: Record<string, { tone: string; style: string }> = {
+const personalityTraits: Record<string, { tone: string; style: string; voice: string }> = {
   friendly: {
     tone: "warm, approachable, and encouraging",
     style: "Use casual language, be supportive, and show genuine interest in helping. Feel free to use conversational phrases and be personable.",
+    voice: `- Greet the user warmly, like a good friend: "Hey! Great to hear from you" or "Oh nice, let's dig into this"
+- Celebrate their wins: "That's awesome!" or "Look at you go!"
+- When they're stuck, be encouraging: "No worries, we'll figure this out together"
+- Use phrases like "I've got you", "Let's do this", and "Happy to help with that"`,
   },
   professional: {
     tone: "clear, direct, and efficient",
     style: "Be concise and well-organized. Focus on delivering accurate, actionable information without unnecessary filler.",
+    voice: `- Lead with the answer, then provide context: "Short answer: yes. Here's why..."
+- Use structured responses: numbered lists, clear headers, bullet points
+- Acknowledge requests crisply: "Understood", "On it", "Here's what I found"
+- Be direct but not cold: "Good question" is fine, but skip the small talk`,
   },
   witty: {
     tone: "clever, playful, and creative",
     style: "Use humor and wordplay where appropriate. Be engaging and entertaining while still being helpful and informative.",
+    voice: `- Open with something unexpected: "Ah, excellent question -- you've come to the right bot" or "Well well well, let's see what we're working with"
+- Sprinkle in light humor: "Not to brag, but I was literally built for this"
+- Use playful asides: "Plot twist:", "Fun fact:", "Between you and me..."
+- Keep it clever, not corny -- think dry wit over dad jokes`,
   },
 };
 
@@ -71,6 +83,11 @@ export function generateSOUL(botConfig: BotConfig): string {
       ? "Adapt your communication style to match the personality described above."
       : personalityTraits[botConfig.personality]?.style || "";
 
+  const voice =
+    botConfig.personality !== "custom"
+      ? personalityTraits[botConfig.personality]?.voice || ""
+      : "";
+
   const useCaseNotes = botConfig.useCases
     .map((uc) => useCaseGuidelines[uc])
     .filter(Boolean)
@@ -84,7 +101,7 @@ You are ${botConfig.botName}, a personal AI assistant on Telegram. You are ${per
 
 ## Communication Style
 ${style}
-
+${voice ? `\n## Your Voice\n${voice}\n` : ""}
 ## Guidelines
 - Always be helpful and respectful
 - If you don't know something, say so honestly
@@ -263,17 +280,20 @@ export function generateCronJobs(loop: string, timezone?: string): string | null
     ? { cron: "0 9 * * *", timezone }
     : { cron: "0 14 * * *" };
 
-  const jobs = [
-    {
-      id: `loop-${loop}`,
-      description: `Daily ${LOOP_LABELS[loop] || loop} check-in`,
-      schedule,
-      prompt,
-      sessionTarget: "isolated",
-      delivery: { mode: "announce" },
-      wakeMode: "next-heartbeat",
-    },
-  ];
+  const cronFile = {
+    version: 1,
+    jobs: [
+      {
+        id: `loop-${loop}`,
+        description: `Daily ${LOOP_LABELS[loop] || loop} check-in`,
+        schedule,
+        prompt,
+        sessionTarget: "isolated",
+        delivery: { mode: "announce" },
+        wakeMode: "next-heartbeat",
+      },
+    ],
+  };
 
-  return JSON.stringify(jobs, null, 2);
+  return JSON.stringify(cronFile, null, 2);
 }
