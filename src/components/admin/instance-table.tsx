@@ -17,6 +17,8 @@ interface Instance {
   status: string;
   onboardingStep: string;
   ipAddress: string | null;
+  instanceName: string | null;
+  dropletId: string | null;
   llmProvider: string;
   healthStatus: string;
   telegramBotUsername: string | null;
@@ -85,28 +87,31 @@ export function InstanceTable() {
     );
   }
 
-  const statusColor = (status: string) => {
+  const statusStyle = (status: string) => {
     switch (status) {
       case "active":
-        return "default" as const;
+        return "bg-emerald-500/15 text-emerald-400 border-emerald-500/20";
       case "suspended":
-        return "secondary" as const;
-      case "failed":
+        return "bg-yellow-500/15 text-yellow-400 border-yellow-500/20";
       case "terminated":
-        return "destructive" as const;
+        return "bg-neutral-500/15 text-neutral-400 border-neutral-500/20";
+      case "failed":
+        return "bg-red-500/15 text-red-400 border-red-500/20";
       default:
-        return "outline" as const;
+        return "bg-neutral-500/15 text-neutral-400 border-neutral-500/20";
     }
   };
 
-  const healthColor = (health: string) => {
+  const healthStyle = (health: string) => {
     switch (health) {
       case "healthy":
-        return "default" as const;
+        return "bg-emerald-500/15 text-emerald-400 border-emerald-500/20";
       case "unhealthy":
-        return "destructive" as const;
+        return "bg-red-500/15 text-red-400 border-red-500/20";
+      case "unreachable":
+        return "bg-red-500/15 text-red-400 border-red-500/20";
       default:
-        return "secondary" as const;
+        return "bg-neutral-500/15 text-neutral-400 border-neutral-500/20";
     }
   };
 
@@ -132,7 +137,7 @@ export function InstanceTable() {
                 <th className="pb-3 pr-4">Health</th>
                 <th className="pb-3 pr-4">Bot</th>
                 <th className="pb-3 pr-4">AI</th>
-                <th className="pb-3 pr-4">IP</th>
+                <th className="pb-3 pr-4">Instance</th>
                 <th className="pb-3">Actions</th>
               </tr>
             </thead>
@@ -153,12 +158,12 @@ export function InstanceTable() {
                     </Badge>
                   </td>
                   <td className="py-3 pr-4">
-                    <Badge variant={statusColor(instance.status)}>
+                    <Badge className={statusStyle(instance.status)}>
                       {instance.status}
                     </Badge>
                   </td>
                   <td className="py-3 pr-4">
-                    <Badge variant={healthColor(instance.healthStatus)}>
+                    <Badge className={healthStyle(instance.healthStatus)}>
                       {instance.healthStatus}
                     </Badge>
                   </td>
@@ -179,8 +184,8 @@ export function InstanceTable() {
                   <td className="py-3 pr-4 capitalize text-xs">
                     {instance.llmProvider}
                   </td>
-                  <td className="py-3 pr-4 font-mono text-xs">
-                    {instance.ipAddress || "--"}
+                  <td className="py-3 pr-4 text-xs">
+                    {instance.instanceName || (instance.dropletId ? `droplet-${instance.dropletId}` : "--")}
                   </td>
                   <td className="py-3">
                     <div className="flex gap-1">
