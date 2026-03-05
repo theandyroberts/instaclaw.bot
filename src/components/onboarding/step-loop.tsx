@@ -56,8 +56,8 @@ export function StepLoop({ config, onUpdate, onNext, onBack }: StepLoopProps) {
               onClick={() => setSelected(loop.id)}
               className={`relative flex items-center gap-4 rounded-xl border-2 p-4 text-left transition-all ${
                 isSelected
-                  ? "border-primary bg-primary/10"
-                  : "border-border hover:border-neutral-700 hover:bg-neutral-800/50"
+                  ? "border-primary bg-primary/15 ring-1 ring-primary/30"
+                  : "border-neutral-800 bg-neutral-900/50 hover:border-neutral-700 hover:bg-neutral-800/50"
               }`}
             >
               <Icon
@@ -66,13 +66,13 @@ export function StepLoop({ config, onUpdate, onNext, onBack }: StepLoopProps) {
                 }`}
               />
               <div className="min-w-0 flex-1">
-                <span className="text-sm font-medium text-gray-100">
+                <span className={`text-sm font-medium ${isSelected ? "text-white" : "text-gray-400"}`}>
                   {loop.label}
                 </span>
-                <p className="text-xs text-gray-500">{loop.description}</p>
+                <p className={`text-xs ${isSelected ? "text-gray-300" : "text-gray-600"}`}>{loop.description}</p>
               </div>
               {isSelected && (
-                <Check className="h-4 w-4 shrink-0 text-primary" />
+                <Check className="h-5 w-5 shrink-0 text-primary" />
               )}
             </button>
           );

@@ -142,7 +142,7 @@ export function StepTelegram({ onComplete, botName }: StepTelegramProps) {
 
               <div className="overflow-hidden rounded-lg bg-black">
                 <video
-                  src="/tutorial/botfather-guide.mp4"
+                  src="https://assets.instaclaw.bot/tutorial/botfather-guide.mp4"
                   controls
                   autoPlay
                   playsInline
