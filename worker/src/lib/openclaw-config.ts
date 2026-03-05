@@ -5,12 +5,32 @@ export interface OpenClawConfig {
   model?: string;
 }
 
+/** Centralized model config per plan tier — single source of truth */
+export const PLAN_MODELS: Record<string, { primary: string; fallbacks: string[]; llmProvider: string }> = {
+  starter: {
+    primary: "openrouter/google/gemini-2.5-flash",
+    fallbacks: [
+      "openrouter/moonshotai/kimi-k2.5",
+      "openrouter/nvidia/nemotron-3-nano-30b-a3b",
+    ],
+    llmProvider: "gemini",
+  },
+  pro: {
+    primary: "openrouter/anthropic/claude-sonnet-4.5",
+    fallbacks: [
+      "openrouter/liquid/lfm2-8b-a1b",
+      "openrouter/nvidia/nemotron-3-nano-30b-a3b",
+    ],
+    llmProvider: "claude",
+  },
+};
+
 /**
  * Generate a Dockerfile that extends the base OpenClaw image with Chromium
  * and its dependencies for browser-based skills.
  */
 export function generateDockerfile(): string {
-  return `FROM alpine/openclaw:2026.2.21
+  return `FROM alpine/openclaw:2026.2.26
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \\
     chromium \\
@@ -31,7 +51,6 @@ export function generateDockerCompose(
   gatewayToken: string,
   opts?: {
     openrouterApiKey?: string;
-    moonshotApiKey?: string;
     braveApiKey?: string;
     geminiApiKey?: string;
   }
@@ -41,9 +60,6 @@ export function generateDockerCompose(
   ];
   if (opts?.openrouterApiKey) {
     envLines.push(`      - OPENROUTER_API_KEY=${opts.openrouterApiKey}`);
-  }
-  if (opts?.moonshotApiKey) {
-    envLines.push(`      - MOONSHOT_API_KEY=${opts.moonshotApiKey}`);
   }
   if (opts?.braveApiKey) {
     envLines.push(`      - BRAVE_API_KEY=${opts.braveApiKey}`);
@@ -125,7 +141,7 @@ export function getLLMConfig(provider: string): {
   switch (provider) {
     case "kimi":
       return {
-        model: "moonshot/kimi-k2.5",
+        model: "openrouter/moonshotai/kimi-k2.5",
       };
     case "claude":
       return {

@@ -366,7 +366,7 @@ export const provisionWorker = new Worker(
           gatewayToken,
           status: "active",
           onboardingStep: "awaiting_telegram_token",
-          llmProvider: plan === "pro" ? "claude" : "kimi",
+          llmProvider: plan === "pro" ? "claude" : "gemini",
           llmConfigured: true,
           provisionedAt: new Date(),
         },
