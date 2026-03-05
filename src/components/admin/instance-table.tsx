@@ -184,8 +184,8 @@ export function InstanceTable() {
                   <td className="py-3 pr-4 capitalize text-xs">
                     {instance.llmProvider}
                   </td>
-                  <td className="py-3 pr-4 text-xs">
-                    {instance.instanceName || (instance.dropletId ? `droplet-${instance.dropletId}` : "--")}
+                  <td className="py-3 pr-4 text-xs font-mono">
+                    {instance.instanceName || (instance.id ? `instaclaw-${instance.id.slice(0, 8)}` : "--")}
                   </td>
                   <td className="py-3">
                     <div className="flex gap-1">
