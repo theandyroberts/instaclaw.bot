@@ -1,3 +1,5 @@
+import type { $Enums } from "../../../src/generated/prisma";
+
 export interface OpenClawConfig {
   telegram?: {
     botToken: string;
@@ -5,8 +7,13 @@ export interface OpenClawConfig {
   model?: string;
 }
 
-/** Centralized model config per plan tier — single source of truth */
-export const PLAN_MODELS: Record<string, { primary: string; fallbacks: string[]; llmProvider: string }> = {
+/** Per-plan model config type — llmProvider is validated against Prisma enum */
+type PlanModelConfig = { primary: string; fallbacks: string[]; llmProvider: $Enums.LLMProvider };
+
+/** Centralized model config per plan tier — single source of truth.
+ *  `satisfies` ensures every Plan key exists and llmProvider values are valid Prisma enums.
+ *  The Record<string, ...> annotation lets consumers index with string/any from DB queries. */
+export const PLAN_MODELS: Record<string, PlanModelConfig> = {
   starter: {
     primary: "openrouter/google/gemini-2.5-flash",
     fallbacks: [
@@ -23,7 +30,7 @@ export const PLAN_MODELS: Record<string, { primary: string; fallbacks: string[];
     ],
     llmProvider: "claude",
   },
-};
+} satisfies Record<$Enums.Plan, PlanModelConfig>;
 
 /**
  * Generate a Dockerfile that extends the base OpenClaw image with Chromium

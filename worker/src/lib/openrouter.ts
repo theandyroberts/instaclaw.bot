@@ -1,3 +1,5 @@
+import type { $Enums } from "../../../src/generated/prisma";
+
 const OPENROUTER_MANAGEMENT_KEY = process.env.OPENROUTER_MANAGEMENT_KEY!;
 const API_BASE = "https://openrouter.ai/api/v1";
 
@@ -5,7 +7,7 @@ const API_BASE = "https://openrouter.ai/api/v1";
 export const PLAN_BUDGETS: Record<string, number> = {
   starter: 5,
   pro: 30,
-};
+} satisfies Record<$Enums.Plan, number>;
 
 async function orFetch(path: string, options?: RequestInit): Promise<any> {
   const response = await fetch(`${API_BASE}${path}`, {
