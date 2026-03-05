@@ -7,10 +7,13 @@ import "./workers/configure-workspace";
 import "./workers/suspend";
 import "./workers/unsuspend";
 import "./workers/terminate";
+import "./workers/update-plan";
 import "./workers/pool-create";
 import "./workers/pool-allocate";
 import { scheduleHealthChecks } from "./workers/health-check";
 import { schedulePoolMaintenance } from "./workers/pool-maintain";
+import { scheduleModelAudit } from "./workers/model-audit";
+import { scheduleUsageCollection } from "./workers/usage-collect";
 import { ensureFirewall } from "./lib/firewall";
 
 const PORT = parseInt(process.env.PORT || "3001");
@@ -35,6 +38,16 @@ const server = app.listen(PORT, async () => {
   // Schedule pool maintenance
   schedulePoolMaintenance().catch((err) => {
     console.error("Failed to schedule pool maintenance:", err);
+  });
+
+  // Schedule daily model audit
+  scheduleModelAudit().catch((err) => {
+    console.error("Failed to schedule model audit:", err);
+  });
+
+  // Schedule LLM usage collection
+  scheduleUsageCollection().catch((err) => {
+    console.error("Failed to schedule usage collection:", err);
   });
 });
 

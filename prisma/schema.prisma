@@ -105,9 +105,11 @@ model Instance {
   lastHealthCheck     DateTime?
   healthStatus        HealthStatus   @default(unknown)
   instanceName        String?        @unique
+  llmSpendMonthly     Float          @default(0)
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
   user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  usageSnapshots      LlmUsageSnapshot[]
 
   @@map("instances")
 }
@@ -186,4 +188,34 @@ model PoolDroplet {
   allocatedTo       String?
 
   @@map("pool_droplets")
+}
+
+model LlmUsageSnapshot {
+  id             String   @id @default(cuid())
+  instanceId     String
+  usageTotal     Float
+  usageMonthly   Float
+  limit          Float?
+  limitRemaining Float?
+  collectedAt    DateTime @default(now())
+  instance       Instance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+
+  @@index([instanceId, collectedAt])
+  @@map("llm_usage_snapshots")
+}
+
+model LlmActivityLog {
+  id               String   @id @default(cuid())
+  date             String
+  model            String
+  providerName     String
+  costUsd          Float
+  requests         Int
+  promptTokens     Int
+  completionTokens Int
+  reasoningTokens  Int      @default(0)
+  collectedAt      DateTime @default(now())
+
+  @@unique([date, model, providerName])
+  @@map("llm_activity_logs")
 }

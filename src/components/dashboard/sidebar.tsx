@@ -10,6 +10,7 @@ import {
   Wrench,
   LogOut,
   Shield,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -81,13 +82,24 @@ export function Sidebar({ onboardingIncomplete, isAdmin }: SidebarProps) {
             <Link
               href="/admin/instances"
               className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                pathname.startsWith("/admin")
+                pathname === "/admin/instances"
                   ? "bg-primary/10 text-primary"
                   : "text-muted-foreground hover:bg-accent hover:text-foreground"
               }`}
             >
               <Shield className="h-4 w-4" />
-              Admin
+              Instances
+            </Link>
+            <Link
+              href="/admin/usage"
+              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+                pathname === "/admin/usage"
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+              }`}
+            >
+              <BarChart3 className="h-4 w-4" />
+              LLM Usage
             </Link>
           </>
         )}

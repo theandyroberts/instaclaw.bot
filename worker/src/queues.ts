@@ -87,3 +87,12 @@ export const poolAllocateQueue = new Queue("pool-allocate", {
     removeOnFail: 10,
   },
 });
+
+export const usageQueue = new Queue("usage", {
+  connection: redis,
+  defaultJobOptions: {
+    ...defaultJobOptions,
+    attempts: 1,
+    removeOnComplete: 10,
+  },
+});
