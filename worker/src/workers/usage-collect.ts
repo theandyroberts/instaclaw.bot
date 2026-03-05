@@ -103,30 +103,32 @@ async function collectDailyActivity(jobId: string) {
     let upserted = 0;
 
     for (const item of items) {
+      const normalizedDate = (item.date || dateStr).split(" ")[0];
+
       await prisma.llmActivityLog.upsert({
         where: {
           date_model_providerName: {
-            date: item.date || dateStr,
+            date: normalizedDate,
             model: item.model,
             providerName: item.provider_name,
           },
         },
         create: {
-          date: item.date || dateStr,
+          date: normalizedDate,
           model: item.model,
           providerName: item.provider_name,
-          costUsd: item.cost,
-          requests: item.num_requests,
-          promptTokens: item.tokens_prompt,
-          completionTokens: item.tokens_completion,
-          reasoningTokens: item.tokens_reasoning || 0,
+          costUsd: item.cost ?? 0,
+          requests: item.num_requests ?? 0,
+          promptTokens: item.tokens_prompt ?? 0,
+          completionTokens: item.tokens_completion ?? 0,
+          reasoningTokens: item.tokens_reasoning ?? 0,
         },
         update: {
-          costUsd: item.cost,
-          requests: item.num_requests,
-          promptTokens: item.tokens_prompt,
-          completionTokens: item.tokens_completion,
-          reasoningTokens: item.tokens_reasoning || 0,
+          costUsd: item.cost ?? 0,
+          requests: item.num_requests ?? 0,
+          promptTokens: item.tokens_prompt ?? 0,
+          completionTokens: item.tokens_completion ?? 0,
+          reasoningTokens: item.tokens_reasoning ?? 0,
         },
       });
       upserted++;
