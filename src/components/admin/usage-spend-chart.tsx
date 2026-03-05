@@ -62,11 +62,11 @@ export function UsageSpendChart({ data }: { data: DailyData[] | null }) {
               <XAxis
                 dataKey="date"
                 stroke="var(--muted-foreground)"
-                fontSize={12}
+                tick={{ fill: "#9ca3af", fontSize: 12 }}
               />
               <YAxis
                 stroke="var(--muted-foreground)"
-                fontSize={12}
+                tick={{ fill: "#9ca3af", fontSize: 12 }}
                 tickFormatter={(v) => `$${v}`}
               />
               <Tooltip

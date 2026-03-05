@@ -73,14 +73,14 @@ export function UsageModelCharts({
                 <XAxis
                   type="number"
                   stroke="var(--muted-foreground)"
-                  fontSize={12}
+                  tick={{ fill: "#9ca3af", fontSize: 12 }}
                   tickFormatter={(v) => `$${v}`}
                 />
                 <YAxis
                   type="category"
                   dataKey="name"
                   stroke="var(--muted-foreground)"
-                  fontSize={11}
+                  tick={{ fill: "#9ca3af", fontSize: 11 }}
                   width={140}
                 />
                 <Tooltip
@@ -119,9 +119,18 @@ export function UsageModelCharts({
                   outerRadius={100}
                   dataKey="value"
                   nameKey="name"
-                  label={({ name, value }) => `${name}: $${value}`}
+                  label={({ name, value, cx, cy, midAngle, outerRadius }) => {
+                    const RADIAN = Math.PI / 180;
+                    const radius = (outerRadius as number) + 16;
+                    const x = (cx as number) + radius * Math.cos(-midAngle * RADIAN);
+                    const y = (cy as number) + radius * Math.sin(-midAngle * RADIAN);
+                    return (
+                      <text x={x} y={y} fill="#9ca3af" fontSize={11} textAnchor={x > (cx as number) ? "start" : "end"} dominantBaseline="central">
+                        {`${name}: $${value}`}
+                      </text>
+                    );
+                  }}
                   labelLine={false}
-                  fontSize={11}
                 >
                   {providerData.map((_, i) => (
                     <Cell key={i} fill={COLORS[i % COLORS.length]} />
