@@ -25,11 +25,11 @@ interface ProviderData {
 }
 
 const COLORS = [
-  "hsl(var(--chart-1))",
-  "hsl(var(--chart-2))",
-  "hsl(var(--chart-3))",
-  "hsl(var(--chart-4))",
-  "hsl(var(--chart-5))",
+  "var(--chart-1)",
+  "var(--chart-2)",
+  "var(--chart-3)",
+  "var(--chart-4)",
+  "var(--chart-5)",
 ];
 
 function shortenModel(id: string): string {
@@ -69,30 +69,30 @@ export function UsageModelCharts({
           ) : (
             <ResponsiveContainer width="100%" height={250}>
               <BarChart data={modelData} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis
                   type="number"
-                  stroke="hsl(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                   fontSize={12}
                   tickFormatter={(v) => `$${v}`}
                 />
                 <YAxis
                   type="category"
                   dataKey="name"
-                  stroke="hsl(var(--muted-foreground))"
+                  stroke="var(--muted-foreground)"
                   fontSize={11}
                   width={140}
                 />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
+                    backgroundColor: "var(--card)",
+                    border: "1px solid var(--border)",
                     borderRadius: "8px",
-                    color: "hsl(var(--foreground))",
+                    color: "var(--foreground)",
                   }}
                   formatter={(value) => [`$${Number(value).toFixed(4)}`, "Cost"]}
                 />
-                <Bar dataKey="cost" fill="hsl(var(--chart-2))" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="cost" fill="var(--chart-2)" radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}
@@ -129,10 +129,10 @@ export function UsageModelCharts({
                 </Pie>
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: "hsl(var(--card))",
-                    border: "1px solid hsl(var(--border))",
+                    backgroundColor: "var(--card)",
+                    border: "1px solid var(--border)",
                     borderRadius: "8px",
-                    color: "hsl(var(--foreground))",
+                    color: "var(--foreground)",
                   }}
                   formatter={(value) => [`$${Number(value).toFixed(4)}`, "Cost"]}
                 />

@@ -58,31 +58,31 @@ export function UsageSpendChart({ data }: { data: DailyData[] | null }) {
         ) : (
           <ResponsiveContainer width="100%" height={250}>
             <AreaChart data={filtered}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
               <XAxis
                 dataKey="date"
-                stroke="hsl(var(--muted-foreground))"
+                stroke="var(--muted-foreground)"
                 fontSize={12}
               />
               <YAxis
-                stroke="hsl(var(--muted-foreground))"
+                stroke="var(--muted-foreground)"
                 fontSize={12}
                 tickFormatter={(v) => `$${v}`}
               />
               <Tooltip
                 contentStyle={{
-                  backgroundColor: "hsl(var(--card))",
-                  border: "1px solid hsl(var(--border))",
+                  backgroundColor: "var(--card)",
+                  border: "1px solid var(--border)",
                   borderRadius: "8px",
-                  color: "hsl(var(--foreground))",
+                  color: "var(--foreground)",
                 }}
                 formatter={(value) => [`$${Number(value).toFixed(4)}`, "Cost"]}
               />
               <Area
                 type="monotone"
                 dataKey="cost"
-                stroke="hsl(var(--chart-1))"
-                fill="hsl(var(--chart-1))"
+                stroke="var(--chart-1)"
+                fill="var(--chart-1)"
                 fillOpacity={0.2}
               />
             </AreaChart>
