@@ -15,6 +15,8 @@ import {
   generateAGENTS,
   generateMEMORY,
   generateCronJobs,
+  generateSiteCreatorSkill,
+  generateDeploySiteScript,
 } from "../lib/workspace-templates";
 import { ensureFirewall } from "../lib/firewall";
 import { setupConsoleBridge } from "../lib/console-bridge";
@@ -308,6 +310,14 @@ export const provisionWorker = new Worker(
             await writeFileSSH(ssh, `${cronDir}/jobs.json`, cronJson);
             console.log(`[provision:${job.id}] Wrote cron/jobs.json for loop: ${botConfig.loop}`);
           }
+        }
+
+        // Write public-site-creator skill if instance has a name
+        if (instanceName) {
+          const skillDir = `${WORKSPACE_DIR}/skills/public-site-creator/scripts`;
+          await execSSH(ssh, `mkdir -p ${skillDir}`, "/");
+          await writeFileSSH(ssh, `${WORKSPACE_DIR}/skills/public-site-creator/SKILL.md`, generateSiteCreatorSkill(instanceName));
+          await writeFileSSH(ssh, `${skillDir}/deploy_site.py`, generateDeploySiteScript(instanceName));
         }
 
         // Ensure canvas directory exists for public sites

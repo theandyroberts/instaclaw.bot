@@ -164,20 +164,14 @@ export function generateAGENTS(
     ? `
 
 ## Creating Websites & Dashboards
-You can create web pages, dashboards, and apps. Save files to:
-  ~/.openclaw/canvas/<site-name>/
+You can create public web pages, dashboards, and apps for the user. Read the skill at \`~/.openclaw/workspace/skills/public-site-creator/SKILL.md\` for full instructions before creating any site.
 
-They become publicly accessible at:
-  https://<site-name>-${instanceName}.instaclaw.bot/
-
-Guidelines:
-- Create an index.html as the entry point
-- Use descriptive site names (lowercase, hyphens ok): electricians, weekly-report, coffee-shops
-- Include all CSS/JS inline or as separate files in the same directory
-- Always tell the user the full public URL when you create or update a site
-- For data dashboards, embed the data in the HTML or fetch via client-side JS
-- You can use React, Vue, or any framework via CDN imports
-- Make sites look great -- use modern CSS, clean layouts, and responsive design
+Key points:
+- Sites live at: \`~/.openclaw/canvas/<site-name>/index.html\`
+- Public URL: \`https://<site-name>-${instanceName}.instaclaw.bot/\`
+- **You MUST use the exec tool** (e.g. \`mkdir -p\` + \`cat > file\`) to write files to canvas -- the write tool blocks paths outside your workspace
+- Default to Linear's UI design language (clean, minimal, lots of whitespace, system font stack, neutral palette with one accent color) unless the user specifies a different style
+- Always tell the user the public URL after deploying
 `
     : "";
 
@@ -296,4 +290,109 @@ export function generateCronJobs(loop: string, timezone?: string): string | null
   };
 
   return JSON.stringify(cronFile, null, 2);
+}
+
+export function generateSiteCreatorSkill(instanceName: string): string {
+  return `---
+name: public-site-creator
+description: Create and deploy static websites to public subdomains under ${instanceName}.instaclaw.bot. Use when the user asks to create a website, build a web page, make a public site, deploy HTML, or host content at a subdomain.
+---
+
+# Public Site Creator
+
+Create and deploy public static websites for the user.
+
+## When to Use
+
+- User asks to "create a website", "make a site", "build a page"
+- User wants content hosted at a public URL
+- User wants a dashboard, landing page, portfolio, etc.
+
+## How It Works
+
+Sites are served at: \`https://NAME-${instanceName}.instaclaw.bot/\`
+
+### Step-by-step
+
+1. **Pick a name** -- lowercase, hyphens ok: \`menu\`, \`my-dashboard\`, \`portfolio\`
+2. **Create the directory**: \`mkdir -p ~/.openclaw/canvas/NAME\`
+3. **Write index.html** using exec (the write tool blocks paths outside workspace):
+   \`\`\`bash
+   cat > ~/.openclaw/canvas/NAME/index.html << 'SITE_EOF'
+   <!DOCTYPE html>
+   <html>...your HTML...</html>
+   SITE_EOF
+   \`\`\`
+4. **Tell the user** their URL: \`https://NAME-${instanceName}.instaclaw.bot/\`
+
+### Important Rules
+
+- **Always use exec** to write to \`~/.openclaw/canvas/\` -- the write tool will reject paths outside workspace
+- Only \`index.html\` is needed. Put CSS/JS inline or as separate files in the same directory.
+- Subdomains only -- \`https://NAME-${instanceName}.instaclaw.bot/\` works, but \`https://${instanceName}.instaclaw.bot/NAME\` does NOT
+- You can add sub-pages: \`~/.openclaw/canvas/NAME/about/index.html\` → \`https://NAME-${instanceName}.instaclaw.bot/about/\`
+
+## Design Defaults
+
+Unless the user specifies a different style, use **Linear's UI design language**:
+- Clean, minimal layout with generous whitespace
+- System font stack: \`-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif\`
+- Neutral color palette (gray-50 through gray-900) with one accent color
+- Subtle borders (\`1px solid #e5e5e5\`), no heavy shadows
+- Responsive -- works on mobile and desktop
+- Dark mode support via \`prefers-color-scheme\` media query
+- Smooth, understated transitions
+- No visual clutter -- every element should earn its place
+
+## Example
+
+User: "Create a site for my coffee shop menu"
+
+→ \`mkdir -p ~/.openclaw/canvas/menu\`
+→ Write HTML to \`~/.openclaw/canvas/menu/index.html\`
+→ URL: \`https://menu-${instanceName}.instaclaw.bot/\`
+`;
+}
+
+export function generateDeploySiteScript(instanceName: string): string {
+  return `#!/usr/bin/env python3
+"""Deploy a static site to the public canvas directory."""
+
+import argparse
+import os
+import sys
+
+CANVAS_DIR = os.path.expanduser("~/.openclaw/canvas")
+INSTANCE_NAME = "${instanceName}"
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Deploy a static site")
+    parser.add_argument("--name", required=True, help="Subdomain name")
+    parser.add_argument("--file", help="Path to HTML file to deploy")
+    parser.add_argument("--content", help="Raw HTML content")
+    args = parser.parse_args()
+
+    target_dir = os.path.join(CANVAS_DIR, args.name)
+    os.makedirs(target_dir, exist_ok=True)
+    target_file = os.path.join(target_dir, "index.html")
+
+    if args.content:
+        with open(target_file, "w") as f:
+            f.write(args.content)
+    elif args.file:
+        import shutil
+        shutil.copy2(args.file, target_file)
+    else:
+        print("Error: provide --file or --content", file=sys.stderr)
+        return 1
+
+    url = f"https://{args.name}-{INSTANCE_NAME}.instaclaw.bot"
+    print(f"Deployed to: {url}")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
+`;
 }
