@@ -88,6 +88,14 @@ export const poolAllocateQueue = new Queue("pool-allocate", {
   },
 });
 
+export const updateInstanceNameQueue = new Queue("update-instance-name", {
+  connection: redis,
+  defaultJobOptions: {
+    ...defaultJobOptions,
+    attempts: 2,
+  },
+});
+
 export const usageQueue = new Queue("usage", {
   connection: redis,
   defaultJobOptions: {

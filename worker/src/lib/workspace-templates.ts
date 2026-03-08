@@ -173,7 +173,14 @@ Key points:
 - Default to Linear's UI design language (clean, minimal, lots of whitespace, system font stack, neutral palette with one accent color) unless the user specifies a different style
 - Always tell the user the public URL after deploying
 `
-    : "";
+    : `
+
+## Creating Websites & Dashboards
+You have the ability to create public web pages, dashboards, and apps for the user. However, the user needs to set their subdomain name first before websites can go live.
+
+If the user asks about creating a website, tell them:
+> "I can create websites for you! First, you'll need to set your subdomain name in settings. Go to **instaclaw.bot/dashboard/settings** and choose a subdomain, then I'll be able to deploy sites for you."
+`;
 
   return `# Agent Configuration
 
@@ -219,10 +226,9 @@ ${plan === "pro" ? `
 ## Model Policy
 You have access to premium AI models. You may use /models to see and switch between available models.` : `
 ## Model Policy
-Your plan includes Kimi K2.5 as the primary model and free OpenRouter models as fallbacks.
-- Do NOT switch to paid models (Claude, GPT-4, Gemini, etc.) -- they are not included in this plan
-- If a user asks to change models, you may suggest free alternatives from OpenRouter (models ending in :free)
-- If the user wants premium models, suggest upgrading to the Pro plan at instaclaw.bot`}
+Your plan includes Gemini 2.5 Flash as the primary model with Kimi K2.5 as a fallback.
+- Do NOT switch to expensive models (Claude, GPT-4, etc.) -- they are not included in this plan
+- If a user asks to change models, suggest upgrading to the Pro plan at instaclaw.bot`}
 ${websiteSection}${botConfig.loop && botConfig.loop !== "just-exploring" && LOOP_LABELS[botConfig.loop] ? `
 
 ## Your Loop: ${LOOP_LABELS[botConfig.loop]}
@@ -292,16 +298,29 @@ export function generateCronJobs(loop: string, timezone?: string): string | null
   return JSON.stringify(cronFile, null, 2);
 }
 
-export function generateSiteCreatorSkill(instanceName: string): string {
+export function generateSiteCreatorSkill(instanceName?: string | null): string {
+  const displayName = instanceName || "<subdomain>";
+  const prerequisite = instanceName
+    ? ""
+    : `
+## Prerequisite
+
+**The user has not set their subdomain yet.** Before you can deploy any site, the user must choose a subdomain name.
+
+Tell them: "To create websites, you first need to set your subdomain name. Go to **instaclaw.bot/dashboard/settings** to choose one, then come back and I'll build your site!"
+
+Do NOT proceed with site creation until the subdomain is configured.
+`;
+
   return `---
 name: public-site-creator
-description: Create and deploy static websites to public subdomains under ${instanceName}.instaclaw.bot. Use when the user asks to create a website, build a web page, make a public site, deploy HTML, or host content at a subdomain.
+description: Create and deploy static websites to public subdomains under ${displayName}.instaclaw.bot. Use when the user asks to create a website, build a web page, make a public site, deploy HTML, or host content at a subdomain.
 ---
 
 # Public Site Creator
 
 Create and deploy public static websites for the user.
-
+${prerequisite}
 ## When to Use
 
 - User asks to "create a website", "make a site", "build a page"
@@ -310,7 +329,7 @@ Create and deploy public static websites for the user.
 
 ## How It Works
 
-Sites are served at: \`https://NAME-${instanceName}.instaclaw.bot/\`
+Sites are served at: \`https://NAME-${displayName}.instaclaw.bot/\`
 
 ### Step-by-step
 
@@ -323,14 +342,14 @@ Sites are served at: \`https://NAME-${instanceName}.instaclaw.bot/\`
    <html>...your HTML...</html>
    SITE_EOF
    \`\`\`
-4. **Tell the user** their URL: \`https://NAME-${instanceName}.instaclaw.bot/\`
+4. **Tell the user** their URL: \`https://NAME-${displayName}.instaclaw.bot/\`
 
 ### Important Rules
 
 - **Always use exec** to write to \`~/.openclaw/canvas/\` -- the write tool will reject paths outside workspace
 - Only \`index.html\` is needed. Put CSS/JS inline or as separate files in the same directory.
-- Subdomains only -- \`https://NAME-${instanceName}.instaclaw.bot/\` works, but \`https://${instanceName}.instaclaw.bot/NAME\` does NOT
-- You can add sub-pages: \`~/.openclaw/canvas/NAME/about/index.html\` → \`https://NAME-${instanceName}.instaclaw.bot/about/\`
+- Subdomains only -- \`https://NAME-${displayName}.instaclaw.bot/\` works, but \`https://${displayName}.instaclaw.bot/NAME\` does NOT
+- You can add sub-pages: \`~/.openclaw/canvas/NAME/about/index.html\` → \`https://NAME-${displayName}.instaclaw.bot/about/\`
 
 ## Design Defaults
 
@@ -350,11 +369,12 @@ User: "Create a site for my coffee shop menu"
 
 → \`mkdir -p ~/.openclaw/canvas/menu\`
 → Write HTML to \`~/.openclaw/canvas/menu/index.html\`
-→ URL: \`https://menu-${instanceName}.instaclaw.bot/\`
+→ URL: \`https://menu-${displayName}.instaclaw.bot/\`
 `;
 }
 
-export function generateDeploySiteScript(instanceName: string): string {
+export function generateDeploySiteScript(instanceName?: string | null): string {
+  const instanceNameValue = instanceName ? `"${instanceName}"` : "None";
   return `#!/usr/bin/env python3
 """Deploy a static site to the public canvas directory."""
 
@@ -363,7 +383,7 @@ import os
 import sys
 
 CANVAS_DIR = os.path.expanduser("~/.openclaw/canvas")
-INSTANCE_NAME = "${instanceName}"
+INSTANCE_NAME = ${instanceNameValue}
 
 
 def main():
@@ -372,6 +392,10 @@ def main():
     parser.add_argument("--file", help="Path to HTML file to deploy")
     parser.add_argument("--content", help="Raw HTML content")
     args = parser.parse_args()
+
+    if INSTANCE_NAME is None:
+        print("Error: Subdomain not configured yet. Please set your subdomain at instaclaw.bot/dashboard/settings first.", file=sys.stderr)
+        return 1
 
     target_dir = os.path.join(CANVAS_DIR, args.name)
     os.makedirs(target_dir, exist_ok=True)

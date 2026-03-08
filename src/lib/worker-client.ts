@@ -52,6 +52,14 @@ export async function enqueueTerminate(instanceId: string) {
   return callWorker("/jobs/terminate", { instanceId });
 }
 
+export async function enqueueUpdatePlan(instanceId: string, newPlan: string) {
+  return callWorker("/jobs/update-plan", { instanceId, newPlan });
+}
+
+export async function enqueueNameUpdate(instanceId: string) {
+  return callWorker("/jobs/update-instance-name", { instanceId });
+}
+
 export async function getConsoleUrl(
   instanceId: string,
   userId: string

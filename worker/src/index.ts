@@ -10,6 +10,7 @@ import "./workers/terminate";
 import "./workers/update-plan";
 import "./workers/pool-create";
 import "./workers/pool-allocate";
+import "./workers/update-instance-name";
 import { scheduleHealthChecks } from "./workers/health-check";
 import { schedulePoolMaintenance } from "./workers/pool-maintain";
 import { scheduleModelAudit } from "./workers/model-audit";

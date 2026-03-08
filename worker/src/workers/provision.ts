@@ -312,13 +312,11 @@ export const provisionWorker = new Worker(
           }
         }
 
-        // Write public-site-creator skill if instance has a name
-        if (instanceName) {
-          const skillDir = `${WORKSPACE_DIR}/skills/public-site-creator/scripts`;
-          await execSSH(ssh, `mkdir -p ${skillDir}`, "/");
-          await writeFileSSH(ssh, `${WORKSPACE_DIR}/skills/public-site-creator/SKILL.md`, generateSiteCreatorSkill(instanceName));
-          await writeFileSSH(ssh, `${skillDir}/deploy_site.py`, generateDeploySiteScript(instanceName));
-        }
+        // Write public-site-creator skill (always — handles missing instanceName gracefully)
+        const skillDir = `${WORKSPACE_DIR}/skills/public-site-creator/scripts`;
+        await execSSH(ssh, `mkdir -p ${skillDir}`, "/");
+        await writeFileSSH(ssh, `${WORKSPACE_DIR}/skills/public-site-creator/SKILL.md`, generateSiteCreatorSkill(instanceName));
+        await writeFileSSH(ssh, `${skillDir}/deploy_site.py`, generateDeploySiteScript(instanceName));
 
         // Ensure canvas directory exists for public sites
         await execSSH(ssh, "mkdir -p /opt/openclaw/home/.openclaw/canvas", "/");

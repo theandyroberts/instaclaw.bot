@@ -14,6 +14,7 @@ import {
   poolQueue,
   poolAllocateQueue,
   auditQueue,
+  updateInstanceNameQueue,
 } from "./queues";
 import { prisma } from "./lib/prisma";
 
@@ -418,6 +419,18 @@ app.post("/jobs/model-audit", async (req, res) => {
     res.json({ jobId: job.id, queue: "audit" });
   } catch (error) {
     console.error("Failed to enqueue model-audit:", error);
+    res.status(500).json({ error: "Failed to enqueue job" });
+  }
+});
+
+// Update instance name (re-deploy skill files)
+app.post("/jobs/update-instance-name", async (req, res) => {
+  try {
+    const { instanceId } = req.body;
+    const job = await updateInstanceNameQueue.add("update-instance-name", { instanceId });
+    res.json({ jobId: job.id, queue: "update-instance-name" });
+  } catch (error) {
+    console.error("Failed to enqueue update-instance-name:", error);
     res.status(500).json({ error: "Failed to enqueue job" });
   }
 });

@@ -117,13 +117,11 @@ export const configureWorkspaceWorker = new Worker(
         await writeFileSSH(ssh, `${WORKSPACE_DIR}/AGENTS.md`, agentsMd);
         await writeFileSSH(ssh, `${WORKSPACE_DIR}/MEMORY.md`, memoryMd);
 
-        // Write public-site-creator skill if instance has a name
-        if (instance.instanceName) {
-          const skillDir = `${WORKSPACE_DIR}/skills/public-site-creator/scripts`;
-          await execSSH(ssh, `mkdir -p ${skillDir}`);
-          await writeFileSSH(ssh, `${WORKSPACE_DIR}/skills/public-site-creator/SKILL.md`, generateSiteCreatorSkill(instance.instanceName));
-          await writeFileSSH(ssh, `${skillDir}/deploy_site.py`, generateDeploySiteScript(instance.instanceName));
-        }
+        // Write public-site-creator skill (always — handles missing instanceName gracefully)
+        const skillDir = `${WORKSPACE_DIR}/skills/public-site-creator/scripts`;
+        await execSSH(ssh, `mkdir -p ${skillDir}`);
+        await writeFileSSH(ssh, `${WORKSPACE_DIR}/skills/public-site-creator/SKILL.md`, generateSiteCreatorSkill(instance.instanceName));
+        await writeFileSSH(ssh, `${skillDir}/deploy_site.py`, generateDeploySiteScript(instance.instanceName));
 
         // Write cron jobs if loop is set
         if (botConfig.loop && botConfig.loop !== "just-exploring") {

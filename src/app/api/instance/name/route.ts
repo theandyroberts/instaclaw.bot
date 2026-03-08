@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { enqueueNameUpdate } from "@/lib/worker-client";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
@@ -35,10 +36,17 @@ export async function PUT(req: Request) {
       );
     }
 
-    await prisma.instance.update({
+    const instance = await prisma.instance.update({
       where: { userId: session.user.id },
       data: { instanceName: name },
     });
+
+    // Re-deploy skill files with the real subdomain (fire-and-forget)
+    if (instance.status === "active") {
+      enqueueNameUpdate(instance.id).catch((err) => {
+        console.error("Failed to enqueue name update:", err);
+      });
+    }
 
     return NextResponse.json({ instanceName: name });
   } catch (error) {

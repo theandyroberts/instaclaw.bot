@@ -5,6 +5,7 @@ import {
   generateAGENTS,
   generateCronJobs,
   generateSiteCreatorSkill,
+  generateDeploySiteScript,
 } from "../workspace-templates";
 
 const baseBotConfig = {
@@ -81,9 +82,11 @@ describe("generateAGENTS", () => {
     expect(result).toContain("mybot.instaclaw.bot");
   });
 
-  it("omits website section when instanceName is null", () => {
+  it("includes website section with setup prompt when instanceName is null", () => {
     const result = generateAGENTS(baseBotConfig, "starter", null);
-    expect(result).not.toContain("Creating Websites");
+    expect(result).toContain("Creating Websites");
+    expect(result).toContain("instaclaw.bot/dashboard/settings");
+    expect(result).not.toContain(".instaclaw.bot/");
   });
 
   it("includes loop section when loop is set", () => {
@@ -137,11 +140,44 @@ describe("generateSiteCreatorSkill", () => {
   it("includes instance name in URLs", () => {
     const result = generateSiteCreatorSkill("mybot");
     expect(result).toContain("mybot.instaclaw.bot");
+    expect(result).not.toContain("<subdomain>");
+    expect(result).not.toContain("Prerequisite");
   });
 
   it("includes step-by-step instructions", () => {
     const result = generateSiteCreatorSkill("test");
     expect(result).toContain("mkdir -p");
     expect(result).toContain("index.html");
+  });
+
+  it("uses placeholder and prerequisite when instanceName is null", () => {
+    const result = generateSiteCreatorSkill(null);
+    expect(result).toContain("<subdomain>");
+    expect(result).toContain("Prerequisite");
+    expect(result).toContain("instaclaw.bot/dashboard/settings");
+  });
+
+  it("uses placeholder when instanceName is undefined", () => {
+    const result = generateSiteCreatorSkill();
+    expect(result).toContain("<subdomain>");
+  });
+});
+
+describe("generateDeploySiteScript", () => {
+  it("sets INSTANCE_NAME when instanceName is provided", () => {
+    const result = generateDeploySiteScript("mybot");
+    expect(result).toContain('INSTANCE_NAME = "mybot"');
+    expect(result).not.toContain("INSTANCE_NAME = None");
+  });
+
+  it("sets INSTANCE_NAME to None when null", () => {
+    const result = generateDeploySiteScript(null);
+    expect(result).toContain("INSTANCE_NAME = None");
+    expect(result).toContain("Subdomain not configured yet");
+  });
+
+  it("sets INSTANCE_NAME to None when undefined", () => {
+    const result = generateDeploySiteScript();
+    expect(result).toContain("INSTANCE_NAME = None");
   });
 });
