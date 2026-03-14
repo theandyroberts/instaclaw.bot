@@ -60,6 +60,18 @@ export async function enqueueNameUpdate(instanceId: string) {
   return callWorker("/jobs/update-instance-name", { instanceId });
 }
 
+export async function listSites(instanceId: string): Promise<string[]> {
+  const response = await fetch(`${WORKER_URL}/instances/${instanceId}/sites`, {
+    headers: {
+      Authorization: `Bearer ${WORKER_SECRET}`,
+    },
+  });
+
+  if (!response.ok) return [];
+  const data = await response.json();
+  return data.sites || [];
+}
+
 export async function getConsoleUrl(
   instanceId: string,
   userId: string

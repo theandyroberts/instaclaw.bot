@@ -5,6 +5,12 @@ import { DashboardHeader } from "@/components/dashboard/header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InstanceNameForm } from "@/components/dashboard/instance-name-form";
+import { ConsoleButton } from "@/components/dashboard/console-button";
+
+const MODEL_DISPLAY_NAMES: Record<string, string> = {
+  starter: "Healer Alpha",
+  pro: "Claude Sonnet 4.5",
+};
 
 export const dynamic = 'force-dynamic';
 
@@ -12,9 +18,10 @@ export default async function SettingsPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
 
-  const instance = await prisma.instance.findUnique({
-    where: { userId: session.user.id },
-  });
+  const [instance, subscription] = await Promise.all([
+    prisma.instance.findUnique({ where: { userId: session.user.id } }),
+    prisma.subscription.findUnique({ where: { userId: session.user.id } }),
+  ]);
 
   return (
     <>
@@ -66,7 +73,7 @@ export default async function SettingsPage() {
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-gray-500">AI Model</span>
-                <span className="text-sm font-medium capitalize">{instance.llmProvider}</span>
+                <span className="text-sm font-medium">{(subscription && MODEL_DISPLAY_NAMES[subscription.plan]) || instance.llmProvider}</span>
               </div>
               {instance.telegramBotUsername && (
                 <div className="flex justify-between">
@@ -93,6 +100,20 @@ export default async function SettingsPage() {
                   {instance.healthStatus}
                 </Badge>
               </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {instance && instance.status === "active" && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Control Panel</CardTitle>
+              <CardDescription>
+                Manage skills, view logs, and configure your bot directly
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ConsoleButton />
             </CardContent>
           </Card>
         )}

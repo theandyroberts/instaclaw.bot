@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { isAdmin } from "@/lib/admin";
+import { listSites } from "@/lib/worker-client";
 import { redirect } from "next/navigation";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,8 +13,16 @@ import {
   ArrowRight,
   MessageCircle,
   Globe,
+  ExternalLink,
+  LifeBuoy,
 } from "lucide-react";
-import { ConsoleButton } from "@/components/dashboard/console-button";
+import { TelegramIcon } from "@/components/icons/telegram";
+import { SupportForm } from "@/components/dashboard/support-form";
+
+const MODEL_DISPLAY_NAMES: Record<string, string> = {
+  starter: "Healer Alpha",
+  pro: "Claude Sonnet 4.5",
+};
 
 export const dynamic = 'force-dynamic';
 
@@ -52,7 +61,7 @@ export default async function DashboardPage() {
               <p>No personal instance configured. Use the admin panels to manage the system.</p>
             </CardContent>
           </Card>
-          <p className="mt-8 text-center text-xs text-gray-300">v0.5.0</p>
+          <p className="mt-8 text-center text-xs text-gray-300">v0.6.0</p>
         </div>
       </>
     );
@@ -61,6 +70,16 @@ export default async function DashboardPage() {
   // At this point, both instance and subscription exist (non-admin was redirected, admin without instance returned early)
   if (!instance || !subscription) redirect("/onboarding");
 
+  // Fetch sites list if instance has a name
+  let sites: string[] = [];
+  if (instance.status === "active" && instance.instanceName) {
+    try {
+      sites = await listSites(instance.id);
+    } catch {
+      sites = [];
+    }
+  }
+
   return (
     <>
       <DashboardHeader
@@ -68,6 +87,7 @@ export default async function DashboardPage() {
         description={`Welcome back, ${session.user.name || "there"}!`}
       />
       <div className="p-8">
+        {/* 1. Status / Telegram Bot / Plan grid */}
         <div className="grid gap-6 md:grid-cols-3">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -127,12 +147,13 @@ export default async function DashboardPage() {
                 {subscription.plan}
               </div>
               <p className="text-xs text-gray-500">
-                AI: {instance.llmProvider || "Kimi"}
+                AI: {MODEL_DISPLAY_NAMES[subscription.plan] || instance.llmProvider || "Kimi"}
               </p>
             </CardContent>
           </Card>
         </div>
 
+        {/* 2. Telegram CTA */}
         {instance.telegramBotUsername && (
           <Card className="mt-6">
             <CardContent className="flex items-center justify-between py-6">
@@ -149,43 +170,52 @@ export default async function DashboardPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
+                  <TelegramIcon className="mr-2 h-4 w-4" />
                   Open Telegram
-                  <ArrowRight className="ml-2 h-4 w-4" />
                 </a>
               </Button>
             </CardContent>
           </Card>
         )}
 
-        {instance.status === "active" && (
-          <Card className="mt-6">
-            <CardContent className="flex items-center justify-between py-6">
-              <div>
-                <h3 className="font-semibold">Control Panel</h3>
-                <p className="text-sm text-gray-500">
-                  Manage skills, view logs, and configure your bot directly
-                </p>
-              </div>
-              <ConsoleButton />
-            </CardContent>
-          </Card>
-        )}
-
+        {/* 3. Public Sites */}
         {instance.status === "active" && instance.instanceName && (
           <Card className="mt-6">
             <CardContent className="py-6">
               <div className="flex items-start gap-3">
                 <Globe className="mt-0.5 h-5 w-5 text-gray-400" />
-                <div className="space-y-1">
+                <div className="w-full space-y-3">
                   <h3 className="font-semibold">Your Public Sites</h3>
-                  <p className="text-sm text-gray-500">
-                    Any site your bot creates is publicly accessible at{" "}
-                    <code className="rounded bg-gray-100 px-1 py-0.5 font-mono text-xs">
+                  {sites.length > 0 ? (
+                    <div className="space-y-2">
+                      {sites.map((site) => (
+                        <div
+                          key={site}
+                          className="flex items-center justify-between rounded-md border border-border px-3 py-2"
+                        >
+                          <span className="text-sm font-medium">{site}</span>
+                          <a
+                            href={`https://${site}-${instance.instanceName}.instaclaw.bot`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-1 text-sm text-primary hover:underline"
+                          >
+                            Go to site
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-400">
+                      Try asking your bot: &quot;Build me a dashboard of coffee shops in Austin&quot;
+                    </p>
+                  )}
+                  <p className="text-xs text-gray-500">
+                    Sites are accessible at{" "}
+                    <code className="rounded bg-gray-100 px-1 py-0.5 font-mono text-xs dark:bg-gray-800">
                       &lt;site&gt;-{instance.instanceName}.instaclaw.bot
                     </code>
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    Try asking your bot: &quot;Build me a dashboard of coffee shops in Austin&quot;
                   </p>
                 </div>
               </div>
@@ -217,6 +247,20 @@ export default async function DashboardPage() {
           </Card>
         )}
 
+        {/* 4. Support */}
+        <Card className="mt-6">
+          <CardHeader className="flex flex-row items-center gap-2 pb-2">
+            <LifeBuoy className="h-4 w-4 text-gray-400" />
+            <CardTitle className="text-sm font-medium text-gray-500">
+              Support
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <SupportForm />
+          </CardContent>
+        </Card>
+
+        {/* 5. Footer */}
         {instance.gatewayToken ? (
           <p className="mt-8 text-center text-xs text-gray-400">
             GW: <code className="font-mono select-all">{instance.gatewayToken}</code>
@@ -226,7 +270,7 @@ export default async function DashboardPage() {
             GW token missing from database
           </p>
         )}
-        <p className="mt-2 text-center text-xs text-gray-300">v0.5.0</p>
+        <p className="mt-2 text-center text-xs text-gray-300">v0.6.0</p>
       </div>
     </>
   );

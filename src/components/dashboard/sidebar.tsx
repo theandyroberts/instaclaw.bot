@@ -7,7 +7,6 @@ import {
   LayoutDashboard,
   Settings as SettingsIcon,
   CreditCard,
-  Wrench,
   LogOut,
   Shield,
   BarChart3,
@@ -27,12 +26,6 @@ export function Sidebar({ onboardingIncomplete, isAdmin }: SidebarProps) {
       href: "/dashboard",
       label: "Overview",
       icon: LayoutDashboard,
-    },
-    {
-      href: "/dashboard/setup",
-      label: "Setup",
-      icon: Wrench,
-      dot: onboardingIncomplete,
     },
     {
       href: "/dashboard/billing",
@@ -69,9 +62,6 @@ export function Sidebar({ onboardingIncomplete, isAdmin }: SidebarProps) {
             >
               <link.icon className="h-4 w-4" />
               {link.label}
-              {link.dot && (
-                <span className="ml-auto h-2 w-2 rounded-full bg-red-500" />
-              )}
             </Link>
           );
         })}

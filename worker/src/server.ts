@@ -435,6 +435,41 @@ app.post("/jobs/update-instance-name", async (req, res) => {
   }
 });
 
+// List public sites for an instance
+app.get("/instances/:instanceId/sites", async (req, res) => {
+  try {
+    const { instanceId } = req.params;
+    const instance = await prisma.instance.findUnique({
+      where: { id: instanceId },
+      select: { ipAddress: true, status: true },
+    });
+
+    if (!instance || instance.status !== "active" || !instance.ipAddress) {
+      res.json({ sites: [] });
+      return;
+    }
+
+    const { connectSSH, execSSH } = await import("./lib/ssh");
+    const ssh = await connectSSH(instance.ipAddress);
+    try {
+      const output = await execSSH(
+        ssh,
+        "ls /opt/openclaw/home/.openclaw/canvas/ 2>/dev/null || true"
+      );
+      const sites = output
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean);
+      res.json({ sites });
+    } finally {
+      ssh.dispose();
+    }
+  } catch (error) {
+    console.error("Failed to list sites:", error);
+    res.json({ sites: [] });
+  }
+});
+
 // Pool replenish (admin/manual)
 app.post("/jobs/pool-replenish", async (req, res) => {
   try {
