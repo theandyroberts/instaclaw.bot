@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { isAdmin } from "@/lib/admin";
 import { redirect } from "next/navigation";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,21 +21,46 @@ export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user?.id) redirect("/sign-in");
 
+  const admin = isAdmin(session.user.email);
+
   const [subscription, instance] = await Promise.all([
     prisma.subscription.findUnique({ where: { userId: session.user.id } }),
     prisma.instance.findUnique({ where: { userId: session.user.id } }),
   ]);
 
-  // No subscription or onboarding incomplete -- redirect to onboarding funnel
-  if (!subscription || subscription.status !== "active") {
-    redirect("/onboarding");
+  // Non-admin users without active subscription/instance go to onboarding
+  if (!admin) {
+    if (!subscription || subscription.status !== "active") {
+      redirect("/onboarding");
+    }
+    if (!instance || instance.onboardingStep !== "complete") {
+      redirect("/onboarding");
+    }
   }
 
-  if (!instance || instance.onboardingStep !== "complete") {
-    redirect("/onboarding");
+  // Admin without instance — show admin-only dashboard
+  if (admin && (!instance || !subscription)) {
+    return (
+      <>
+        <DashboardHeader
+          title="Admin Dashboard"
+          description="System administration"
+        />
+        <div className="p-8">
+          <Card>
+            <CardContent className="py-6 text-center text-gray-400">
+              <p>No personal instance configured. Use the admin panels to manage the system.</p>
+            </CardContent>
+          </Card>
+          <p className="mt-8 text-center text-xs text-gray-300">v0.5.0</p>
+        </div>
+      </>
+    );
   }
 
-  // Fully set up
+  // At this point, both instance and subscription exist (non-admin was redirected, admin without instance returned early)
+  if (!instance || !subscription) redirect("/onboarding");
+
   return (
     <>
       <DashboardHeader

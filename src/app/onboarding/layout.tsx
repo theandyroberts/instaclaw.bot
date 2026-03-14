@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { SignOutLink } from "@/components/sign-out-link";
 
 export const dynamic = 'force-dynamic';
 
@@ -15,7 +16,10 @@ export default async function OnboardingLayout({
         <div className="mx-auto flex max-w-2xl items-center justify-between">
           <a href="/" className="text-xl font-bold hover:opacity-80 transition-opacity"><span className="text-white">Insta</span><span className="text-primary">Claw</span></a>
           {session?.user?.email && (
-            <span className="text-sm text-gray-500">{session.user.email}</span>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-500">{session.user.email}</span>
+              <SignOutLink />
+            </div>
           )}
         </div>
       </header>
