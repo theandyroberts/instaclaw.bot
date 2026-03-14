@@ -15,10 +15,10 @@ type PlanModelConfig = { primary: string; fallbacks: string[]; llmProvider: $Enu
  *  The Record<string, ...> annotation lets consumers index with string/any from DB queries. */
 export const PLAN_MODELS: Record<string, PlanModelConfig> = {
   starter: {
-    primary: "openrouter/google/gemini-2.5-flash",
+    primary: "openrouter/healer-alpha",
     fallbacks: [
-      "openrouter/moonshotai/kimi-k2.5",
-      "openrouter/nvidia/nemotron-3-nano-30b-a3b",
+      "openrouter/hunter-alpha",
+      "openrouter/google/gemini-2.5-flash",
     ],
     llmProvider: "gemini",
   },
@@ -37,7 +37,7 @@ export const PLAN_MODELS: Record<string, PlanModelConfig> = {
  * and its dependencies for browser-based skills.
  */
 export function generateDockerfile(): string {
-  return `FROM alpine/openclaw:2026.2.26
+  return `FROM alpine/openclaw:2026.3.8
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \\
     chromium \\

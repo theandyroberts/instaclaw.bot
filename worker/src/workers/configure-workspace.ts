@@ -83,8 +83,13 @@ export const configureWorkspaceWorker = new Worker(
         }
 
         // Update model in OpenClaw format
+        // Preserve existing agent config (e.g. channels) and merge model + reasoning settings
+        const existingAgents = (config.agents as Record<string, unknown>) || {};
+        const existingDefaults = (existingAgents.defaults as Record<string, unknown>) || {};
         config.agents = {
+          ...existingAgents,
           defaults: {
+            ...existingDefaults,
             model: {
               primary: model,
               fallbacks: fallbackModels,

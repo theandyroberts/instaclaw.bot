@@ -122,8 +122,9 @@ export function UsageModelCharts({
                   label={({ name, value, cx, cy, midAngle, outerRadius }) => {
                     const RADIAN = Math.PI / 180;
                     const radius = (outerRadius as number) + 16;
-                    const x = (cx as number) + radius * Math.cos(-midAngle * RADIAN);
-                    const y = (cy as number) + radius * Math.sin(-midAngle * RADIAN);
+                    const angle = (midAngle as number) ?? 0;
+                    const x = (cx as number) + radius * Math.cos(-angle * RADIAN);
+                    const y = (cy as number) + radius * Math.sin(-angle * RADIAN);
                     return (
                       <text x={x} y={y} fill="#9ca3af" fontSize={11} textAnchor={x > (cx as number) ? "start" : "end"} dominantBaseline="central">
                         {`${name}: $${value}`}
