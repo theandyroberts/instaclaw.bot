@@ -9,7 +9,7 @@ const headlines = [
   { line1: "Get your OpenClaw Bot", line2: "Right Now!" },
   { line1: "Need a personal assistant?", line2: "Get One Today!" },
   { line1: "Your own AI on Telegram.", line2: "Live in Minutes." },
-  { line1: "Skip the tech headaches.", line2: "Just Chat." },
+  { line1: "Skip the tech headaches.", line2: "Just Get Things Done." },
 ];
 
 export function Hero() {

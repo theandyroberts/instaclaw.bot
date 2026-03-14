@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
-import { ComingSoonGate } from "@/components/coming-soon-gate";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -31,7 +30,7 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <SessionProvider>
-          <ComingSoonGate>{children}</ComingSoonGate>
+          {children}
         </SessionProvider>
       </body>
     </html>

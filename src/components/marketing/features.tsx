@@ -66,7 +66,7 @@ export function Features() {
       <div className="mx-auto max-w-6xl">
         <div className="mb-12 text-center">
           <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
-            Everything You Need in a Chat
+            Everything You Need to Grow Your Business
           </h2>
           <p className="mx-auto max-w-2xl text-muted-foreground">
             Your personal AI assistant can handle research, writing, coding, and more --
