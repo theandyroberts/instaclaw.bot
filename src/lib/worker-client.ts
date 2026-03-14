@@ -61,15 +61,24 @@ export async function enqueueNameUpdate(instanceId: string) {
 }
 
 export async function listSites(instanceId: string): Promise<string[]> {
-  const response = await fetch(`${WORKER_URL}/instances/${instanceId}/sites`, {
-    headers: {
-      Authorization: `Bearer ${WORKER_SECRET}`,
-    },
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 5000);
+  try {
+    const response = await fetch(`${WORKER_URL}/instances/${instanceId}/sites`, {
+      headers: {
+        Authorization: `Bearer ${WORKER_SECRET}`,
+      },
+      signal: controller.signal,
+    });
 
-  if (!response.ok) return [];
-  const data = await response.json();
-  return data.sites || [];
+    if (!response.ok) return [];
+    const data = await response.json();
+    return data.sites || [];
+  } catch {
+    return [];
+  } finally {
+    clearTimeout(timeout);
+  }
 }
 
 export async function getConsoleUrl(
