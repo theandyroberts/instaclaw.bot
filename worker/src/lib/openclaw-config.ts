@@ -25,7 +25,7 @@ export const PLAN_MODELS: Record<string, PlanModelConfig> = {
   pro: {
     primary: "openrouter/anthropic/claude-sonnet-4.5",
     fallbacks: [
-      "openrouter/liquid/lfm2-8b-a1b",
+      "openrouter/healer-alpha",
       "openrouter/nvidia/nemotron-3-nano-30b-a3b",
     ],
     llmProvider: "claude",
