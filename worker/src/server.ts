@@ -1,6 +1,8 @@
 import express from "express";
 import * as crypto from "crypto";
+import * as fs from "fs";
 import * as http from "http";
+import * as path from "path";
 import httpProxy from "http-proxy";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import {
@@ -236,6 +238,18 @@ app.use((req, res, next) => {
   } else {
     next();
   }
+});
+
+// --- Public reports route (no auth) ---
+const REPORTS_DIR = path.join(__dirname, "..", "reports");
+app.get("/reports/:slug", (req, res) => {
+  const slug = req.params.slug.replace(/[^a-z0-9-]/gi, "");
+  const file = path.join(REPORTS_DIR, `${slug}.html`);
+  if (!fs.existsSync(file)) {
+    res.status(404).send("Report not found");
+    return;
+  }
+  res.type("html").send(fs.readFileSync(file, "utf-8"));
 });
 
 // --- Standard body parsing + bearer auth for API routes ---

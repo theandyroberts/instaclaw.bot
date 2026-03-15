@@ -35,6 +35,23 @@ interface Plan {
 
 const plans: Plan[] = [
   {
+    id: "pro",
+    name: "Pro",
+    description: "For power users who want the best AI models",
+    price: "$49",
+    period: "/month",
+    features: [
+      "Everything in Starter",
+      "Access to foundation models",
+      "100 AI images per day",
+      "Personal web server*",
+      "Advanced AI configuration",
+      "Priority support",
+    ],
+    highlight: false,
+    selectable: true,
+  },
+  {
     id: "starter",
     name: "Starter",
     description: "Perfect for getting started with AI on Telegram",
@@ -49,23 +66,6 @@ const plans: Plan[] = [
       "Dedicated private server",
       "24/7 uptime",
       "Email support",
-    ],
-    highlight: false,
-    selectable: true,
-  },
-  {
-    id: "pro",
-    name: "Pro",
-    description: "For power users who want the best AI models",
-    price: "$49",
-    period: "/month",
-    features: [
-      "Everything in Starter",
-      "Access to foundation models",
-      "100 AI images per day",
-      "Personal web server*",
-      "Advanced AI configuration",
-      "Priority support",
     ],
     highlight: true,
     selectable: true,
@@ -91,7 +91,7 @@ const plans: Plan[] = [
 ];
 
 export function Pricing() {
-  const [selectedId, setSelectedId] = useState<string>("pro");
+  const [selectedId, setSelectedId] = useState<string>("starter");
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleCardClick = (plan: Plan) => {

@@ -1,6 +1,6 @@
 import { stripe, getPlanFromPriceId } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
-import { enqueueAllocate, enqueueSuspend, enqueueUnsuspend } from "@/lib/worker-client";
+import { enqueueAllocate, enqueueSuspend, enqueueUnsuspend, enqueueUpdatePlan } from "@/lib/worker-client";
 import { sendEmail, instanceSuspendedEmail } from "@/lib/email";
 import { headers } from "next/headers";
 import type Stripe from "stripe";
@@ -213,6 +213,11 @@ export async function POST(req: Request) {
           const previousStatus = sub.status;
           const period = getSubscriptionPeriod(subscription);
 
+          // Detect plan change (upgrade or downgrade)
+          const newPriceId = subscription.items.data[0]?.price.id;
+          const newPlan = newPriceId ? getPlanFromPriceId(newPriceId) : null;
+          const planChanged = newPlan && newPlan !== sub.plan;
+
           await prisma.subscription.update({
             where: { id: sub.id },
             data: {
@@ -220,9 +225,13 @@ export async function POST(req: Request) {
               cancelAtPeriodEnd: subscription.cancel_at_period_end,
               currentPeriodStart: period.currentPeriodStart,
               currentPeriodEnd: period.currentPeriodEnd,
+              ...(planChanged
+                ? { plan: newPlan, stripePriceId: newPriceId }
+                : {}),
             },
           });
 
+          // Handle reactivation from canceled/past_due
           if (
             (previousStatus === "canceled" || previousStatus === "past_due") &&
             subscription.status === "active" &&
@@ -240,6 +249,21 @@ export async function POST(req: Request) {
               await enqueueUnsuspend(sub.user.instance.id);
             } catch (err) {
               console.error("Failed to enqueue unsuspend job:", err);
+            }
+          }
+
+          // Handle plan change — update OpenRouter key limit + reconfigure
+          if (
+            planChanged &&
+            sub.user.instance?.status === "active"
+          ) {
+            try {
+              await enqueueUpdatePlan(sub.user.instance.id, newPlan);
+              console.log(
+                `Plan changed ${sub.plan} → ${newPlan} for instance ${sub.user.instance.id}`
+              );
+            } catch (err) {
+              console.error("Failed to enqueue update-plan job:", err);
             }
           }
         }

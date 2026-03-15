@@ -137,7 +137,6 @@ export const poolCreateWorker = new Worker(
         const gatewayToken = crypto.randomBytes(32).toString("hex");
         const compose = generateDockerCompose(gatewayToken, {
           openrouterApiKey: process.env.OPENROUTER_API_KEY,
-          moonshotApiKey: process.env.KIMI_API_KEY,
           braveApiKey: process.env.BRAVE_API_KEY,
           geminiApiKey: process.env.GEMINI_API_KEY,
         });
@@ -154,15 +153,11 @@ export const poolCreateWorker = new Worker(
           "/opt/openclaw"
         );
 
-        // 10. Create workspace directory, canvas directory + media symlink
-        log("Creating workspace and media symlink...");
+        // 10. Create workspace, canvas, and media directories
+        log("Creating workspace, canvas, and media directories...");
         await execSSH(ssh, "mkdir -p /opt/openclaw/home/.openclaw/workspace", "/");
         await execSSH(ssh, "mkdir -p /opt/openclaw/home/.openclaw/canvas", "/");
-        await execSSH(
-          ssh,
-          "ln -sfn /opt/openclaw/home/.openclaw/workspace /opt/openclaw/home/.openclaw/media",
-          "/"
-        );
+        await execSSH(ssh, "mkdir -p /opt/openclaw/home/.openclaw/media", "/");
 
         // 11. Set up console bridge (socat + iptables) for web UI access
         log("Setting up console bridge...");
