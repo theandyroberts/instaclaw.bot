@@ -109,6 +109,7 @@ function parseCookies(header: string | undefined): Record<string, string> {
 // ---------------------------------------------------------------------------
 
 const app = express();
+const FAVICON_PATH = path.join(__dirname, "..", "favicon.ico");
 
 // --- Subdomain proxy middleware (runs BEFORE json parsing + bearer auth) ---
 app.use(async (req, res, next) => {
@@ -117,6 +118,16 @@ app.use(async (req, res, next) => {
 
   // ---- PUBLIC SITE ROUTE (no auth required) ----
   if (route.type === "site") {
+    // Serve InstaClaw favicon for all canvas sites
+    if (req.url === "/favicon.ico") {
+      if (fs.existsSync(FAVICON_PATH)) {
+        res.type("image/x-icon").send(fs.readFileSync(FAVICON_PATH));
+      } else {
+        res.status(404).end();
+      }
+      return;
+    }
+
     const instance = await prisma.instance.findFirst({
       where: { instanceName: route.name, status: "active" },
       select: { id: true, tailscaleIp: true, gatewayToken: true },
@@ -237,6 +248,15 @@ app.use((req, res, next) => {
     consoleProxy(req, res, next);
   } else {
     next();
+  }
+});
+
+// --- Favicon (no auth — serves for reports + canvas sites) ---
+app.get("/favicon.ico", (_req, res) => {
+  if (fs.existsSync(FAVICON_PATH)) {
+    res.type("image/x-icon").send(fs.readFileSync(FAVICON_PATH));
+  } else {
+    res.status(404).end();
   }
 });
 

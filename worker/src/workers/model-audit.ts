@@ -417,6 +417,25 @@ function capTags(c: ModelCaps): string {
   ].filter(Boolean).join(" ");
 }
 
+const CHECK = `<span class="cap-y">✓</span>`;
+const CROSS = `<span class="cap-n">✗</span>`;
+
+function capCols(c: ModelCaps): string {
+  const other: string[] = [];
+  if (c.imageGen) other.push("img-gen");
+  if (c.audio) other.push("audio");
+  return [
+    `<td class="cap">${c.tools ? CHECK : CROSS}</td>`,
+    `<td class="cap">${c.vision ? CHECK : CROSS}</td>`,
+    `<td class="cap">${c.reasoning ? CHECK : CROSS}</td>`,
+    `<td class="cap">${c.structuredOutput ? CHECK : CROSS}</td>`,
+    `<td class="cap">${c.jsonMode ? CHECK : CROSS}</td>`,
+    `<td class="cap-other">${other.length > 0 ? other.join(", ") : ""}</td>`,
+  ].join("");
+}
+
+const CAP_HEADERS = `<th class="cap">Tools</th><th class="cap">Vision</th><th class="cap">Reason</th><th class="cap">Struct</th><th class="cap">JSON</th><th class="cap">Other</th>`;
+
 function hopsBadge(score: number): string {
   const cls = score >= 80 ? "hops-hi" : score >= 50 ? "hops-md" : "hops-lo";
   return `<span class="hops ${cls}">${score}</span>`;
@@ -444,7 +463,7 @@ export function writeReportPage(result: AuditResult): string {
     .warn-box li { color: var(--yellow); font-size: 0.85rem; padding: 0.2rem 0; font-family: ui-monospace, monospace; }
     .ok-box { background: #0d1a0d; border: 1px solid var(--green); border-radius: 8px; padding: 0.75rem 1rem; margin-bottom: 1.5rem; color: var(--green); font-weight: 600; font-size: 0.9rem; }
     table { width: 100%; border-collapse: collapse; font-size: 0.8rem; background: var(--card); border-radius: 8px; overflow: hidden; margin-bottom: 0.5rem; }
-    th { text-align: left; padding: 0.5rem 0.6rem; color: var(--dim); font-weight: 600; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border); background: var(--bg); white-space: nowrap; }
+    th { text-align: left; padding: 0.5rem 0.6rem; color: var(--dim); font-weight: 600; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; border-bottom: 1px solid var(--border); background: var(--bg); white-space: nowrap; vertical-align: bottom; }
     td { padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--border); font-family: ui-monospace, monospace; font-size: 0.78rem; }
     tr:last-child td { border-bottom: none; }
     tr:hover { background: rgba(88,166,255,0.04); }
@@ -462,6 +481,10 @@ export function writeReportPage(result: AuditResult): string {
     .hops-hi { background: #0d1a0d; color: var(--green); border: 1px solid var(--green); }
     .hops-md { background: #1c1206; color: var(--yellow); border: 1px solid var(--yellow); }
     .hops-lo { background: #2d0b0b; color: var(--red); border: 1px solid var(--red); }
+    .cap { text-align: center; width: 3.5rem; }
+    .cap-y { color: var(--green); font-weight: 700; }
+    .cap-n { color: #484f58; }
+    .cap-other { font-size: 0.72rem; color: var(--dim); white-space: nowrap; }
   `;
 
   const html = `<!DOCTYPE html>
@@ -469,11 +492,12 @@ export function writeReportPage(result: AuditResult): string {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Model Audit — ${now.toISOString().slice(0, 10)}</title>
+  <title>InstaClaw OpenRouter Model Audit — ${now.toISOString().slice(0, 10)}</title>
+  <link rel="icon" href="https://instaclaw.bot/favicon.ico" type="image/x-icon">
   <style>${css}</style>
 </head>
 <body>
-  <h1>OpenRouter Model Audit</h1>
+  <h1>InstaClaw OpenRouter Model Audit</h1>
   <div class="meta">${now.toISOString()} · <b>${result.totalModels}</b> models indexed</div>
 
 ${warnings.length > 0
@@ -482,7 +506,7 @@ ${warnings.length > 0
 
   <h2>Configured Models</h2>
   <table>
-    <tr><th>Hops</th><th>Plan</th><th>Role</th><th>Model ID</th><th>Status</th><th class="r">In $/M</th><th class="r">Out $/M</th><th class="r">Ctx</th><th class="r">Max Out</th><th>Capabilities</th></tr>
+    <tr><th>Hops<br>Score</th><th>Plan</th><th>Role</th><th>Model ID</th><th>Status</th><th class="r">In $/M</th><th class="r">Out $/M</th><th class="r">Ctx</th><th class="r">Max Out</th>${CAP_HEADERS}</tr>
 ${configured.map((c) => `    <tr>
       <td>${c.found ? hopsBadge(c.hops) : "—"}</td>
       <td>${esc(c.plan)}</td><td>${esc(c.role)}</td><td>${esc(c.id)}</td>
@@ -491,44 +515,44 @@ ${configured.map((c) => `    <tr>
       <td class="r">${c.found ? "$" + c.outputPer1M.toFixed(2) : "—"}</td>
       <td class="r">${c.found ? fmtCtx(c.context) : "—"}</td>
       <td class="r">${c.maxCompletion ? fmtCtx(c.maxCompletion) : "—"}</td>
-      <td>${c.found ? capTags(c.caps) : "—"}</td>
+      ${c.found ? capCols(c.caps) : '<td colspan="6">—</td>'}
     </tr>`).join("\n")}
   </table>
 
   <h2>Free Multimodal Models</h2>
   <div class="legend">Ranked by InstaClaw Hops Score. Current starter highlighted.</div>
   <table>
-    <tr><th>Hops</th><th>#</th><th>Model ID</th><th>Params</th><th class="r">Context</th><th>Modality</th><th>Capabilities</th></tr>
+    <tr><th>Hops<br>Score</th><th>#</th><th>Model ID</th><th>Params</th><th class="r">Context</th><th>Modality</th>${CAP_HEADERS}</tr>
 ${freeMultimodal.map((m, i) => {
     const isCurrent = m.id === toORId(PLAN_MODELS.starter.primary);
     return `    <tr${isCurrent ? ' class="cur"' : ""}>
       <td>${hopsBadge(m.hops)}</td>
       <td>${i + 1}</td><td>${esc(m.id)}</td><td>${fmtParams(m.params)}</td>
       <td class="r">${fmtCtx(m.context)}</td><td>${esc(m.modality)}</td>
-      <td>${capTags(m.caps)}</td>
+      ${capCols(m.caps)}
     </tr>`;
   }).join("\n")}
   </table>
 
   <h2>Top 10 Cheapest Paid <span style="font-weight:normal;color:var(--dim)">(8k+ ctx)</span></h2>
   <table>
-    <tr><th>Hops</th><th>#</th><th>Model ID</th><th class="r">In $/M</th><th class="r">Out $/M</th><th class="r">Ctx</th><th>Capabilities</th></tr>
+    <tr><th>Hops<br>Score</th><th>#</th><th>Model ID</th><th class="r">In $/M</th><th class="r">Out $/M</th><th class="r">Ctx</th>${CAP_HEADERS}</tr>
 ${cheapestPaid.map((m, i) => `    <tr>
       <td>${hopsBadge(m.hops)}</td>
       <td>${i + 1}</td><td>${esc(m.id)}</td>
       <td class="r">$${m.inputPer1M.toFixed(3)}</td><td class="r">$${m.outputPer1M.toFixed(3)}</td>
-      <td class="r">${fmtCtx(m.context)}</td><td>${capTags(m.caps)}</td>
+      <td class="r">${fmtCtx(m.context)}</td>${capCols(m.caps)}
     </tr>`).join("\n")}
   </table>
 
   <h2>Mid-Tier Value <span style="font-weight:normal;color:var(--dim)">($0.10–$1.00/M, 32k+ ctx)</span></h2>
   <table>
-    <tr><th>Hops</th><th>#</th><th>Model ID</th><th class="r">In $/M</th><th class="r">Out $/M</th><th class="r">Ctx</th><th>Capabilities</th></tr>
+    <tr><th>Hops<br>Score</th><th>#</th><th>Model ID</th><th class="r">In $/M</th><th class="r">Out $/M</th><th class="r">Ctx</th>${CAP_HEADERS}</tr>
 ${midTier.map((m, i) => `    <tr>
       <td>${hopsBadge(m.hops)}</td>
       <td>${i + 1}</td><td>${esc(m.id)}</td>
       <td class="r">$${m.inputPer1M.toFixed(3)}</td><td class="r">$${m.outputPer1M.toFixed(3)}</td>
-      <td class="r">${fmtCtx(m.context)}</td><td>${capTags(m.caps)}</td>
+      <td class="r">${fmtCtx(m.context)}</td>${capCols(m.caps)}
     </tr>`).join("\n")}
   </table>
 
