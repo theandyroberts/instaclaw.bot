@@ -65,7 +65,7 @@ const plans: Plan[] = [
       "Everything in Standard",
       "Access to foundation models",
       "100 AI images per day",
-      "Personal web server*",
+      "Personal web server",
       "Advanced AI configuration",
       "Priority support",
     ],
@@ -263,10 +263,6 @@ export function Pricing() {
               );
             })}
           </div>
-
-          <p className="mt-3 text-center text-xs text-muted-foreground/60">
-            *Personal web server coming soon
-          </p>
 
           <div className="mx-auto mt-8 max-w-md">
             <Button
