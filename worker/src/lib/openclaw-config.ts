@@ -49,6 +49,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \\
     chromium-driver \\
     fonts-freefont-ttf \\
     && rm -rf /var/lib/apt/lists/*
+RUN npm install -g mcporter
 USER node
 `;
 }
@@ -176,22 +177,36 @@ export function buildOpenClawConfigObject(opts: {
     messages: { ackReactionScope: "group-mentions" },
     plugins: { entries: { telegram: { enabled: true } } },
     cron: { enabled: true },
-    skills: { entries: { "nano-banana-pro": { enabled: true } } },
+    skills: { entries: { "nano-banana-pro": { enabled: true }, mcporter: { enabled: true } } },
+    qmd: { mcporter: { enabled: true, startDaemon: true } },
   };
 
-  // Add Composio MCP server for app integrations (per-user isolation via userId)
-  if (process.env.COMPOSIO_API_KEY && opts.userId) {
-    config.mcpServers = {
-      composio: {
-        url: `https://mcp.composio.dev/api/v2/mcp?userId=${opts.userId}`,
-        headers: {
-          "x-api-key": process.env.COMPOSIO_API_KEY,
-        },
-      },
-    };
-  }
-
   return config;
+}
+
+/**
+ * Generate mcporter.json config for Composio MCP integration.
+ * Each user gets their own Composio entity via the userId parameter.
+ * Written to /opt/openclaw/home/.openclaw/config/mcporter.json
+ */
+export function generateMcporterConfig(userId: string): string | null {
+  const apiKey = process.env.COMPOSIO_API_KEY;
+  if (!apiKey) return null;
+
+  const config = {
+    servers: {
+      composio: {
+        transport: "http",
+        url: `https://mcp.composio.dev/api/v2/mcp?userId=${userId}`,
+        headers: {
+          "x-api-key": apiKey,
+        },
+        description: "Composio — 800+ app integrations (Gmail, Calendar, Slack, Notion, and more)",
+      },
+    },
+  };
+
+  return JSON.stringify(config, null, 2);
 }
 
 /**

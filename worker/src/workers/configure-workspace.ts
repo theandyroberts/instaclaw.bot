@@ -2,7 +2,7 @@ import { Worker } from "bullmq";
 import { redis } from "../queues";
 import { prisma } from "../lib/prisma";
 import { connectSSH, execSSH, writeFileSSH } from "../lib/ssh";
-import { generateDockerCompose, PLAN_MODELS, buildOpenClawConfigObject } from "../lib/openclaw-config";
+import { generateDockerCompose, PLAN_MODELS, buildOpenClawConfigObject, generateMcporterConfig } from "../lib/openclaw-config";
 import {
   generateSOUL,
   generateUSER,
@@ -133,6 +133,15 @@ export const configureWorkspaceWorker = new Worker(
             await writeFileSSH(ssh, `${cronDir}/jobs.json`, cronJson);
             console.log(`[configure-workspace:${job.id}] Wrote cron/jobs.json for loop: ${botConfig.loop}`);
           }
+        }
+
+        // Write mcporter config for Composio integration
+        const mcporterJson = generateMcporterConfig(user.id);
+        if (mcporterJson) {
+          const mcporterDir = "/opt/openclaw/home/.openclaw/config";
+          await execSSH(ssh, `mkdir -p ${mcporterDir}`);
+          await writeFileSSH(ssh, `${mcporterDir}/mcporter.json`, mcporterJson);
+          console.log(`[configure-workspace:${job.id}] Wrote mcporter.json for Composio`);
         }
 
         // Regenerate docker-compose preserving per-instance keys

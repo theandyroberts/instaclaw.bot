@@ -2,7 +2,7 @@ import { Worker } from "bullmq";
 import { redis, provisionQueue, poolQueue } from "../queues";
 import { prisma } from "../lib/prisma";
 import { connectSSH, execSSH, writeFileSSH } from "../lib/ssh";
-import { generateDockerCompose, PLAN_MODELS, buildOpenClawConfigObject } from "../lib/openclaw-config";
+import { generateDockerCompose, PLAN_MODELS, buildOpenClawConfigObject, generateMcporterConfig } from "../lib/openclaw-config";
 import { renameDroplet } from "../lib/digitalocean";
 import { createAPIKey, deleteAPIKey, PLAN_BUDGETS } from "../lib/openrouter";
 import {
@@ -196,6 +196,15 @@ export const poolAllocateWorker = new Worker(
 
         // Ensure canvas directory exists for public sites
         await execSSH(ssh, "mkdir -p /opt/openclaw/home/.openclaw/canvas", "/");
+
+        // Write mcporter config for Composio integration
+        const mcporterJson = generateMcporterConfig(userId);
+        if (mcporterJson) {
+          const mcporterDir = "/opt/openclaw/home/.openclaw/config";
+          await execSSH(ssh, `mkdir -p ${mcporterDir}`, "/");
+          await writeFileSSH(ssh, `${mcporterDir}/mcporter.json`, mcporterJson);
+          log("Wrote mcporter.json for Composio");
+        }
 
         log("Workspace configured");
 

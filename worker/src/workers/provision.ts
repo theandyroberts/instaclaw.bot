@@ -8,7 +8,7 @@ import {
   getDropletPublicIP,
 } from "../lib/digitalocean";
 import { connectSSH, execSSH, writeFileSSH } from "../lib/ssh";
-import { generateDockerCompose, generateDockerfile, PLAN_MODELS, buildOpenClawConfigObject } from "../lib/openclaw-config";
+import { generateDockerCompose, generateDockerfile, PLAN_MODELS, buildOpenClawConfigObject, generateMcporterConfig } from "../lib/openclaw-config";
 import {
   generateSOUL,
   generateUSER,
@@ -307,6 +307,15 @@ export const provisionWorker = new Worker(
         // Create media directory for OpenClaw to store downloaded/generated media
         // (Must be a real directory, not a symlink — symlinks break inside Docker container)
         await execSSH(ssh, "mkdir -p /opt/openclaw/home/.openclaw/media", "/");
+
+        // Write mcporter config for Composio integration
+        const mcporterJson = generateMcporterConfig(userId);
+        if (mcporterJson) {
+          const mcporterDir = "/opt/openclaw/home/.openclaw/config";
+          await execSSH(ssh, `mkdir -p ${mcporterDir}`, "/");
+          await writeFileSSH(ssh, `${mcporterDir}/mcporter.json`, mcporterJson);
+          console.log(`[provision:${job.id}] Wrote mcporter.json for Composio`);
+        }
 
         // --- INSTALL UV (needed by nano-banana-pro image generation skill) ---
         console.log(`[provision:${job.id}] Installing uv...`);
