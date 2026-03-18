@@ -188,6 +188,9 @@ export function buildOpenClawConfigObject(opts: {
  * Each user gets their own Composio entity via the userId parameter.
  * Written to /opt/openclaw/home/.openclaw/config/mcporter.json
  */
+/** Composio MCP server ID — created via composio.mcp.create('instaclaw', { toolkits: [...] }) */
+const COMPOSIO_MCP_SERVER_ID = "8ddaa1c1-ae90-43cd-9528-7ec9da5626e6";
+
 export function generateMcporterConfig(userId: string): string | null {
   const apiKey = process.env.COMPOSIO_API_KEY;
   if (!apiKey) return null;
@@ -196,7 +199,7 @@ export function generateMcporterConfig(userId: string): string | null {
     servers: {
       composio: {
         transport: "http",
-        url: `https://mcp.composio.dev/api/v2/mcp?userId=${userId}`,
+        url: `https://backend.composio.dev/v3/mcp/${COMPOSIO_MCP_SERVER_ID}?include_composio_helper_actions=true&user_id=${userId}`,
         headers: {
           "x-api-key": apiKey,
         },
