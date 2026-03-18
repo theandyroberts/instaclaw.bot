@@ -111,10 +111,72 @@ function parseCookies(header: string | undefined): Record<string, string> {
 const app = express();
 const FAVICON_PATH = path.join(__dirname, "..", "favicon.ico");
 
+// --- Caddy on-demand TLS check (unauthenticated — Caddy calls this) ---
+app.get("/domain-check", async (req, res) => {
+  const domain = typeof req.query.domain === "string" ? req.query.domain.toLowerCase() : null;
+  if (!domain) { res.status(400).end(); return; }
+  const record = await prisma.customDomain.findUnique({
+    where: { domain },
+    select: { id: true },
+  });
+  res.status(record ? 200 : 404).end();
+});
+
 // --- Subdomain proxy middleware (runs BEFORE json parsing + bearer auth) ---
 app.use(async (req, res, next) => {
   const route = parseSubdomain(req.headers.host);
-  if (!route) return next();
+
+  // --- CUSTOM DOMAIN ROUTE (non-instaclaw.bot hostname) ---
+  if (!route) {
+    const hostname = req.headers.host?.split(":")[0]?.toLowerCase();
+    if (hostname && hostname !== "localhost" && hostname !== "127.0.0.1" && !hostname.endsWith(".instaclaw.bot")) {
+      const customDomain = await prisma.customDomain.findUnique({
+        where: { domain: hostname },
+        include: {
+          instance: {
+            select: { id: true, tailscaleIp: true, gatewayToken: true, status: true },
+          },
+        },
+      });
+
+      if (
+        customDomain?.instance.status === "active" &&
+        customDomain.instance.tailscaleIp &&
+        customDomain.instance.gatewayToken
+      ) {
+        // Lazy-update status to active on first successful proxy
+        if (customDomain.status === "pending") {
+          prisma.customDomain.update({
+            where: { id: customDomain.id },
+            data: { status: "active" },
+          }).catch(() => {});
+        }
+
+        if (req.url === "/favicon.ico") {
+          if (fs.existsSync(FAVICON_PATH)) {
+            res.type("image/x-icon").send(fs.readFileSync(FAVICON_PATH));
+          } else {
+            res.status(404).end();
+          }
+          return;
+        }
+
+        const originalPath = req.url || "/";
+        req.url = `/__openclaw__/canvas/${customDomain.siteSlug}${originalPath}`;
+        req.headers.authorization = `Bearer ${customDomain.instance.gatewayToken}`;
+        delete req.headers["x-forwarded-for"];
+        delete req.headers["x-forwarded-proto"];
+        delete req.headers["x-forwarded-host"];
+        delete req.headers["x-forwarded-port"];
+        delete req.headers["x-real-ip"];
+        req.headers.host = "127.0.0.1:18789";
+        req.headers.origin = "http://127.0.0.1:18789";
+        (req as any).__proxyTarget = `http://${customDomain.instance.tailscaleIp}:18789`;
+        return next();
+      }
+    }
+    return next();
+  }
 
   // ---- PUBLIC SITE ROUTE (no auth required) ----
   if (route.type === "site") {

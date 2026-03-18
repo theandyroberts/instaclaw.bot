@@ -5,6 +5,7 @@ import { DashboardHeader } from "@/components/dashboard/header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { InstanceNameForm } from "@/components/dashboard/instance-name-form";
+import { CustomDomainsForm } from "@/components/dashboard/custom-domains-form";
 import { ConsoleButton } from "@/components/dashboard/console-button";
 
 const MODEL_DISPLAY_NAMES: Record<string, string> = {
@@ -23,6 +24,13 @@ export default async function SettingsPage() {
     prisma.instance.findUnique({ where: { userId: session.user.id } }),
     prisma.subscription.findUnique({ where: { userId: session.user.id } }),
   ]);
+
+  const customDomains = instance
+    ? await prisma.customDomain.findMany({
+        where: { instanceId: instance.id },
+        orderBy: { createdAt: "desc" },
+      })
+    : [];
 
   return (
     <>
@@ -55,6 +63,30 @@ export default async function SettingsPage() {
             </CardHeader>
             <CardContent>
               <InstanceNameForm currentName={instance.instanceName} />
+            </CardContent>
+          </Card>
+        )}
+
+        {instance && instance.status === "active" && instance.instanceName && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Custom Domains</CardTitle>
+              <CardDescription>
+                Point your own domain to any of your published sites.
+                SSL certificates are provisioned automatically.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CustomDomainsForm
+                instanceId={instance.id}
+                initialDomains={customDomains.map((d) => ({
+                  id: d.id,
+                  domain: d.domain,
+                  siteSlug: d.siteSlug,
+                  status: d.status,
+                  createdAt: d.createdAt.toISOString(),
+                }))}
+              />
             </CardContent>
           </Card>
         )}

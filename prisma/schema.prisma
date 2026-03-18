@@ -110,8 +110,28 @@ model Instance {
   updatedAt           DateTime       @updatedAt
   user                User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   usageSnapshots      LlmUsageSnapshot[]
+  customDomains       CustomDomain[]
 
   @@map("instances")
+}
+
+model CustomDomain {
+  id          String             @id @default(cuid())
+  domain      String             @unique
+  siteSlug    String
+  instanceId  String
+  status      CustomDomainStatus @default(pending)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  instance    Instance           @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+
+  @@map("custom_domains")
+}
+
+enum CustomDomainStatus {
+  pending
+  active
+  error
 }
 
 enum Plan {
