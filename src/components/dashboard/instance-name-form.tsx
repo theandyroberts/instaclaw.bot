@@ -116,9 +116,17 @@ export function InstanceNameForm({ currentName }: InstanceNameFormProps) {
           </code>
         </p>
       )}
-      <p className="text-xs text-amber-500">
-        Choose carefully -- this cannot be changed later.
-      </p>
+      <div className="rounded-md bg-amber-500/10 border border-amber-500/20 p-3 space-y-1.5">
+        <p className="text-xs font-medium text-amber-500">
+          Choose carefully -- this cannot be changed later.
+        </p>
+        <ul className="text-xs text-gray-400 space-y-0.5 list-disc list-inside">
+          <li>Keep it short -- it appears in every site URL</li>
+          <li>Use your brand, business name, or bot name</li>
+          <li>Make it something people can say out loud or type from memory</li>
+          <li>Avoid random numbers -- <span className="font-mono">acme</span> reads better than <span className="font-mono">acme2024</span></li>
+        </ul>
+      </div>
     </div>
   );
 }
