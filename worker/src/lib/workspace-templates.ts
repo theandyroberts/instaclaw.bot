@@ -7,6 +7,7 @@ interface BotConfig {
   useCases: string[];
   extraContext?: string;
   loop?: string;
+  timezone?: string;
 }
 
 const LOOP_LABELS: Record<string, string> = {
@@ -127,6 +128,14 @@ ${botConfig.userName}
     content += `
 ## About
 ${botConfig.userDescription}
+`;
+  }
+
+  if (botConfig.timezone) {
+    content += `
+## Timezone
+${botConfig.timezone}
+All times should be displayed in this timezone unless the user specifies otherwise.
 `;
   }
 
@@ -347,6 +356,10 @@ export function generateMEMORY(botConfig: BotConfig): string {
 
   if (botConfig.userDescription) {
     content += `- About: ${botConfig.userDescription}\n`;
+  }
+
+  if (botConfig.timezone) {
+    content += `- Timezone: ${botConfig.timezone}\n`;
   }
 
   if (botConfig.useCases.length > 0) {
