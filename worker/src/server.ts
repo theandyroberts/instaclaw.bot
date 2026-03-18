@@ -475,16 +475,16 @@ app.get("/instances/:instanceId/sites", async (req, res) => {
     const { instanceId } = req.params;
     const instance = await prisma.instance.findUnique({
       where: { id: instanceId },
-      select: { ipAddress: true, status: true },
+      select: { tailscaleIp: true, status: true },
     });
 
-    if (!instance || instance.status !== "active" || !instance.ipAddress) {
+    if (!instance || instance.status !== "active" || !instance.tailscaleIp) {
       res.json({ sites: [] });
       return;
     }
 
     const { connectSSH, execSSH } = await import("./lib/ssh");
-    const ssh = await connectSSH(instance.ipAddress);
+    const ssh = await connectSSH(instance.tailscaleIp);
     try {
       const output = await execSSH(
         ssh,
