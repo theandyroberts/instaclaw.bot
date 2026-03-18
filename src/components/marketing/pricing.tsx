@@ -37,23 +37,6 @@ interface Plan {
 
 const plans: Plan[] = [
   {
-    id: "pro",
-    name: "Pro",
-    description: "For power users who want the best AI models",
-    monthlyPrice: 59,
-    yearlyPrice: 588,
-    features: [
-      "Everything in Standard",
-      "Access to foundation models",
-      "100 AI images per day",
-      "Personal web server*",
-      "Advanced AI configuration",
-      "Priority support",
-    ],
-    highlight: false,
-    selectable: true,
-  },
-  {
     id: "standard",
     name: "Standard",
     description: "Perfect for getting started with AI on Telegram",
@@ -68,6 +51,23 @@ const plans: Plan[] = [
       "Dedicated private server",
       "24/7 uptime",
       "Email support",
+    ],
+    highlight: false,
+    selectable: true,
+  },
+  {
+    id: "pro",
+    name: "Pro",
+    description: "For power users who want the best AI models",
+    monthlyPrice: 59,
+    yearlyPrice: 588,
+    features: [
+      "Everything in Standard",
+      "Access to foundation models",
+      "100 AI images per day",
+      "Personal web server*",
+      "Advanced AI configuration",
+      "Priority support",
     ],
     highlight: true,
     selectable: true,
@@ -92,13 +92,9 @@ const plans: Plan[] = [
   },
 ];
 
-function getYearlySavingsPercent(monthly: number, yearly: number): number {
-  return Math.round((1 - yearly / (monthly * 12)) * 100);
-}
-
 export function Pricing() {
-  const [selectedId, setSelectedId] = useState<string>("standard");
-  const [interval, setInterval] = useState<BillingInterval>("monthly");
+  const [selectedId, setSelectedId] = useState<string>("pro");
+  const [interval, setInterval] = useState<BillingInterval>("yearly");
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleCardClick = (plan: Plan) => {
@@ -111,10 +107,10 @@ export function Pricing() {
   const handleCTA = () => {
     if (!selectedPlan || isEnterprisePlan) return;
 
-    const price = interval === "yearly" ? selectedPlan.yearlyPrice : selectedPlan.monthlyPrice;
-    const displayPrice = interval === "yearly"
-      ? `$${selectedPlan.yearlyPrice}`
-      : `$${selectedPlan.monthlyPrice}`;
+    const monthlyEq = interval === "yearly"
+      ? Math.round(selectedPlan.yearlyPrice / 12)
+      : selectedPlan.monthlyPrice;
+    const displayPrice = `$${monthlyEq}`;
 
     // Store selected plan in localStorage
     localStorage.setItem(
@@ -176,18 +172,15 @@ export function Pricing() {
             {plans.map((plan) => {
               const isSelected = selectedId === plan.id;
               const isEnterprise = plan.id === "enterprise";
+              const monthlyEquivalent = interval === "yearly"
+                ? Math.round(plan.yearlyPrice / 12)
+                : plan.monthlyPrice;
               const displayPrice = isEnterprise
                 ? "Custom"
-                : interval === "yearly"
-                  ? `$${plan.yearlyPrice}`
-                  : `$${plan.monthlyPrice}`;
-              const period = isEnterprise
-                ? ""
-                : interval === "yearly"
-                  ? "/year"
-                  : "/month";
-              const monthlyEquivalent = interval === "yearly" && !isEnterprise
-                ? Math.round(plan.yearlyPrice / 12)
+                : `$${monthlyEquivalent}`;
+              const period = isEnterprise ? "" : "/month";
+              const billedLabel = interval === "yearly" && !isEnterprise
+                ? `Billed $${plan.yearlyPrice}/year`
                 : null;
 
               return (
@@ -225,9 +218,9 @@ export function Pricing() {
                       {period && (
                         <span className="text-muted-foreground">{period}</span>
                       )}
-                      {monthlyEquivalent && (
+                      {billedLabel && (
                         <div className="mt-1 text-sm text-muted-foreground">
-                          ${monthlyEquivalent}/mo
+                          {billedLabel}
                         </div>
                       )}
                     </div>
