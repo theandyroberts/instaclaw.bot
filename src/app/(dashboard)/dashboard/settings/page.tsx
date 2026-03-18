@@ -9,6 +9,7 @@ import { ConsoleButton } from "@/components/dashboard/console-button";
 
 const MODEL_DISPLAY_NAMES: Record<string, string> = {
   starter: "Healer Alpha",
+  standard: "Healer Alpha",
   pro: "Claude Sonnet 4.5",
 };
 

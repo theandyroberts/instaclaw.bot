@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Check } from "lucide-react";
+import { Loader2, Check, Lock } from "lucide-react";
 
 interface InstanceNameFormProps {
   currentName: string | null;
@@ -16,12 +16,13 @@ export function InstanceNameForm({ currentName }: InstanceNameFormProps) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [locked, setLocked] = useState(!!currentName);
 
   const isValid = NAME_RE.test(name);
   const isChanged = name !== (currentName || "");
 
   async function handleSave() {
-    if (!isValid || !isChanged) return;
+    if (!isValid || !isChanged || locked) return;
     setSaving(true);
     setError(null);
     setSaved(false);
@@ -36,12 +37,41 @@ export function InstanceNameForm({ currentName }: InstanceNameFormProps) {
         throw new Error(data.error || `Error ${res.status}`);
       }
       setSaved(true);
+      setLocked(true);
       setTimeout(() => setSaved(false), 3000);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to save");
     } finally {
       setSaving(false);
     }
+  }
+
+  if (locked) {
+    return (
+      <div className="space-y-3">
+        <div className="flex gap-2 items-center">
+          <Input
+            value={name}
+            disabled
+            className="font-mono opacity-70"
+          />
+          <Lock className="h-4 w-4 shrink-0 text-gray-500" />
+        </div>
+        <p className="text-xs text-gray-500">
+          Your sites are at{" "}
+          <code className="rounded bg-gray-100 dark:bg-gray-800 px-1 py-0.5 font-mono text-xs">
+            &lt;site&gt;-{name}.instaclaw.bot
+          </code>
+        </p>
+        <p className="text-xs text-gray-400">
+          Subdomain is locked after first choice. Contact{" "}
+          <a href="mailto:andy@sparkpoint.studio?subject=Change InstaClaw subdomain" className="text-primary hover:underline">
+            support
+          </a>{" "}
+          to change it.
+        </p>
+      </div>
+    );
   }
 
   return (
@@ -81,11 +111,14 @@ export function InstanceNameForm({ currentName }: InstanceNameFormProps) {
       {isValid && (
         <p className="text-xs text-gray-500">
           Your sites will be at{" "}
-          <code className="rounded bg-gray-100 px-1 py-0.5 font-mono text-xs">
+          <code className="rounded bg-gray-100 dark:bg-gray-800 px-1 py-0.5 font-mono text-xs">
             &lt;site&gt;-{name}.instaclaw.bot
           </code>
         </p>
       )}
+      <p className="text-xs text-amber-500">
+        Choose carefully -- this cannot be changed later.
+      </p>
     </div>
   );
 }

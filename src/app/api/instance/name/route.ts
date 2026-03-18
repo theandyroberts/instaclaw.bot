@@ -23,6 +23,19 @@ export async function PUT(req: Request) {
       );
     }
 
+    // Once set, subdomain is locked — users must contact support to change
+    const current = await prisma.instance.findUnique({
+      where: { userId: session.user.id },
+      select: { instanceName: true },
+    });
+
+    if (current?.instanceName) {
+      return NextResponse.json(
+        { error: "Subdomain is locked after first choice. Contact support to change it." },
+        { status: 403 }
+      );
+    }
+
     // Check uniqueness
     const existing = await prisma.instance.findFirst({
       where: { instanceName: name },
