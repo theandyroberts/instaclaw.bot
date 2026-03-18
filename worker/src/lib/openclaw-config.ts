@@ -178,7 +178,6 @@ export function buildOpenClawConfigObject(opts: {
     plugins: { entries: { telegram: { enabled: true } } },
     cron: { enabled: true },
     skills: { entries: { "nano-banana-pro": { enabled: true }, mcporter: { enabled: true } } },
-    qmd: { mcporter: { enabled: true, startDaemon: true } },
   };
 
   return config;
