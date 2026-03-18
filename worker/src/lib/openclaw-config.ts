@@ -13,15 +13,18 @@ type PlanModelConfig = { primary: string; fallbacks: string[]; llmProvider: $Enu
 /** Centralized model config per plan tier — single source of truth.
  *  `satisfies` ensures every Plan key exists and llmProvider values are valid Prisma enums.
  *  The Record<string, ...> annotation lets consumers index with string/any from DB queries. */
+const STARTER_CONFIG: PlanModelConfig = {
+  primary: "openrouter/healer-alpha",
+  fallbacks: [
+    "openrouter/hunter-alpha",
+    "openrouter/google/gemini-2.5-flash",
+  ],
+  llmProvider: "gemini",
+};
+
 export const PLAN_MODELS: Record<string, PlanModelConfig> = {
-  starter: {
-    primary: "openrouter/healer-alpha",
-    fallbacks: [
-      "openrouter/hunter-alpha",
-      "openrouter/google/gemini-2.5-flash",
-    ],
-    llmProvider: "gemini",
-  },
+  starter: STARTER_CONFIG,
+  standard: STARTER_CONFIG,
   pro: {
     primary: "openrouter/anthropic/claude-sonnet-4.5",
     fallbacks: [

@@ -8,21 +8,36 @@ import { Check, Loader2, LogIn, Bot, Smile, Briefcase, Sparkles, PenLine, User, 
 import type { WizardState } from "@/lib/onboarding-storage";
 import { saveWizardState } from "@/lib/onboarding-storage";
 
-interface PlanInfo {
-  id: string;
-  name: string;
+type BillingInterval = "monthly" | "yearly";
+
+interface PlanPricing {
   price: string;
   period: string;
-  features: string[];
   priceId: string;
 }
 
+interface PlanInfo {
+  id: string;
+  name: string;
+  monthly: PlanPricing;
+  yearly: PlanPricing;
+  features: string[];
+}
+
 const planData: Record<string, PlanInfo> = {
-  starter: {
-    id: "starter",
-    name: "Starter",
-    price: "$29",
-    period: "/month",
+  standard: {
+    id: "standard",
+    name: "Standard",
+    monthly: {
+      price: "$35",
+      period: "/month",
+      priceId: process.env.NEXT_PUBLIC_STRIPE_STANDARD_MONTHLY_PRICE_ID || "price_standard_monthly",
+    },
+    yearly: {
+      price: "$348",
+      period: "/year",
+      priceId: process.env.NEXT_PUBLIC_STRIPE_STANDARD_YEARLY_PRICE_ID || "price_standard_yearly",
+    },
     features: [
       "Unlimited messaging",
       "Web browsing & research",
@@ -32,22 +47,28 @@ const planData: Record<string, PlanInfo> = {
       "Dedicated private server",
       "24/7 uptime",
     ],
-    priceId: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID || "price_starter",
   },
   pro: {
     id: "pro",
     name: "Pro",
-    price: "$49",
-    period: "/month",
+    monthly: {
+      price: "$59",
+      period: "/month",
+      priceId: process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PRICE_ID || "price_pro_monthly",
+    },
+    yearly: {
+      price: "$588",
+      period: "/year",
+      priceId: process.env.NEXT_PUBLIC_STRIPE_PRO_YEARLY_PRICE_ID || "price_pro_yearly",
+    },
     features: [
-      "Everything in Starter",
+      "Everything in Standard",
       "Access to foundation models",
       "100 AI images per day",
       "Personal web server*",
       "Advanced AI configuration",
       "Priority support",
     ],
-    priceId: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID || "price_pro",
   },
 };
 
@@ -65,7 +86,7 @@ const personalityIcons: Record<string, typeof Smile> = {
   custom: PenLine,
 };
 
-// Timezone value → readable label
+// Timezone value -> readable label
 const timezoneLabels: Record<string, string> = {
   "America/New_York": "Eastern Time",
   "America/Chicago": "Central Time",
@@ -94,6 +115,7 @@ interface PlanPickerProps {
   onBack?: () => void;
   wizardState?: WizardState | null;
   preselectedPlanId?: string;
+  preselectedInterval?: BillingInterval;
 }
 
 export function PlanPicker({
@@ -101,6 +123,7 @@ export function PlanPicker({
   onBack,
   wizardState,
   preselectedPlanId,
+  preselectedInterval,
 }: PlanPickerProps) {
   const { data: session } = useSession();
   const isAuthenticated = !!session?.user;
@@ -108,6 +131,8 @@ export function PlanPicker({
   const [error, setError] = useState<string | null>(null);
 
   const plan = planData[preselectedPlanId || "pro"] || planData.pro;
+  const interval: BillingInterval = preselectedInterval || "monthly";
+  const pricing = plan[interval];
 
   const handleGo = async () => {
     setLoading(true);
@@ -116,7 +141,7 @@ export function PlanPicker({
     if (!isAuthenticated) {
       // Save wizard state + selected plan to localStorage, then sign in
       if (wizardState) {
-        saveWizardState({ ...wizardState, selectedPriceId: plan.priceId });
+        saveWizardState({ ...wizardState, selectedPriceId: pricing.priceId });
       }
       signIn("google", { callbackUrl: "/onboarding?from=auth" });
       return;
@@ -149,7 +174,7 @@ export function PlanPicker({
       const response = await fetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ priceId: plan.priceId }),
+        body: JSON.stringify({ priceId: pricing.priceId }),
       });
 
       const data = await response.json();
@@ -179,6 +204,10 @@ export function PlanPicker({
     ? personalityIcons[wizardState.personality] || Sparkles
     : null;
 
+  const monthlyEquivalent = interval === "yearly"
+    ? `$${Math.round(parseInt(pricing.price.replace("$", "")) / 12)}/mo`
+    : null;
+
   return (
     <div className="mx-auto max-w-lg space-y-8">
       <div className="text-center">
@@ -196,8 +225,11 @@ export function PlanPicker({
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-2xl font-bold text-gray-100">{plan.name}</h3>
             <div className="text-right">
-              <span className="text-3xl font-bold text-gray-100">{plan.price}</span>
-              <span className="text-gray-500">{plan.period}</span>
+              <span className="text-3xl font-bold text-gray-100">{pricing.price}</span>
+              <span className="text-gray-500">{pricing.period}</span>
+              {monthlyEquivalent && (
+                <div className="text-sm text-gray-500">{monthlyEquivalent}</div>
+              )}
             </div>
           </div>
 

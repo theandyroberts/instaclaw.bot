@@ -12,7 +12,7 @@ export async function GET() {
       return new NextResponse("Forbidden", { status: 403 });
     }
 
-    const PLAN_BUDGETS: Record<string, number> = { starter: 5, pro: 30 };
+    const PLAN_BUDGETS: Record<string, number> = { starter: 5, standard: 5, pro: 30 };
 
     const instances = await prisma.instance.findMany({
       where: { status: "active", openrouterKeyId: { not: null } },
@@ -30,7 +30,7 @@ export async function GET() {
     });
 
     const result = instances.map((i) => {
-      const plan = i.user.subscription?.plan || "starter";
+      const plan = i.user.subscription?.plan || "standard";
       const budget = PLAN_BUDGETS[plan] || 5;
       return {
         instanceId: i.id,

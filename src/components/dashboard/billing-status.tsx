@@ -17,7 +17,29 @@ interface Subscription {
   status: string;
   currentPeriodEnd: string;
   cancelAtPeriodEnd: boolean;
+  stripePriceId?: string;
 }
+
+const planDisplayName: Record<string, string> = {
+  standard: "Standard",
+  starter: "Standard", // legacy name
+  pro: "Pro",
+};
+
+const planPrices: Record<string, Record<string, string>> = {
+  standard: { monthly: "$35/month", yearly: "$348/year" },
+  starter: { monthly: "$35/month", yearly: "$348/year" },
+  pro: { monthly: "$59/month", yearly: "$588/year" },
+};
+
+// Map known price IDs to intervals
+const priceIdToInterval: Record<string, "monthly" | "yearly"> = {
+  // Production price IDs
+  "price_1TC4ZpFOc1Rr5boNE1tw3Qem": "monthly", // Standard Monthly
+  "price_1TC4aKFOc1Rr5boN6RaBFpRY": "yearly",  // Standard Yearly
+  "price_1TC4acFOc1Rr5boNIkqUXZiq": "monthly",  // Pro Monthly
+  "price_1TC4avFOc1Rr5boNNm8Iaiaz": "yearly",   // Pro Yearly
+};
 
 export function BillingStatus() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -82,16 +104,22 @@ export function BillingStatus() {
     canceled: "secondary",
   };
 
+  const displayName = planDisplayName[subscription.plan] || subscription.plan;
+  const interval = subscription.stripePriceId
+    ? priceIdToInterval[subscription.stripePriceId] || "monthly"
+    : "monthly";
+  const priceDisplay = planPrices[subscription.plan]?.[interval] || "";
+
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
             <CardTitle>
-              {subscription.plan === "pro" ? "Pro" : "Starter"} Plan
+              {displayName} Plan
             </CardTitle>
             <CardDescription>
-              ${subscription.plan === "pro" ? "49" : "29"}/month
+              {priceDisplay}
             </CardDescription>
           </div>
           <Badge variant={statusColors[subscription.status] || "secondary"}>
@@ -128,7 +156,7 @@ export function BillingStatus() {
             )}
           </Button>
 
-          {subscription.plan === "starter" && (
+          {(subscription.plan === "standard" || subscription.plan === "starter") && (
             <Button variant="default" asChild>
               <a href="/#pricing">Upgrade to Pro</a>
             </Button>

@@ -23,6 +23,7 @@ export interface SelectedPlan {
   id: string;
   name: string;
   price: string;
+  interval?: "monthly" | "yearly";
 }
 
 export function loadSelectedPlan(): SelectedPlan | null {

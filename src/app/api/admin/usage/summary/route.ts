@@ -26,7 +26,7 @@ export async function GET() {
       },
     });
 
-    const PLAN_BUDGETS: Record<string, number> = { starter: 5, pro: 30 };
+    const PLAN_BUDGETS: Record<string, number> = { starter: 5, standard: 5, pro: 30 };
 
     const totalMonthlySpend = instances.reduce((sum, i) => sum + i.llmSpendMonthly, 0);
     const instanceCount = instances.length;
@@ -34,7 +34,7 @@ export async function GET() {
 
     const budgetAlerts = instances
       .map((i) => {
-        const plan = i.user.subscription?.plan || "starter";
+        const plan = i.user.subscription?.plan || "standard";
         const budget = PLAN_BUDGETS[plan] || 5;
         const pctUsed = (i.llmSpendMonthly / budget) * 100;
         return { instanceId: i.id, email: i.user.email, pctUsed, spend: i.llmSpendMonthly, budget };

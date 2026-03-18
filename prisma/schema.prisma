@@ -116,6 +116,7 @@ model Instance {
 
 enum Plan {
   starter
+  standard
   pro
 }
 

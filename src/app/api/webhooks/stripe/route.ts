@@ -47,7 +47,7 @@ export async function POST(req: Request) {
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
           const userId = subscription.metadata.userId;
-          const plan = (subscription.metadata.plan as "starter" | "pro") || "starter";
+          const plan = (subscription.metadata.plan as "starter" | "standard" | "pro") || "standard";
           const priceId = subscription.items.data[0].price.id;
 
           if (!userId) {

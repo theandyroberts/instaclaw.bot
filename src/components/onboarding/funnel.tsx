@@ -144,6 +144,8 @@ export function OnboardingFunnel({
     }
   }, []);
 
+  const selectedInterval = selectedPlan?.interval || "monthly";
+
   const updateBotConfig = (updates: Partial<BotConfig>) => {
     setBotConfig((prev) => ({ ...prev, ...updates }));
   };
@@ -216,11 +218,18 @@ export function OnboardingFunnel({
       const planFromStorage = loadSelectedPlan();
       if (planFromStorage) {
         // Map plan id to priceId using env vars
-        const priceMap: Record<string, string> = {
-          starter: process.env.NEXT_PUBLIC_STRIPE_STARTER_PRICE_ID || "price_starter",
-          pro: process.env.NEXT_PUBLIC_STRIPE_PRO_PRICE_ID || "price_pro",
+        const interval = planFromStorage.interval || "monthly";
+        const priceMap: Record<string, Record<string, string>> = {
+          standard: {
+            monthly: process.env.NEXT_PUBLIC_STRIPE_STANDARD_MONTHLY_PRICE_ID || "price_standard_monthly",
+            yearly: process.env.NEXT_PUBLIC_STRIPE_STANDARD_YEARLY_PRICE_ID || "price_standard_yearly",
+          },
+          pro: {
+            monthly: process.env.NEXT_PUBLIC_STRIPE_PRO_MONTHLY_PRICE_ID || "price_pro_monthly",
+            yearly: process.env.NEXT_PUBLIC_STRIPE_PRO_YEARLY_PRICE_ID || "price_pro_yearly",
+          },
         };
-        priceId = priceMap[planFromStorage.id];
+        priceId = priceMap[planFromStorage.id]?.[interval];
       }
     }
 
@@ -416,7 +425,7 @@ export function OnboardingFunnel({
       {showNumberedProgress && selectedPlan && (
         <div className="flex justify-center">
           <Badge className="bg-primary/10 text-primary border border-primary/30 px-3 py-1 text-sm">
-            {selectedPlan.name} {selectedPlan.price}/mo
+            {selectedPlan.name} {selectedPlan.price}{selectedInterval === "yearly" ? "/yr" : "/mo"}
           </Badge>
         </div>
       )}
@@ -618,6 +627,7 @@ export function OnboardingFunnel({
             onBack={() => goBack("plan")}
             wizardState={currentWizardState}
             preselectedPlanId={selectedPlan?.id}
+            preselectedInterval={selectedInterval}
           />
         </StepTransition>
       )}

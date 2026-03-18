@@ -1,5 +1,5 @@
 import { auth } from "@/auth";
-import { stripe, getPlanFromPriceId } from "@/lib/stripe";
+import { stripe, getPlanFromPriceId, getIntervalFromPriceId } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -15,7 +15,8 @@ export async function POST(req: Request) {
     const { priceId } = await req.json();
 
     const plan = getPlanFromPriceId(priceId);
-    if (!plan) {
+    const interval = getIntervalFromPriceId(priceId);
+    if (!plan || !interval) {
       return NextResponse.json({ error: "Invalid price" }, { status: 400 });
     }
 

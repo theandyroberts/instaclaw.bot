@@ -21,12 +21,14 @@ import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 
 const SELECTED_PLAN_KEY = "instaclaw-selected-plan";
 
+type BillingInterval = "monthly" | "yearly";
+
 interface Plan {
   id: string;
   name: string;
   description: string;
-  price: string;
-  period: string;
+  monthlyPrice: number;
+  yearlyPrice: number;
   features: string[];
   highlight: boolean;
   selectable: boolean;
@@ -38,10 +40,10 @@ const plans: Plan[] = [
     id: "pro",
     name: "Pro",
     description: "For power users who want the best AI models",
-    price: "$49",
-    period: "/month",
+    monthlyPrice: 59,
+    yearlyPrice: 588,
     features: [
-      "Everything in Starter",
+      "Everything in Standard",
       "Access to foundation models",
       "100 AI images per day",
       "Personal web server*",
@@ -52,11 +54,11 @@ const plans: Plan[] = [
     selectable: true,
   },
   {
-    id: "starter",
-    name: "Starter",
+    id: "standard",
+    name: "Standard",
     description: "Perfect for getting started with AI on Telegram",
-    price: "$29",
-    period: "/month",
+    monthlyPrice: 35,
+    yearlyPrice: 348,
     features: [
       "Personal AI assistant on Telegram",
       "Kimi K2.5 AI (unlimited, free)",
@@ -75,8 +77,8 @@ const plans: Plan[] = [
     id: "enterprise",
     name: "Enterprise",
     description: "Custom solutions for teams and businesses",
-    price: "Custom",
-    period: "",
+    monthlyPrice: 0,
+    yearlyPrice: 0,
     features: [
       "Everything in Pro",
       "Custom model integrations",
@@ -90,8 +92,13 @@ const plans: Plan[] = [
   },
 ];
 
+function getYearlySavingsPercent(monthly: number, yearly: number): number {
+  return Math.round((1 - yearly / (monthly * 12)) * 100);
+}
+
 export function Pricing() {
-  const [selectedId, setSelectedId] = useState<string>("starter");
+  const [selectedId, setSelectedId] = useState<string>("standard");
+  const [interval, setInterval] = useState<BillingInterval>("monthly");
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleCardClick = (plan: Plan) => {
@@ -104,10 +111,20 @@ export function Pricing() {
   const handleCTA = () => {
     if (!selectedPlan || isEnterprisePlan) return;
 
+    const price = interval === "yearly" ? selectedPlan.yearlyPrice : selectedPlan.monthlyPrice;
+    const displayPrice = interval === "yearly"
+      ? `$${selectedPlan.yearlyPrice}`
+      : `$${selectedPlan.monthlyPrice}`;
+
     // Store selected plan in localStorage
     localStorage.setItem(
       SELECTED_PLAN_KEY,
-      JSON.stringify({ id: selectedPlan.id, name: selectedPlan.name, price: selectedPlan.price })
+      JSON.stringify({
+        id: selectedPlan.id,
+        name: selectedPlan.name,
+        price: displayPrice,
+        interval,
+      })
     );
 
     setModalOpen(true);
@@ -126,14 +143,52 @@ export function Pricing() {
               Simple, Transparent Pricing
             </h2>
             <p className="mx-auto max-w-2xl text-muted-foreground">
-              No hidden fees. No usage limits on Starter. Cancel anytime.
+              No hidden fees. No usage limits on Standard. Cancel anytime.
             </p>
+
+            {/* Billing interval toggle */}
+            <div className="mt-6 inline-flex items-center rounded-full bg-muted p-1">
+              <button
+                onClick={() => setInterval("monthly")}
+                className={`rounded-full px-5 py-2 text-sm font-medium transition-colors ${
+                  interval === "monthly"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Monthly
+              </button>
+              <button
+                onClick={() => setInterval("yearly")}
+                className={`rounded-full px-5 py-2 text-sm font-medium transition-colors ${
+                  interval === "yearly"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                Yearly
+                <span className="ml-1.5 text-xs text-green-500 font-semibold">Save 17%</span>
+              </button>
+            </div>
           </div>
 
           <div className="mx-auto grid max-w-5xl gap-6 grid-cols-1 md:grid-cols-3">
             {plans.map((plan) => {
               const isSelected = selectedId === plan.id;
               const isEnterprise = plan.id === "enterprise";
+              const displayPrice = isEnterprise
+                ? "Custom"
+                : interval === "yearly"
+                  ? `$${plan.yearlyPrice}`
+                  : `$${plan.monthlyPrice}`;
+              const period = isEnterprise
+                ? ""
+                : interval === "yearly"
+                  ? "/year"
+                  : "/month";
+              const monthlyEquivalent = interval === "yearly" && !isEnterprise
+                ? Math.round(plan.yearlyPrice / 12)
+                : null;
 
               return (
                 <Card
@@ -165,10 +220,15 @@ export function Pricing() {
                     <CardDescription>{plan.description}</CardDescription>
                     <div className="mt-4">
                       <span className="text-4xl font-bold text-foreground">
-                        {plan.price}
+                        {displayPrice}
                       </span>
-                      {plan.period && (
-                        <span className="text-muted-foreground">{plan.period}</span>
+                      {period && (
+                        <span className="text-muted-foreground">{period}</span>
+                      )}
+                      {monthlyEquivalent && (
+                        <div className="mt-1 text-sm text-muted-foreground">
+                          ${monthlyEquivalent}/mo
+                        </div>
                       )}
                     </div>
                   </CardHeader>

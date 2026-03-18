@@ -24,6 +24,7 @@ export async function GET() {
       status: subscription.status,
       currentPeriodEnd: subscription.currentPeriodEnd,
       cancelAtPeriodEnd: subscription.cancelAtPeriodEnd,
+      stripePriceId: subscription.stripePriceId,
     });
   } catch (error) {
     console.error("Billing status error:", error);
