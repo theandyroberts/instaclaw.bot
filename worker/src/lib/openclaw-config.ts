@@ -5,6 +5,8 @@ export interface OpenClawConfig {
     botToken: string;
   };
   model?: string;
+  /** InstaClaw user ID — used as Composio entity ID for per-user integration isolation */
+  userId?: string;
 }
 
 /** Per-plan model config type — llmProvider is validated against Prisma enum */
@@ -63,6 +65,7 @@ export function generateDockerCompose(
     openrouterApiKey?: string;
     braveApiKey?: string;
     geminiApiKey?: string;
+    composioApiKey?: string;
   }
 ): string {
   const envLines = [
@@ -76,6 +79,9 @@ export function generateDockerCompose(
   }
   if (opts?.geminiApiKey) {
     envLines.push(`      - GEMINI_API_KEY=${opts.geminiApiKey}`);
+  }
+  if (opts?.composioApiKey) {
+    envLines.push(`      - COMPOSIO_API_KEY=${opts.composioApiKey}`);
   }
 
   // PATH includes .local/bin so skills like nano-banana-pro can find uv
@@ -137,6 +143,55 @@ export function generateOpenClawConfig(config: OpenClawConfig): string {
   }
 
   return JSON.stringify(obj, null, 2);
+}
+
+/**
+ * Generate the base OpenClaw JSON config object used by all provisioning paths.
+ * Centralizes the config so provision.ts, pool-allocate.ts, and configure-workspace.ts
+ * all produce identical structures.
+ */
+export function buildOpenClawConfigObject(opts: {
+  model: string;
+  fallbacks: string[];
+  userId?: string;
+}): Record<string, unknown> {
+  const config: Record<string, unknown> = {
+    commands: { native: "auto", nativeSkills: "auto" },
+    agents: {
+      defaults: {
+        model: { primary: opts.model, fallbacks: opts.fallbacks },
+        workspace: "~/.openclaw/workspace",
+        maxConcurrent: 4,
+        subagents: { maxConcurrent: 8 },
+      },
+    },
+    gateway: {
+      trustedProxies: ["127.0.0.1", "::1"],
+      controlUi: {
+        allowedOrigins: ["*"],
+        allowInsecureAuth: true,
+        dangerouslyDisableDeviceAuth: true,
+      },
+    },
+    messages: { ackReactionScope: "group-mentions" },
+    plugins: { entries: { telegram: { enabled: true } } },
+    cron: { enabled: true },
+    skills: { entries: { "nano-banana-pro": { enabled: true } } },
+  };
+
+  // Add Composio MCP server for app integrations (per-user isolation via userId)
+  if (process.env.COMPOSIO_API_KEY && opts.userId) {
+    config.mcpServers = {
+      composio: {
+        url: `https://mcp.composio.dev/api/v2/mcp?userId=${opts.userId}`,
+        headers: {
+          "x-api-key": process.env.COMPOSIO_API_KEY,
+        },
+      },
+    };
+  }
+
+  return config;
 }
 
 /**

@@ -8,7 +8,7 @@ import {
   getDropletPublicIP,
 } from "../lib/digitalocean";
 import { connectSSH, execSSH, writeFileSSH } from "../lib/ssh";
-import { generateDockerCompose, generateDockerfile, PLAN_MODELS } from "../lib/openclaw-config";
+import { generateDockerCompose, generateDockerfile, PLAN_MODELS, buildOpenClawConfigObject } from "../lib/openclaw-config";
 import {
   generateSOUL,
   generateUSER,
@@ -247,6 +247,7 @@ export const provisionWorker = new Worker(
           openrouterApiKey: orKey.key,
           braveApiKey: process.env.BRAVE_API_KEY,
           geminiApiKey: process.env.GEMINI_API_KEY,
+          composioApiKey: process.env.COMPOSIO_API_KEY,
         });
         await writeFileSSH(ssh, "/opt/openclaw/docker-compose.yml", compose);
 
@@ -266,29 +267,11 @@ export const provisionWorker = new Worker(
         const fallbackModels = planConfig.fallbacks;
 
         // Write OpenClaw config
-        const openclawConfig = {
-          commands: { native: "auto", nativeSkills: "auto" },
-          agents: {
-            defaults: {
-              model: { primary: model, fallbacks: fallbackModels },
-              workspace: "~/.openclaw/workspace",
-              maxConcurrent: 4,
-              subagents: { maxConcurrent: 8 },
-            },
-          },
-          gateway: {
-            trustedProxies: ["127.0.0.1", "::1"],
-            controlUi: {
-              allowedOrigins: ["*"],
-              allowInsecureAuth: true,
-              dangerouslyDisableDeviceAuth: true,
-            },
-          },
-          messages: { ackReactionScope: "group-mentions" },
-          plugins: { entries: { telegram: { enabled: true } } },
-          cron: { enabled: true },
-          skills: { entries: { "nano-banana-pro": { enabled: true } } },
-        };
+        const openclawConfig = buildOpenClawConfigObject({
+          model,
+          fallbacks: fallbackModels,
+          userId,
+        });
 
         await writeFileSSH(ssh, CONFIG_PATH, JSON.stringify(openclawConfig, null, 2));
 

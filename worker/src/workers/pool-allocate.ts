@@ -2,7 +2,7 @@ import { Worker } from "bullmq";
 import { redis, provisionQueue, poolQueue } from "../queues";
 import { prisma } from "../lib/prisma";
 import { connectSSH, execSSH, writeFileSSH } from "../lib/ssh";
-import { generateDockerCompose, PLAN_MODELS } from "../lib/openclaw-config";
+import { generateDockerCompose, PLAN_MODELS, buildOpenClawConfigObject } from "../lib/openclaw-config";
 import { renameDroplet } from "../lib/digitalocean";
 import { createAPIKey, deleteAPIKey, PLAN_BUDGETS } from "../lib/openrouter";
 import {
@@ -160,29 +160,11 @@ export const poolAllocateWorker = new Worker(
         const model = planConfig.primary;
         const fallbackModels = planConfig.fallbacks;
 
-        const openclawConfig = {
-          commands: { native: "auto", nativeSkills: "auto" },
-          agents: {
-            defaults: {
-              model: { primary: model, fallbacks: fallbackModels },
-              workspace: "~/.openclaw/workspace",
-              maxConcurrent: 4,
-              subagents: { maxConcurrent: 8 },
-            },
-          },
-          gateway: {
-            trustedProxies: ["127.0.0.1", "::1"],
-            controlUi: {
-              allowedOrigins: ["*"],
-              allowInsecureAuth: true,
-              dangerouslyDisableDeviceAuth: true,
-            },
-          },
-          messages: { ackReactionScope: "group-mentions" },
-          plugins: { entries: { telegram: { enabled: true } } },
-          cron: { enabled: true },
-          skills: { entries: { "nano-banana-pro": { enabled: true } } },
-        };
+        const openclawConfig = buildOpenClawConfigObject({
+          model,
+          fallbacks: fallbackModels,
+          userId,
+        });
 
         await writeFileSSH(ssh, CONFIG_PATH, JSON.stringify(openclawConfig, null, 2));
 
@@ -222,6 +204,7 @@ export const poolAllocateWorker = new Worker(
           openrouterApiKey: orKey.key,
           braveApiKey: process.env.BRAVE_API_KEY,
           geminiApiKey: process.env.GEMINI_API_KEY,
+          composioApiKey: process.env.COMPOSIO_API_KEY,
         });
         await writeFileSSH(ssh, "/opt/openclaw/docker-compose.yml", compose);
 

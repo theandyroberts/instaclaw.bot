@@ -2,7 +2,7 @@ import { Worker } from "bullmq";
 import { redis } from "../queues";
 import { prisma } from "../lib/prisma";
 import { connectSSH, execSSH, writeFileSSH } from "../lib/ssh";
-import { generateDockerCompose, PLAN_MODELS } from "../lib/openclaw-config";
+import { generateDockerCompose, PLAN_MODELS, buildOpenClawConfigObject } from "../lib/openclaw-config";
 import {
   generateSOUL,
   generateUSER,
@@ -73,36 +73,32 @@ export const configureWorkspaceWorker = new Worker(
       const ssh = await connectSSH(sshHost);
 
       try {
-        // Read existing config
-        let config: Record<string, unknown> = {};
+        // Read existing config and merge with fresh base (preserves channels etc.)
+        let existingConfig: Record<string, unknown> = {};
         try {
           const existing = await execSSH(ssh, `cat ${CONFIG_PATH}`);
-          config = JSON.parse(existing);
+          existingConfig = JSON.parse(existing);
         } catch {
           // No existing config
         }
 
-        // Update model in OpenClaw format
-        // Preserve existing agent config (e.g. channels) and merge model + reasoning settings
-        const existingAgents = (config.agents as Record<string, unknown>) || {};
-        const existingDefaults = (existingAgents.defaults as Record<string, unknown>) || {};
-        config.agents = {
-          ...existingAgents,
-          defaults: {
-            ...existingDefaults,
-            model: {
-              primary: model,
-              fallbacks: fallbackModels,
-            },
-            workspace: "~/.openclaw/workspace",
-          },
-        };
+        // Build fresh config with Composio MCP server
+        const freshConfig = buildOpenClawConfigObject({
+          model,
+          fallbacks: fallbackModels,
+          userId: user.id,
+        });
+
+        // Preserve existing channel config (e.g. telegram botToken)
+        if (existingConfig.channels) {
+          freshConfig.channels = existingConfig.channels;
+        }
 
         // Write updated config
         await writeFileSSH(
           ssh,
           CONFIG_PATH,
-          JSON.stringify(config, null, 2)
+          JSON.stringify(freshConfig, null, 2)
         );
 
         // Create workspace directory
@@ -156,6 +152,7 @@ export const configureWorkspaceWorker = new Worker(
         const compose = generateDockerCompose(gatewayToken, {
           openrouterApiKey: instanceOrKey,
           braveApiKey: process.env.BRAVE_API_KEY,
+          composioApiKey: process.env.COMPOSIO_API_KEY,
         });
         await writeFileSSH(ssh, "/opt/openclaw/docker-compose.yml", compose);
 
