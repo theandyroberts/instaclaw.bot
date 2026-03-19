@@ -16,7 +16,7 @@ type PlanModelConfig = { primary: string; fallbacks: string[]; llmProvider: $Enu
  *  `satisfies` ensures every Plan key exists and llmProvider values are valid Prisma enums.
  *  The Record<string, ...> annotation lets consumers index with string/any from DB queries. */
 const STARTER_CONFIG: PlanModelConfig = {
-  primary: "openrouter/healer-alpha",
+  primary: "openrouter/free",
   fallbacks: [
     "openrouter/hunter-alpha",
     "openrouter/google/gemini-2.5-flash",
