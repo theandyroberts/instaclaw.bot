@@ -24,7 +24,7 @@ const KNOWN_PARAMS: Record<string, number> = {
 };
 
 const KNOWN_CAPS: Record<string, Partial<ModelCaps>> = {
-  "openrouter/healer-alpha": { tools: true, vision: true, reasoning: true, structuredOutput: true, jsonMode: true },
+  "openrouter/healer-alpha": { tools: true, vision: true, audioIn: true, reasoning: true, structuredOutput: true, jsonMode: true },
   "openrouter/hunter-alpha": { tools: true, vision: true, reasoning: true, structuredOutput: true, jsonMode: true },
   "openrouter/free":         { tools: true, vision: true, reasoning: true, structuredOutput: true, jsonMode: true },
 };
@@ -52,7 +52,9 @@ interface ModelCaps {
   tools: boolean;
   vision: boolean;        // image input
   imageGen: boolean;       // image output
-  audio: boolean;          // audio input or output
+  audioIn: boolean;        // audio input (voice messages)
+  audioOut: boolean;       // audio output (TTS)
+  videoOut: boolean;       // video output
   reasoning: boolean;      // chain-of-thought / thinking
   structuredOutput: boolean;
   jsonMode: boolean;       // response_format support
@@ -132,7 +134,9 @@ function extractCaps(m: ORModel): ModelCaps {
     tools:            known?.tools ?? sp.includes("tools"),
     vision:           known?.vision ?? (inMod.includes("image") || modality.includes("image->")),
     imageGen:         outMod.includes("image"),
-    audio:            inMod.includes("audio") || outMod.includes("audio"),
+    audioIn:          inMod.includes("audio"),
+    audioOut:         outMod.includes("audio"),
+    videoOut:         outMod.includes("video"),
     reasoning:        known?.reasoning ?? sp.includes("reasoning"),
     structuredOutput: known?.structuredOutput ?? sp.includes("structured_outputs"),
     jsonMode:         known?.jsonMode ?? sp.includes("response_format"),
@@ -157,69 +161,98 @@ function fmtParams(b: number): string {
 }
 
 /**
- * InstaClaw Hops Score (1–100)
- * Weighted evaluation for starter-tier suitability.
+ * InstaClaw Hops Score (0–99)
+ * Weighted evaluation for Standard-tier model suitability.
  *
- * Cost:        30 pts — free is king for starter
- * Tool use:    25 pts — required for agent features
- * Vision:      15 pts — multimodal input
- * Params:      15 pts — model quality proxy
- * Context:      5 pts — starters won't hit limits
- * Reasoning:    5 pts — chain-of-thought
- * Structured:   3 pts — structured output / JSON mode
- * Audio/video:  2 pts — bonus for omni-modal
+ * GATING FACTORS (73 pts max, ~65 at minimum passing thresholds):
+ *   Cost:        14 pts — free is essential for Standard tier
+ *   Tool use:    15 pts — required for integrations, exec, Composio
+ *   Vision:      11 pts — users send photos, screenshots, documents
+ *   Audio input:  9 pts — Telegram voice messages
+ *   Params:      12 pts — quality proxy, instruction-following
+ *   Context:      8 pts — conversation length + tool call results
+ *   Max output:   4 pts — long-form writing, reports, code
+ *
+ * DIFFERENTIATING FACTORS (26 pts max):
+ *   Reasoning:    9 pts — chain-of-thought for complex tasks
+ *   Video output: 8 pts — emerging capability, huge differentiator
+ *   Audio output: 5 pts — TTS, voice responses
+ *   Image gen:    3 pts — image creation output
+ *   Unmoderated:  1 pt  — fewer refused requests
  */
 function hopsScore(opts: {
   inputPer1M: number;
   params: number;
   context: number;
+  maxCompletion?: number;
+  isModerated?: boolean;
   caps: ModelCaps;
 }): number {
-  const { inputPer1M, params, context, caps } = opts;
+  const { inputPer1M, params, context, maxCompletion, isModerated, caps } = opts;
   let score = 0;
 
-  // Cost (30 pts) — free=30, <$0.05=25, <$0.10=20, <$0.50=15, <$1=10, <$3=5, else 0
-  if (inputPer1M === 0) score += 30;
-  else if (inputPer1M < 0.05) score += 25;
-  else if (inputPer1M < 0.10) score += 20;
-  else if (inputPer1M < 0.50) score += 15;
-  else if (inputPer1M < 1.0) score += 10;
-  else if (inputPer1M < 3.0) score += 5;
+  // === GATING FACTORS (73 max, ~65 floor) ===
 
-  // Tool use (25 pts) — binary
-  if (caps.tools) score += 25;
+  // Cost (14 pts)
+  if (inputPer1M === 0) score += 14;
+  else if (inputPer1M < 0.05) score += 11;
+  else if (inputPer1M < 0.10) score += 8;
+  else if (inputPer1M < 0.50) score += 5;
+  else if (inputPer1M < 1.0) score += 2;
 
-  // Vision (15 pts) — binary
-  if (caps.vision) score += 15;
+  // Tool use (15 pts) — graduated by depth of support
+  if (caps.tools && caps.structuredOutput && caps.jsonMode) score += 15;
+  else if (caps.tools && (caps.structuredOutput || caps.jsonMode)) score += 14;
+  else if (caps.tools) score += 13;
 
-  // Params (15 pts) — log scale: 1T+=15, 200B=13, 70B=11, 30B=9, 12B=7, 7B=5, 3B=3, <1B=1, unknown=0
-  if (params >= 1000) score += 15;
-  else if (params >= 200) score += 13;
-  else if (params >= 70) score += 11;
-  else if (params >= 30) score += 9;
-  else if (params >= 12) score += 7;
-  else if (params >= 7) score += 5;
-  else if (params >= 3) score += 3;
+  // Vision (11 pts)
+  if (caps.vision) score += 11;
+
+  // Audio input (9 pts)
+  if (caps.audioIn) score += 9;
+
+  // Params (12 pts) — log scale
+  if (params >= 1000) score += 12;
+  else if (params >= 200) score += 11;
+  else if (params >= 100) score += 10;
+  else if (params >= 70) score += 9;
+  else if (params >= 30) score += 8;
+  else if (params >= 12) score += 5;
+  else if (params >= 7) score += 3;
   else if (params > 0) score += 1;
-  // params === 0 (unknown) → 0 pts
 
-  // Context (5 pts) — scaled
-  if (context >= 500_000) score += 5;
-  else if (context >= 128_000) score += 4;
-  else if (context >= 64_000) score += 3;
+  // Context (8 pts)
+  if (context >= 500_000) score += 8;
+  else if (context >= 256_000) score += 7;
+  else if (context >= 128_000) score += 6;
+  else if (context >= 64_000) score += 4;
   else if (context >= 32_000) score += 2;
   else if (context >= 8_000) score += 1;
 
-  // Reasoning (5 pts)
-  if (caps.reasoning) score += 5;
+  // Max output length (4 pts)
+  const maxOut = maxCompletion ?? 0;
+  if (maxOut >= 16_000) score += 4;
+  else if (maxOut >= 8_000) score += 3;
+  else if (maxOut >= 4_000) score += 1;
 
-  // Structured output (3 pts) — structured_outputs or response_format
-  if (caps.structuredOutput || caps.jsonMode) score += 3;
+  // === DIFFERENTIATING FACTORS (26 max) ===
 
-  // Audio/video (2 pts)
-  if (caps.audio) score += 2;
+  // Reasoning (9 pts)
+  if (caps.reasoning) score += 9;
 
-  return Math.min(100, score);
+  // Video output (8 pts)
+  if (caps.videoOut) score += 8;
+
+  // Audio output (5 pts)
+  if (caps.audioOut) score += 5;
+
+  // Image generation (3 pts)
+  if (caps.imageGen) score += 3;
+
+  // Unmoderated (1 pt)
+  if (isModerated === false) score += 1;
+
+  return Math.min(99, score);
 }
 
 function fmtCtx(n: number): string { return `${(n / 1000).toFixed(0)}k`; }
@@ -262,7 +295,7 @@ export async function runModelAudit(): Promise<AuditResult> {
         maxCompletion: m?.top_provider?.max_completion_tokens ?? 0,
         params: p,
         caps,
-        hops: m ? hopsScore({ inputPer1M: inp, params: p, context: ctx, caps }) : 0,
+        hops: m ? hopsScore({ inputPer1M: inp, params: p, context: ctx, maxCompletion: m.top_provider?.max_completion_tokens, isModerated: m.top_provider?.is_moderated, caps }) : 0,
       });
       if (!m) warnings.push(`${plan} ${role} "${id}" NOT FOUND on OpenRouter`);
     };
@@ -285,7 +318,7 @@ export async function runModelAudit(): Promise<AuditResult> {
     const inp = toPer1M(m.pricing.prompt);
     const caps = extractCaps(m);
     const p = parseParamCount(m.id, m.name);
-    return { id: m.id, name: m.name, inputPer1M: inp, outputPer1M: toPer1M(m.pricing.completion), context: m.context_length, params: p, caps, hops: hopsScore({ inputPer1M: inp, params: p, context: m.context_length, caps }) };
+    return { id: m.id, name: m.name, inputPer1M: inp, outputPer1M: toPer1M(m.pricing.completion), context: m.context_length, params: p, caps, hops: hopsScore({ inputPer1M: inp, params: p, context: m.context_length, maxCompletion: m.top_provider?.max_completion_tokens, isModerated: m.top_provider?.is_moderated, caps }) };
   };
 
   const cheapestPaid: RankedModel[] = paid
@@ -311,7 +344,7 @@ export async function runModelAudit(): Promise<AuditResult> {
         context: m.context_length,
         modality: m.architecture?.modality ?? "unknown",
         caps,
-        hops: hopsScore({ inputPer1M: 0, params: p, context: m.context_length, caps }),
+        hops: hopsScore({ inputPer1M: 0, params: p, context: m.context_length, maxCompletion: m.top_provider?.max_completion_tokens, isModerated: m.top_provider?.is_moderated, caps }),
       };
     })
     .sort((a, b) => b.hops - a.hops);
@@ -362,7 +395,9 @@ function capsStr(c: ModelCaps): string {
   if (c.tools) flags.push("tools");
   if (c.vision) flags.push("vision");
   if (c.imageGen) flags.push("img-gen");
-  if (c.audio) flags.push("audio");
+  if (c.audioIn) flags.push("audio-in");
+  if (c.audioOut) flags.push("audio-out");
+  if (c.videoOut) flags.push("video-out");
   if (c.reasoning) flags.push("reasoning");
   if (c.structuredOutput) flags.push("structured");
   if (c.jsonMode) flags.push("json");
@@ -430,10 +465,12 @@ const CROSS = `<span class="cap-n">✗</span>`;
 function capCols(c: ModelCaps): string {
   const other: string[] = [];
   if (c.imageGen) other.push("img-gen");
-  if (c.audio) other.push("audio");
+  if (c.audioOut) other.push("audio-out");
+  if (c.videoOut) other.push("video-out");
   return [
     `<td class="cap">${c.tools ? CHECK : CROSS}</td>`,
     `<td class="cap">${c.vision ? CHECK : CROSS}</td>`,
+    `<td class="cap">${c.audioIn ? CHECK : CROSS}</td>`,
     `<td class="cap">${c.reasoning ? CHECK : CROSS}</td>`,
     `<td class="cap">${c.structuredOutput ? CHECK : CROSS}</td>`,
     `<td class="cap">${c.jsonMode ? CHECK : CROSS}</td>`,
@@ -441,7 +478,7 @@ function capCols(c: ModelCaps): string {
   ].join("");
 }
 
-const CAP_HEADERS = `<th class="cap">Tools</th><th class="cap">Vision</th><th class="cap">Reason</th><th class="cap">Struct</th><th class="cap">JSON</th><th class="cap">Other</th>`;
+const CAP_HEADERS = `<th class="cap">Tools</th><th class="cap">Vision</th><th class="cap">Audio In</th><th class="cap">Reason</th><th class="cap">Struct</th><th class="cap">JSON</th><th class="cap">Other</th>`;
 
 function hopsBadge(score: number): string {
   const cls = score >= 80 ? "hops-hi" : score >= 50 ? "hops-md" : "hops-lo";
@@ -522,7 +559,7 @@ ${configured.map((c) => `    <tr>
       <td class="r">${c.found ? "$" + c.outputPer1M.toFixed(2) : "—"}</td>
       <td class="r">${c.found ? fmtCtx(c.context) : "—"}</td>
       <td class="r">${c.maxCompletion ? fmtCtx(c.maxCompletion) : "—"}</td>
-      ${c.found ? capCols(c.caps) : '<td colspan="6">—</td>'}
+      ${c.found ? capCols(c.caps) : '<td colspan="7">—</td>'}
     </tr>`).join("\n")}
   </table>
 
@@ -724,7 +761,7 @@ export async function autoSwapModels(): Promise<void> {
         params,
         context: m.context_length,
         caps,
-        hops: hopsScore({ inputPer1M: 0, params, context: m.context_length, caps }),
+        hops: hopsScore({ inputPer1M: 0, params, context: m.context_length, maxCompletion: m.top_provider?.max_completion_tokens, isModerated: m.top_provider?.is_moderated, caps }),
       };
     })
     .sort((a, b) => b.hops - a.hops);
@@ -741,7 +778,7 @@ export async function autoSwapModels(): Promise<void> {
   if (currentModel) {
     const caps = extractCaps(currentModel);
     const params = parseParamCount(currentModel.id, currentModel.name);
-    currentHops = hopsScore({ inputPer1M: 0, params, context: currentModel.context_length, caps });
+    currentHops = hopsScore({ inputPer1M: 0, params, context: currentModel.context_length, maxCompletion: currentModel.top_provider?.max_completion_tokens, isModerated: currentModel.top_provider?.is_moderated, caps });
   }
 
   // Determine if swap is needed
@@ -823,6 +860,35 @@ export async function autoSwapModels(): Promise<void> {
   const fallbackStr = newFallbacks.length > 0
     ? `\nFallbacks: ${newFallbacks.map((f) => `<code>${f}</code>`).join(", ")}`
     : "";
+
+  // Announce to users on updated instances via cron announce
+  const modelDisplayName = best.name || best.id.split("/").pop() || best.id;
+  const announceMsg = `InstaClaw HOPS has upgraded you to ${modelDisplayName}.`;
+  for (const inst of instances) {
+    try {
+      const ssh = await connectSSH(inst.tailscaleIp!);
+      try {
+        // Write a one-shot cron job that announces the upgrade, then self-deletes
+        const announceJob = {
+          version: 1,
+          jobs: [{
+            id: `hops-announce-${Date.now()}`,
+            description: "HOPS model upgrade announcement",
+            schedule: { cron: `${new Date().getUTCMinutes() + 2} ${new Date().getUTCHours()} * * *` },
+            prompt: announceMsg,
+            sessionTarget: "isolated",
+            delivery: { mode: "announce" },
+            oneShot: true,
+          }],
+        };
+        await execSSH(ssh, `cat > /opt/openclaw/home/.openclaw/cron/hops-announce.json << 'CRONEOF'\n${JSON.stringify(announceJob, null, 2)}\nCRONEOF`);
+      } finally {
+        ssh.dispose();
+      }
+    } catch {
+      // Non-blocking — announcement is best-effort
+    }
+  }
 
   console.log(`[auto-swap] Done: ${updated} updated, ${failed} failed`);
   await notifyTelegram(
