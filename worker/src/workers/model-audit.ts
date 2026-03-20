@@ -3,6 +3,13 @@ import * as fs from "fs";
 import * as path from "path";
 import { redis, auditQueue } from "../queues";
 import { PLAN_MODELS } from "../lib/openclaw-config";
+import { prisma } from "../lib/prisma";
+import { connectSSH, execSSH } from "../lib/ssh";
+
+const REDIS_LAST_SWAP_KEY = "instaclaw:last-model-swap";
+const SWAP_COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2 hours
+const SWAP_HOPS_THRESHOLD = 10; // must score 10+ points higher to trigger swap
+const CONFIG_PATH = "/opt/openclaw/home/.openclaw/openclaw.json";
 
 const OR_MODELS_URL = "https://openrouter.ai/api/v1/models";
 
@@ -585,41 +592,295 @@ async function notifyTelegram(message: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
+// Auto-swap: verify model works via OpenRouter API
+// ---------------------------------------------------------------------------
+
+async function verifyModelWorks(modelId: string): Promise<boolean> {
+  const apiKey = process.env.OPENROUTER_API_KEY;
+  if (!apiKey) {
+    console.warn("[auto-swap] No OPENROUTER_API_KEY set, skipping verification");
+    return false;
+  }
+  try {
+    const res = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({
+        model: modelId,
+        messages: [{ role: "user", content: "Say hi" }],
+        max_tokens: 10,
+      }),
+      signal: AbortSignal.timeout(30_000),
+    });
+    if (!res.ok) {
+      const body = await res.text().catch(() => "");
+      console.warn(`[auto-swap] Verification failed for ${modelId}: HTTP ${res.status} — ${body.slice(0, 200)}`);
+      return false;
+    }
+    const json = await res.json();
+    const content = json.choices?.[0]?.message?.content;
+    if (!content) {
+      console.warn(`[auto-swap] Verification failed for ${modelId}: empty response`);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.warn(`[auto-swap] Verification failed for ${modelId}:`, err);
+    return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Auto-swap: update instances with new model
+// ---------------------------------------------------------------------------
+
+async function updateInstanceModel(
+  tailscaleIp: string,
+  tag: string,
+  newPrimary: string,
+  newFallbacks: string[],
+): Promise<boolean> {
+  let ssh;
+  try {
+    ssh = await connectSSH(tailscaleIp);
+  } catch (err) {
+    console.error(`${tag} SSH connect failed, skipping:`, err);
+    return false;
+  }
+  try {
+    // Use python3 to read, update, and write the JSON config
+    const fallbacksJson = JSON.stringify(newFallbacks);
+    const pyScript = `
+import json, sys
+try:
+    with open('${CONFIG_PATH}', 'r') as f:
+        config = json.load(f)
+except Exception as e:
+    print(f"ERROR reading config: {e}", file=sys.stderr)
+    sys.exit(1)
+
+# Navigate to agents.defaults.model, creating if needed
+agents = config.setdefault('agents', {})
+defaults = agents.setdefault('defaults', {})
+model = defaults.setdefault('model', {})
+model['primary'] = '${newPrimary}'
+model['fallbacks'] = json.loads('${fallbacksJson}')
+
+with open('${CONFIG_PATH}', 'w') as f:
+    json.dump(config, f, indent=2)
+print('OK')
+`.trim();
+    const result = await execSSH(ssh, `python3 -c ${JSON.stringify(pyScript)}`, "/opt/openclaw");
+    if (!result.includes("OK")) {
+      console.error(`${tag} python3 config update did not return OK: ${result}`);
+      return false;
+    }
+
+    // Restart container to pick up new config
+    await execSSH(ssh, "docker compose restart", "/opt/openclaw");
+    return true;
+  } catch (err) {
+    console.error(`${tag} Failed to update model:`, err);
+    return false;
+  } finally {
+    ssh.dispose();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Auto-swap: main logic
+// ---------------------------------------------------------------------------
+
+export async function autoSwapModels(): Promise<void> {
+  const models = await fetchModels();
+  const modelMap = new Map(models.map((m) => [m.id, m]));
+
+  // Current standard/starter primary (they share the same config)
+  const currentModelStr = PLAN_MODELS.standard.primary;
+  const currentORId = toORId(currentModelStr, modelMap);
+  const currentModel = modelMap.get(currentORId);
+  const currentGone = !currentModel;
+
+  // Hard requirements: free + tools + vision + 65k+ context + 30B+ params
+  const candidates = models
+    .filter((m) => {
+      if (!isFreeModel(m)) return false;
+      const caps = extractCaps(m);
+      if (!caps.tools || !caps.vision) return false;
+      if (m.context_length < 65_000) return false;
+      const params = parseParamCount(m.id, m.name);
+      if (params < 30) return false;
+      return true;
+    })
+    .map((m) => {
+      const caps = extractCaps(m);
+      const params = parseParamCount(m.id, m.name);
+      return {
+        id: m.id,
+        name: m.name,
+        params,
+        context: m.context_length,
+        caps,
+        hops: hopsScore({ inputPer1M: 0, params, context: m.context_length, caps }),
+      };
+    })
+    .sort((a, b) => b.hops - a.hops);
+
+  if (candidates.length === 0) {
+    console.warn("[auto-swap] No candidates meet hard requirements, skipping");
+    return;
+  }
+
+  const best = candidates[0];
+
+  // Score the current model (if it still exists)
+  let currentHops = 0;
+  if (currentModel) {
+    const caps = extractCaps(currentModel);
+    const params = parseParamCount(currentModel.id, currentModel.name);
+    currentHops = hopsScore({ inputPer1M: 0, params, context: currentModel.context_length, caps });
+  }
+
+  // Determine if swap is needed
+  const scoreDelta = best.hops - currentHops;
+  const bestIsDifferent = best.id !== currentORId;
+  const shouldSwap = currentGone || (bestIsDifferent && scoreDelta >= SWAP_HOPS_THRESHOLD);
+
+  if (!shouldSwap) return; // No swap needed — stay quiet
+
+  // Anti-flap: check cooldown (skip cooldown if current model is gone)
+  if (!currentGone) {
+    const lastSwapStr = await redis.get(REDIS_LAST_SWAP_KEY);
+    if (lastSwapStr) {
+      const elapsed = Date.now() - parseInt(lastSwapStr, 10);
+      if (elapsed < SWAP_COOLDOWN_MS) {
+        console.log(`[auto-swap] Cooldown active (${Math.round((SWAP_COOLDOWN_MS - elapsed) / 60000)}min remaining), skipping`);
+        return;
+      }
+    }
+  }
+
+  const reason = currentGone
+    ? `current model GONE from OpenRouter`
+    : `better candidate (+${scoreDelta} Hops)`;
+  console.log(`[auto-swap] Swap triggered: ${reason}`);
+  console.log(`[auto-swap] ${currentORId} (Hops ${currentHops}) -> ${best.id} (Hops ${best.hops})`);
+
+  // Verify the new model actually works
+  const verified = await verifyModelWorks(best.id);
+  if (!verified) {
+    console.warn(`[auto-swap] New model ${best.id} failed verification, aborting swap`);
+    await notifyTelegram(
+      `<b>⚠ Auto-Swap Aborted</b>\n\nModel <code>${best.id}</code> failed verification test.\nReason: ${reason}\nCurrent: <code>${currentORId}</code>`
+    );
+    return;
+  }
+
+  // Pick top 2 remaining free models with tools as fallbacks
+  const fallbackCandidates = candidates
+    .filter((c) => c.id !== best.id && c.caps.tools)
+    .slice(0, 2);
+  const newFallbacks = fallbackCandidates.map((c) => `openrouter/${c.id}`);
+  const newPrimary = `openrouter/${best.id}`;
+
+  // Fetch all active starter/standard instances
+  const instances = await prisma.instance.findMany({
+    where: {
+      status: "active",
+      tailscaleIp: { not: null },
+      user: {
+        subscription: {
+          plan: { in: ["starter", "standard"] },
+        },
+      },
+    },
+    select: {
+      id: true,
+      tailscaleIp: true,
+    },
+  });
+
+  console.log(`[auto-swap] Updating ${instances.length} instance(s)...`);
+  let updated = 0;
+  let failed = 0;
+
+  for (const inst of instances) {
+    const tag = `[auto-swap:${inst.id.slice(0, 8)}]`;
+    const ok = await updateInstanceModel(inst.tailscaleIp!, tag, newPrimary, newFallbacks);
+    if (ok) {
+      updated++;
+    } else {
+      failed++;
+    }
+  }
+
+  // Set cooldown
+  await redis.set(REDIS_LAST_SWAP_KEY, Date.now().toString());
+
+  const fallbackStr = newFallbacks.length > 0
+    ? `\nFallbacks: ${newFallbacks.map((f) => `<code>${f}</code>`).join(", ")}`
+    : "";
+
+  console.log(`[auto-swap] Done: ${updated} updated, ${failed} failed`);
+  await notifyTelegram(
+    `<b>🔄 Auto-Swap Complete</b>\n\n` +
+    `<code>${currentORId}</code> (Hops ${currentHops})\n→ <code>${best.id}</code> (Hops ${best.hops})${fallbackStr}\n\n` +
+    `Reason: ${reason}\nInstances: ${updated} updated, ${failed} failed`
+  );
+}
+
+// ---------------------------------------------------------------------------
 // BullMQ worker
 // ---------------------------------------------------------------------------
 
 export const modelAuditWorker = new Worker(
   "audit",
   async (job) => {
-    console.log(`[model-audit:${job.id}] Running daily model audit...`);
+    const isDailyRun = new Date().getUTCHours() === 6;
+
     try {
-      const result = await runModelAudit();
-      const text = formatPlainText(result);
-      for (const line of text.split("\n")) console.log(`[model-audit:${job.id}] ${line}`);
+      // Auto-swap runs every 15 minutes
+      await autoSwapModels();
+    } catch (err) {
+      console.error(`[model-watch:${job.id}] Auto-swap error:`, err);
+      // Don't throw — let the daily audit still run if applicable
+    }
 
-      const slug = writeReportPage(result);
-      const url = `https://worker.instaclaw.bot/reports/${slug}`;
+    // Full audit report only on the daily 06:00 UTC run
+    if (isDailyRun) {
+      console.log(`[model-watch:${job.id}] Running daily model audit report...`);
+      try {
+        const result = await runModelAudit();
+        const text = formatPlainText(result);
+        for (const line of text.split("\n")) console.log(`[model-watch:${job.id}] ${line}`);
 
-      const summary = result.warnings.length > 0
-        ? `\n\n<b>⚠ ${result.warnings.length} warning(s)</b>\n${result.warnings.join("\n")}`
-        : "\n\n✓ No warnings";
-      await notifyTelegram(`<b>📊 Model Audit Complete</b>${summary}\n\n<a href="${url}">Full Report →</a>`);
-    } catch (error) {
-      console.error(`[model-audit:${job.id}] Failed:`, error);
-      await notifyTelegram(`<b>❌ Model Audit Failed</b>\n\n${error}`);
-      throw error;
+        const slug = writeReportPage(result);
+        const url = `https://worker.instaclaw.bot/reports/${slug}`;
+
+        const summary = result.warnings.length > 0
+          ? `\n\n<b>⚠ ${result.warnings.length} warning(s)</b>\n${result.warnings.join("\n")}`
+          : "\n\n✓ No warnings";
+        await notifyTelegram(`<b>📊 Model Audit Complete</b>${summary}\n\n<a href="${url}">Full Report →</a>`);
+      } catch (error) {
+        console.error(`[model-watch:${job.id}] Audit report failed:`, error);
+        await notifyTelegram(`<b>❌ Model Audit Failed</b>\n\n${error}`);
+        throw error;
+      }
     }
   },
   { connection: redis, concurrency: 1 }
 );
 
 modelAuditWorker.on("failed", (job, err) => {
-  console.error(`Model audit job ${job?.id} failed:`, err.message);
+  console.error(`Model watch job ${job?.id} failed:`, err.message);
 });
 
-export async function scheduleModelAudit() {
+export async function scheduleModelWatch() {
   const repeatableJobs = await auditQueue.getRepeatableJobs();
   for (const job of repeatableJobs) await auditQueue.removeRepeatableByKey(job.key);
-  await auditQueue.add("model-audit", {}, { repeat: { pattern: "0 6 * * *" } });
-  console.log("Model audit scheduled (daily at 06:00 UTC)");
+  await auditQueue.add("model-watch", {}, { repeat: { pattern: "*/15 * * * *" } });
+  console.log("Model watch scheduled (every 15 minutes)");
 }

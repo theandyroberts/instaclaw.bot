@@ -13,7 +13,7 @@ import "./workers/pool-allocate";
 import "./workers/update-instance-name";
 import { scheduleHealthChecks } from "./workers/health-check";
 import { schedulePoolMaintenance } from "./workers/pool-maintain";
-import { scheduleModelAudit } from "./workers/model-audit";
+import { scheduleModelWatch } from "./workers/model-audit";
 import { scheduleUsageCollection } from "./workers/usage-collect";
 import { ensureFirewall } from "./lib/firewall";
 
@@ -41,9 +41,9 @@ const server = app.listen(PORT, async () => {
     console.error("Failed to schedule pool maintenance:", err);
   });
 
-  // Schedule daily model audit
-  scheduleModelAudit().catch((err) => {
-    console.error("Failed to schedule model audit:", err);
+  // Schedule model watch (every 15 min — auto-swap + daily audit report)
+  scheduleModelWatch().catch((err) => {
+    console.error("Failed to schedule model watch:", err);
   });
 
   // Schedule LLM usage collection
