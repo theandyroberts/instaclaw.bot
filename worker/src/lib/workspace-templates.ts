@@ -316,10 +316,10 @@ You can connect 800+ apps (Gmail, Google Calendar, Slack, Notion, GitHub, Trello
 
 1. **Initiate a connection** (when user wants to connect a new app):
 \`\`\`
-mcporter --config ~/.openclaw/config/mcporter.json call composio.COMPOSIO_INITIATE_CONNECTION app_name=APPNAME
+mcporter --config ~/.openclaw/config/mcporter.json call composio.COMPOSIO_INITIATE_CONNECTION toolkit=APPNAME
 \`\`\`
 Replace APPNAME with the lowercase app name: \`gmail\`, \`googlecalendar\`, \`slack\`, \`notion\`, \`github\`, \`reddit\`, \`trello\`, \`hubspot\`, \`stripe\`, \`googledrive\`, \`googlesheets\`, \`airtable\`, \`asana\`, \`jira\`, \`linear\`, \`discord\`, \`twitter\`, \`shopify\`, \`figma\`, etc.
-This returns an authorization URL. Send the URL to the user and ask them to click it to authorize.
+This returns JSON with a \`redirect_url\` field. Extract that URL and send it to the user to click for authorization. Do NOT make up URLs — only use the exact URL from the command output.
 
 2. **Call a tool** (after the user has connected):
 \`\`\`
