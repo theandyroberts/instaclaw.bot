@@ -15,7 +15,7 @@ type PlanModelConfig = { primary: string; fallbacks: string[]; llmProvider: $Enu
 /** Centralized model config per plan tier — single source of truth.
  *  `satisfies` ensures every Plan key exists and llmProvider values are valid Prisma enums.
  *  The Record<string, ...> annotation lets consumers index with string/any from DB queries. */
-const STARTER_CONFIG: PlanModelConfig = {
+const STANDARD_CONFIG: PlanModelConfig = {
   primary: "openrouter/nvidia/nemotron-3-super-120b-a12b:free",
   fallbacks: [
     "openrouter/qwen/qwen3-coder:free",
@@ -25,12 +25,12 @@ const STARTER_CONFIG: PlanModelConfig = {
 };
 
 export const PLAN_MODELS: Record<string, PlanModelConfig> = {
-  starter: STARTER_CONFIG,
-  standard: STARTER_CONFIG,
+  starter: STANDARD_CONFIG, // legacy alias
+  standard: STANDARD_CONFIG,
   pro: {
     primary: "openrouter/anthropic/claude-sonnet-4.5",
     fallbacks: [
-      "openrouter/healer-alpha",
+      "openrouter/google/gemini-2.5-flash",
       "openrouter/nvidia/nemotron-3-nano-30b-a3b",
     ],
     llmProvider: "claude",

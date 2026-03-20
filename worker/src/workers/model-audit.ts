@@ -279,12 +279,13 @@ export async function runModelAudit(): Promise<AuditResult> {
   const warnings: string[] = [];
   const configured: ConfiguredModel[] = [];
 
-  // 1. Check configured models
+  // 1. Check configured models (skip "starter" — legacy alias for standard)
   for (const [plan, config] of Object.entries(PLAN_MODELS)) {
+    if (plan === "starter") continue;
     const check = (role: string, modelStr: string) => {
       const id = toORId(modelStr, modelMap);
       const m = modelMap.get(id);
-      const caps = m ? extractCaps(m) : { tools: false, vision: false, imageGen: false, audio: false, reasoning: false, structuredOutput: false, jsonMode: false };
+      const caps = m ? extractCaps(m) : { tools: false, vision: false, imageGen: false, audioIn: false, audioOut: false, videoOut: false, reasoning: false, structuredOutput: false, jsonMode: false };
       const inp = m ? toPer1M(m.pricing.prompt) : 0;
       const ctx = m?.context_length ?? 0;
       const p = m ? parseParamCount(m.id, m.name) : 0;
@@ -352,7 +353,7 @@ export async function runModelAudit(): Promise<AuditResult> {
     .sort((a, b) => b.hops - a.hops);
 
   // 5. Starter model health check — compare Hops Scores
-  const currentStarterId = toORId(PLAN_MODELS.starter.primary, modelMap);
+  const currentStarterId = toORId(PLAN_MODELS.standard.primary, modelMap);
   const currentEntry = freeMultimodal.find((m) => m.id === currentStarterId);
   if (freeMultimodal.length > 0) {
     const best = freeMultimodal[0]; // highest hops score
@@ -367,7 +368,7 @@ export async function runModelAudit(): Promise<AuditResult> {
   }
 
   // 6. Fallback price check
-  const currentFallbackId = toORId(PLAN_MODELS.starter.fallbacks[0], modelMap);
+  const currentFallbackId = toORId(PLAN_MODELS.standard.fallbacks[0], modelMap);
   const fb = modelMap.get(currentFallbackId);
   if (fb && cheapestPaid.length > 0) {
     const fbPrice = toPer1M(fb.pricing.prompt);
@@ -570,7 +571,7 @@ ${configured.map((c) => `    <tr>
   <table>
     <tr><th>Hops<br>Score</th><th>#</th><th>Model ID</th><th>Params</th><th class="r">Context</th><th>Modality</th>${CAP_HEADERS}</tr>
 ${freeMultimodal.map((m, i) => {
-    const isCurrent = m.id === toORId(PLAN_MODELS.starter.primary);
+    const isCurrent = m.id === toORId(PLAN_MODELS.standard.primary);
     return `    <tr${isCurrent ? ' class="cur"' : ""}>
       <td>${hopsBadge(m.hops)}</td>
       <td>${i + 1}</td><td>${esc(m.id)}</td><td>${fmtParams(m.params)}</td>
