@@ -196,14 +196,13 @@ export function generateMcporterConfig(userId: string): string | null {
   if (!apiKey) return null;
 
   const config = {
-    servers: {
+    mcpServers: {
       composio: {
         transport: "http",
         url: `https://backend.composio.dev/v3/mcp/${COMPOSIO_MCP_SERVER_ID}?include_composio_helper_actions=true&user_id=${userId}`,
         headers: {
           "x-api-key": apiKey,
         },
-        description: "Composio — 800+ app integrations (Gmail, Calendar, Slack, Notion, and more)",
       },
     },
   };
