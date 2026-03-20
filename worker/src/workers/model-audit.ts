@@ -7,6 +7,7 @@ import { prisma } from "../lib/prisma";
 import { connectSSH, execSSH, writeFileSSH } from "../lib/ssh";
 
 const REDIS_LAST_SWAP_KEY = "instaclaw:last-model-swap";
+const REDIS_DEPLOYED_MODEL_KEY = "instaclaw:deployed-model"; // tracks what's actually running on instances
 const SWAP_COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2 hours
 const SWAP_HOPS_THRESHOLD = 15; // must score 15+ points higher to trigger swap
 const CONFIG_PATH = "/opt/openclaw/home/.openclaw/openclaw.json";
@@ -743,9 +744,10 @@ export async function autoSwapModels(): Promise<void> {
   const models = await fetchModels();
   const modelMap = new Map(models.map((m) => [m.id, m]));
 
-  // Current standard/starter primary (they share the same config)
-  const currentModelStr = PLAN_MODELS.standard.primary;
-  const currentORId = toORId(currentModelStr, modelMap);
+  // Check what's actually deployed (Redis tracks last successful swap)
+  // Falls back to PLAN_MODELS if no swap has happened yet
+  const deployedModelStr = await redis.get(REDIS_DEPLOYED_MODEL_KEY) || PLAN_MODELS.standard.primary;
+  const currentORId = toORId(deployedModelStr, modelMap);
   const currentModel = modelMap.get(currentORId);
   let currentGone = !currentModel;
 
@@ -875,8 +877,9 @@ export async function autoSwapModels(): Promise<void> {
     }
   }
 
-  // Set cooldown
+  // Set cooldown + track what's deployed
   await redis.set(REDIS_LAST_SWAP_KEY, Date.now().toString());
+  await redis.set(REDIS_DEPLOYED_MODEL_KEY, newPrimary);
 
   const fallbackStr = newFallbacks.length > 0
     ? `\nFallbacks: ${newFallbacks.map((f) => `<code>${f}</code>`).join(", ")}`
