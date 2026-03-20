@@ -749,7 +749,16 @@ export async function autoSwapModels(): Promise<void> {
   const currentModelStr = PLAN_MODELS.standard.primary;
   const currentORId = toORId(currentModelStr, modelMap);
   const currentModel = modelMap.get(currentORId);
-  const currentGone = !currentModel;
+  let currentGone = !currentModel;
+
+  // Also verify the current model actually responds (it may be listed but dead)
+  if (!currentGone) {
+    const currentWorks = await verifyModelWorks(currentORId);
+    if (!currentWorks) {
+      console.warn(`[auto-swap] Current model ${currentORId} is listed but NOT responding — treating as gone`);
+      currentGone = true;
+    }
+  }
 
   // Hard requirements: free + tools + vision + 65k+ context + 30B+ params
   const candidates = models
