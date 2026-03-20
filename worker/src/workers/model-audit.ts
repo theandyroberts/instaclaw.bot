@@ -8,7 +8,7 @@ import { connectSSH, execSSH } from "../lib/ssh";
 
 const REDIS_LAST_SWAP_KEY = "instaclaw:last-model-swap";
 const SWAP_COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2 hours
-const SWAP_HOPS_THRESHOLD = 10; // must score 10+ points higher to trigger swap
+const SWAP_HOPS_THRESHOLD = 15; // must score 15+ points higher to trigger swap
 const CONFIG_PATH = "/opt/openclaw/home/.openclaw/openclaw.json";
 
 const OR_MODELS_URL = "https://openrouter.ai/api/v1/models";
@@ -163,22 +163,23 @@ function fmtParams(b: number): string {
 /**
  * InstaClaw Hops Score (0–99)
  * Weighted evaluation for Standard-tier model suitability.
+ * Audio input NOT scored — OpenClaw transcribes voice messages upstream via Gemini.
  *
- * GATING FACTORS (73 pts max, ~65 at minimum passing thresholds):
+ * GATING FACTORS (67 pts max, ~65 at minimum passing thresholds):
  *   Cost:        14 pts — free is essential for Standard tier
  *   Tool use:    15 pts — required for integrations, exec, Composio
  *   Vision:      11 pts — users send photos, screenshots, documents
- *   Audio input:  9 pts — Telegram voice messages
  *   Params:      12 pts — quality proxy, instruction-following
- *   Context:      8 pts — conversation length + tool call results
+ *   Context:     11 pts — conversation length + tool call results
  *   Max output:   4 pts — long-form writing, reports, code
  *
- * DIFFERENTIATING FACTORS (26 pts max):
- *   Reasoning:    9 pts — chain-of-thought for complex tasks
+ * DIFFERENTIATING FACTORS (32 pts max):
+ *   Reasoning:   12 pts — chain-of-thought for complex tasks
  *   Video output: 8 pts — emerging capability, huge differentiator
  *   Audio output: 5 pts — TTS, voice responses
+ *   Max output+:  2 pts — bonus for very large output windows
  *   Image gen:    3 pts — image creation output
- *   Unmoderated:  1 pt  — fewer refused requests
+ *   Unmoderated:  2 pts — fewer refused requests
  */
 function hopsScore(opts: {
   inputPer1M: number;
@@ -191,7 +192,7 @@ function hopsScore(opts: {
   const { inputPer1M, params, context, maxCompletion, isModerated, caps } = opts;
   let score = 0;
 
-  // === GATING FACTORS (73 max, ~65 floor) ===
+  // === GATING FACTORS (67 max, ~65 floor) ===
 
   // Cost (14 pts)
   if (inputPer1M === 0) score += 14;
@@ -208,9 +209,6 @@ function hopsScore(opts: {
   // Vision (11 pts)
   if (caps.vision) score += 11;
 
-  // Audio input (9 pts)
-  if (caps.audioIn) score += 9;
-
   // Params (12 pts) — log scale
   if (params >= 1000) score += 12;
   else if (params >= 200) score += 11;
@@ -221,12 +219,12 @@ function hopsScore(opts: {
   else if (params >= 7) score += 3;
   else if (params > 0) score += 1;
 
-  // Context (8 pts)
-  if (context >= 500_000) score += 8;
-  else if (context >= 256_000) score += 7;
-  else if (context >= 128_000) score += 6;
-  else if (context >= 64_000) score += 4;
-  else if (context >= 32_000) score += 2;
+  // Context (11 pts)
+  if (context >= 500_000) score += 11;
+  else if (context >= 256_000) score += 10;
+  else if (context >= 128_000) score += 9;
+  else if (context >= 64_000) score += 6;
+  else if (context >= 32_000) score += 3;
   else if (context >= 8_000) score += 1;
 
   // Max output length (4 pts)
@@ -235,10 +233,10 @@ function hopsScore(opts: {
   else if (maxOut >= 8_000) score += 3;
   else if (maxOut >= 4_000) score += 1;
 
-  // === DIFFERENTIATING FACTORS (26 max) ===
+  // === DIFFERENTIATING FACTORS (32 max) ===
 
-  // Reasoning (9 pts)
-  if (caps.reasoning) score += 9;
+  // Reasoning (12 pts) — biggest quality differentiator
+  if (caps.reasoning) score += 12;
 
   // Video output (8 pts)
   if (caps.videoOut) score += 8;
@@ -246,11 +244,15 @@ function hopsScore(opts: {
   // Audio output (5 pts)
   if (caps.audioOut) score += 5;
 
+  // Max output bonus (2 pts) — reward very large output windows
+  if (maxOut >= 32_000) score += 2;
+  else if (maxOut >= 16_000) score += 1;
+
   // Image generation (3 pts)
   if (caps.imageGen) score += 3;
 
-  // Unmoderated (1 pt)
-  if (isModerated === false) score += 1;
+  // Unmoderated (2 pts)
+  if (isModerated === false) score += 2;
 
   return Math.min(99, score);
 }
@@ -679,6 +681,7 @@ async function updateInstanceModel(
   tag: string,
   newPrimary: string,
   newFallbacks: string[],
+  forceRestart: boolean,
 ): Promise<boolean> {
   let ssh;
   try {
@@ -716,8 +719,14 @@ print('OK')
       return false;
     }
 
-    // Restart container to pick up new config
-    await execSSH(ssh, "docker compose restart", "/opt/openclaw");
+    if (forceRestart) {
+      // Dead model — restart now, the bot is already broken
+      await execSSH(ssh, "docker compose restart", "/opt/openclaw");
+      console.log(`${tag} Config updated + container restarted`);
+    } else {
+      // Better model — config written, takes effect on next session
+      console.log(`${tag} Config updated (no restart — takes effect next session)`);
+    }
     return true;
   } catch (err) {
     console.error(`${tag} Failed to update model:`, err);
@@ -840,13 +849,14 @@ export async function autoSwapModels(): Promise<void> {
     },
   });
 
-  console.log(`[auto-swap] Updating ${instances.length} instance(s)...`);
+  const swapMode = currentGone ? "restart" : "config-only";
+  console.log(`[auto-swap] Updating ${instances.length} instance(s) (${swapMode})...`);
   let updated = 0;
   let failed = 0;
 
   for (const inst of instances) {
     const tag = `[auto-swap:${inst.id.slice(0, 8)}]`;
-    const ok = await updateInstanceModel(inst.tailscaleIp!, tag, newPrimary, newFallbacks);
+    const ok = await updateInstanceModel(inst.tailscaleIp!, tag, newPrimary, newFallbacks, currentGone);
     if (ok) {
       updated++;
     } else {
@@ -868,13 +878,15 @@ export async function autoSwapModels(): Promise<void> {
     try {
       const ssh = await connectSSH(inst.tailscaleIp!);
       try {
-        // Write a one-shot cron job that announces the upgrade, then self-deletes
+        const now = new Date();
+        const announceMin = (now.getUTCMinutes() + 2) % 60;
+        const announceHour = now.getUTCMinutes() >= 58 ? (now.getUTCHours() + 1) % 24 : now.getUTCHours();
         const announceJob = {
           version: 1,
           jobs: [{
             id: `hops-announce-${Date.now()}`,
             description: "HOPS model upgrade announcement",
-            schedule: { cron: `${new Date().getUTCMinutes() + 2} ${new Date().getUTCHours()} * * *` },
+            schedule: { cron: `${announceMin} ${announceHour} * * *` },
             prompt: announceMsg,
             sessionTarget: "isolated",
             delivery: { mode: "announce" },
@@ -890,11 +902,11 @@ export async function autoSwapModels(): Promise<void> {
     }
   }
 
-  console.log(`[auto-swap] Done: ${updated} updated, ${failed} failed`);
+  console.log(`[auto-swap] Done: ${updated} updated, ${failed} failed (${swapMode})`);
   await notifyTelegram(
     `<b>🔄 Auto-Swap Complete</b>\n\n` +
     `<code>${currentORId}</code> (Hops ${currentHops})\n→ <code>${best.id}</code> (Hops ${best.hops})${fallbackStr}\n\n` +
-    `Reason: ${reason}\nInstances: ${updated} updated, ${failed} failed`
+    `Reason: ${reason}\nMode: ${swapMode}\nInstances: ${updated} updated, ${failed} failed`
   );
 }
 
