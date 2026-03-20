@@ -4,7 +4,7 @@ import * as path from "path";
 import { redis, auditQueue } from "../queues";
 import { PLAN_MODELS } from "../lib/openclaw-config";
 import { prisma } from "../lib/prisma";
-import { connectSSH, execSSH } from "../lib/ssh";
+import { connectSSH, execSSH, writeFileSSH } from "../lib/ssh";
 
 const REDIS_LAST_SWAP_KEY = "instaclaw:last-model-swap";
 const SWAP_COOLDOWN_MS = 2 * 60 * 60 * 1000; // 2 hours
@@ -692,29 +692,27 @@ async function updateInstanceModel(
     return false;
   }
   try {
-    // Use python3 to read, update, and write the JSON config
+    // Write a temp python script, then execute it (avoids shell quoting issues with python3 -c)
     const fallbacksJson = JSON.stringify(newFallbacks);
-    const pyScript = `
-import json, sys
-try:
-    with open('${CONFIG_PATH}', 'r') as f:
-        config = json.load(f)
-except Exception as e:
-    print(f"ERROR reading config: {e}", file=sys.stderr)
-    sys.exit(1)
-
-# Navigate to agents.defaults.model, creating if needed
-agents = config.setdefault('agents', {})
-defaults = agents.setdefault('defaults', {})
-model = defaults.setdefault('model', {})
-model['primary'] = '${newPrimary}'
-model['fallbacks'] = json.loads('${fallbacksJson}')
-
-with open('${CONFIG_PATH}', 'w') as f:
-    json.dump(config, f, indent=2)
-print('OK')
-`.trim();
-    const result = await execSSH(ssh, `python3 -c ${JSON.stringify(pyScript)}`, "/opt/openclaw");
+    const pyScript = [
+      "import json, sys",
+      "try:",
+      `    with open('${CONFIG_PATH}', 'r') as f:`,
+      "        config = json.load(f)",
+      "except Exception as e:",
+      `    print(f"ERROR reading config: {e}", file=sys.stderr)`,
+      "    sys.exit(1)",
+      "agents = config.setdefault('agents', {})",
+      "defaults = agents.setdefault('defaults', {})",
+      "model = defaults.setdefault('model', {})",
+      `model['primary'] = '${newPrimary}'`,
+      `model['fallbacks'] = json.loads('${fallbacksJson}')`,
+      `with open('${CONFIG_PATH}', 'w') as f:`,
+      "    json.dump(config, f, indent=2)",
+      "print('OK')",
+    ].join("\n");
+    await writeFileSSH(ssh, "/tmp/hops-update.py", pyScript);
+    const result = await execSSH(ssh, "python3 /tmp/hops-update.py", "/opt/openclaw");
     if (!result.includes("OK")) {
       console.error(`${tag} python3 config update did not return OK: ${result}`);
       return false;
@@ -839,8 +837,11 @@ export async function autoSwapModels(): Promise<void> {
   const fallbackCandidates = candidates
     .filter((c) => c.id !== best.id && c.caps.tools)
     .slice(0, 2);
-  const newFallbacks = fallbackCandidates.map((c) => `openrouter/${c.id}`);
-  const newPrimary = `openrouter/${best.id}`;
+  // OpenClaw uses "openrouter/vendor/model" format; OpenRouter API IDs are "vendor/model"
+  // Exception: "openrouter/free" already has the prefix — don't double it
+  const toOpenClawId = (id: string) => id.startsWith("openrouter/") ? id : `openrouter/${id}`;
+  const newFallbacks = fallbackCandidates.map((c) => toOpenClawId(c.id));
+  const newPrimary = toOpenClawId(best.id);
 
   // Fetch all active starter/standard instances
   const instances = await prisma.instance.findMany({
