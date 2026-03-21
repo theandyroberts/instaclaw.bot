@@ -34,6 +34,12 @@ export function Navbar() {
         </div>
 
         <div className="flex items-center gap-3">
+          <Link
+            href="/sign-in"
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
+            Sign In
+          </Link>
           <Button onClick={() => smoothScrollTo("#pricing")}>
             Get Started
           </Button>
