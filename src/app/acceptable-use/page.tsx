@@ -2,7 +2,7 @@ import { Navbar } from "@/components/marketing/navbar";
 import { Footer } from "@/components/marketing/footer";
 
 export const metadata = {
-  title: "Acceptable Use Policy | InstaClaw",
+  title: "Acceptable Use Policy | InstaClaw.bot",
 };
 
 export default function AcceptableUsePage() {
@@ -20,7 +20,7 @@ export default function AcceptableUsePage() {
 
           <section className="space-y-4">
             <p className="text-muted-foreground leading-relaxed">
-              This Acceptable Use Policy (&quot;AUP&quot;) governs your use of InstaClaw and the AI assistants we host on your behalf. It supplements our{" "}
+              This Acceptable Use Policy (&quot;AUP&quot;) governs your use of InstaClaw.bot and the AI assistants we host on your behalf. It supplements our{" "}
               <a href="/terms" className="text-primary hover:underline">Terms of Service</a>.
               Violations may result in suspension or termination of your account without refund.
             </p>
@@ -72,7 +72,7 @@ export default function AcceptableUsePage() {
             <h2 className="text-xl font-semibold">4. Public Websites</h2>
             <div className="space-y-3 text-muted-foreground leading-relaxed">
               <p>
-                Websites published through InstaClaw&apos;s canvas feature are publicly accessible on the internet. You are responsible for all content on your public sites.
+                Websites published through InstaClaw.bot&apos;s canvas feature are publicly accessible on the internet. You are responsible for all content on your public sites.
               </p>
               <p>Public sites may not:</p>
               <ul className="list-disc pl-6 space-y-2">

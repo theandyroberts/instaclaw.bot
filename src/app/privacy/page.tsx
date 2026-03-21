@@ -2,7 +2,7 @@ import { Navbar } from "@/components/marketing/navbar";
 import { Footer } from "@/components/marketing/footer";
 
 export const metadata = {
-  title: "Privacy Policy | InstaClaw",
+  title: "Privacy Policy | InstaClaw.bot",
 };
 
 export default function PrivacyPage() {

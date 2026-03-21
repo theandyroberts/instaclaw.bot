@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "InstaClaw - Your Personal AI Assistant on Telegram",
+  title: "InstaClaw.bot - Your Personal AI Assistant on Telegram",
   description:
     "Get your own personal AI assistant on Telegram in 5 minutes. Powered by OpenClaw. Starting at $29/mo.",
 };

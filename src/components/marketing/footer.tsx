@@ -7,7 +7,7 @@ export function Footer() {
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <div>
             <Link href="/" className="text-xl font-bold">
-              <span className="text-white">Insta</span><span className="text-primary">Claw</span>
+              <span className="text-white">Insta</span><span className="text-primary">Claw</span><span className="text-white">.bot</span>
             </Link>
             <p className="mt-1 text-sm text-muted-foreground">
               Your personal AI assistant on Telegram.
@@ -37,7 +37,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 border-t border-border pt-8 text-center text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} InstaClaw. Powered by{" "}
+          &copy; {new Date().getFullYear()} InstaClaw.bot. Powered by{" "}
           <a
             href="https://github.com/openclaw"
             target="_blank"

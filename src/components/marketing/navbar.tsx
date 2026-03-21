@@ -9,7 +9,7 @@ export function Navbar() {
     <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
         <Link href="/" className="text-2xl font-bold">
-          <span className="text-white">Insta</span><span className="text-primary">Claw</span>
+          <span className="text-white">Insta</span><span className="text-primary">Claw</span><span className="text-white">.bot</span>
         </Link>
 
         <div className="hidden items-center gap-6 md:flex">

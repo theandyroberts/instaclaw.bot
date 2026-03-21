@@ -251,7 +251,7 @@ export function Pricing() {
 
                     {isEnterprise && (
                       <a
-                        href="mailto:andy@sparkpoint.studio?subject=InstaClaw Enterprise"
+                        href="mailto:andy@sparkpoint.studio?subject=InstaClaw.bot Enterprise"
                         className="mt-6 block text-center text-sm text-primary hover:text-primary/80 hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >

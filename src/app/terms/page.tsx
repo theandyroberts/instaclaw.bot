@@ -2,7 +2,7 @@ import { Navbar } from "@/components/marketing/navbar";
 import { Footer } from "@/components/marketing/footer";
 
 export const metadata = {
-  title: "Terms of Service | InstaClaw",
+  title: "Terms of Service | InstaClaw.bot",
 };
 
 export default function TermsPage() {
@@ -21,14 +21,14 @@ export default function TermsPage() {
           <section className="space-y-4">
             <h2 className="text-xl font-semibold">1. Agreement to Terms</h2>
             <p className="text-muted-foreground leading-relaxed">
-              By accessing or using InstaClaw (&quot;Service&quot;), operated by InstaClaw (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;), you agree to be bound by these Terms of Service. If you do not agree, do not use the Service.
+              By accessing or using InstaClaw.bot (&quot;Service&quot;), operated by InstaClaw.bot (&quot;we,&quot; &quot;us,&quot; or &quot;our&quot;), you agree to be bound by these Terms of Service. If you do not agree, do not use the Service.
             </p>
           </section>
 
           <section className="space-y-4">
             <h2 className="text-xl font-semibold">2. Description of Service</h2>
             <p className="text-muted-foreground leading-relaxed">
-              InstaClaw is a managed hosting platform that provides personal AI assistants powered by OpenClaw. Each subscriber receives a dedicated virtual machine running an AI agent accessible via Telegram. The Service includes AI-powered task execution, web research, image generation, and the ability to create and host public websites.
+              InstaClaw.bot is a managed hosting platform that provides personal AI assistants powered by OpenClaw. Each subscriber receives a dedicated virtual machine running an AI agent accessible via Telegram. The Service includes AI-powered task execution, web research, image generation, and the ability to create and host public websites.
             </p>
           </section>
 
@@ -104,14 +104,14 @@ export default function TermsPage() {
           <section className="space-y-4">
             <h2 className="text-xl font-semibold">10. Limitation of Liability</h2>
             <p className="text-muted-foreground leading-relaxed">
-              TO THE MAXIMUM EXTENT PERMITTED BY LAW, INSTACLAW SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOSS OF PROFITS, DATA, OR BUSINESS OPPORTUNITIES, ARISING FROM YOUR USE OF THE SERVICE. OUR TOTAL LIABILITY SHALL NOT EXCEED THE AMOUNT YOU PAID US IN THE 12 MONTHS PRECEDING THE CLAIM.
+              TO THE MAXIMUM EXTENT PERMITTED BY LAW, INSTACLAW.BOT SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOSS OF PROFITS, DATA, OR BUSINESS OPPORTUNITIES, ARISING FROM YOUR USE OF THE SERVICE. OUR TOTAL LIABILITY SHALL NOT EXCEED THE AMOUNT YOU PAID US IN THE 12 MONTHS PRECEDING THE CLAIM.
             </p>
           </section>
 
           <section className="space-y-4">
             <h2 className="text-xl font-semibold">11. Indemnification</h2>
             <p className="text-muted-foreground leading-relaxed">
-              You agree to indemnify and hold harmless InstaClaw, its officers, employees, and agents from any claims, damages, losses, or expenses (including legal fees) arising from your use of the Service, your content, websites you publish, or your violation of these Terms.
+              You agree to indemnify and hold harmless InstaClaw.bot, its officers, employees, and agents from any claims, damages, losses, or expenses (including legal fees) arising from your use of the Service, your content, websites you publish, or your violation of these Terms.
             </p>
           </section>
 

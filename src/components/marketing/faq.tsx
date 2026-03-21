@@ -7,9 +7,9 @@ import {
 
 const faqs = [
   {
-    question: "What is InstaClaw?",
+    question: "What is InstaClaw.bot?",
     answer:
-      "InstaClaw gives you a personal AI assistant that lives in Telegram. You get your own dedicated server running OpenClaw, the popular open-source AI assistant. Just open Telegram, chat with your bot, and get help with research, writing, coding, and more.",
+      "InstaClaw.bot gives you a personal AI assistant that lives in Telegram. You get your own dedicated server running OpenClaw, the popular open-source AI assistant. Just open Telegram, chat with your bot, and get help with research, writing, coding, and more.",
   },
   {
     question: "Do I need any technical skills?",
@@ -42,7 +42,7 @@ const faqs = [
       "Your AI assistant stops responding, but we keep your configuration for 30 days. If you resubscribe within that window, everything picks up right where you left off.",
   },
   {
-    question: "How does InstaClaw compare to SimpleClaw?",
+    question: "How does InstaClaw.bot compare to SimpleClaw?",
     answer:
       "We offer the same Pro tier at $49/mo with $15 LLM credit, but we also have a Starter tier at $29/mo with unlimited Kimi AI. That's $20/mo less to get started. Same quality, better price.",
   },

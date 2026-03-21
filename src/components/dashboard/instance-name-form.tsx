@@ -65,7 +65,7 @@ export function InstanceNameForm({ currentName }: InstanceNameFormProps) {
         </p>
         <p className="text-xs text-gray-400">
           Subdomain is locked after first choice. Contact{" "}
-          <a href="mailto:andy@sparkpoint.studio?subject=Change InstaClaw subdomain" className="text-primary hover:underline">
+          <a href="mailto:andy@sparkpoint.studio?subject=Change InstaClaw.bot subdomain" className="text-primary hover:underline">
             support
           </a>{" "}
           to change it.
