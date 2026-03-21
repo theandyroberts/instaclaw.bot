@@ -555,7 +555,7 @@ app.get("/instances/:instanceId/sites", async (req, res) => {
       const sites = output
         .split("\n")
         .map((s) => s.trim())
-        .filter(Boolean);
+        .filter((s) => s && s !== ".trash");
       res.json({ sites });
     } finally {
       ssh.dispose();
@@ -563,6 +563,56 @@ app.get("/instances/:instanceId/sites", async (req, res) => {
   } catch (error) {
     console.error("Failed to list sites:", error);
     res.json({ sites: [] });
+  }
+});
+
+// Soft-delete a public site (mv to .trash/)
+app.delete("/instances/:instanceId/sites/:siteName", async (req, res) => {
+  try {
+    const { instanceId, siteName } = req.params;
+
+    // Validate site name (prevent path traversal)
+    if (!siteName || /[\/\.\s]/.test(siteName)) {
+      res.status(400).json({ error: "Invalid site name" });
+      return;
+    }
+
+    const instance = await prisma.instance.findUnique({
+      where: { id: instanceId },
+      select: { tailscaleIp: true, status: true },
+    });
+
+    if (!instance || instance.status !== "active" || !instance.tailscaleIp) {
+      res.status(404).json({ error: "Instance not found or inactive" });
+      return;
+    }
+
+    const { connectSSH, execSSH } = await import("./lib/ssh");
+    const ssh = await connectSSH(instance.tailscaleIp);
+    try {
+      const canvasBase = "/opt/openclaw/home/.openclaw/canvas";
+      // Check site exists
+      const exists = await execSSH(
+        ssh,
+        `test -d ${canvasBase}/${siteName} && echo yes || echo no`
+      );
+      if (exists.trim() !== "yes") {
+        res.status(404).json({ error: "Site not found" });
+        return;
+      }
+      // Move to .trash/ with timestamp to avoid collisions
+      const ts = Date.now();
+      await execSSH(
+        ssh,
+        `mkdir -p ${canvasBase}/.trash && mv ${canvasBase}/${siteName} ${canvasBase}/.trash/${siteName}.${ts}`
+      );
+      res.json({ success: true });
+    } finally {
+      ssh.dispose();
+    }
+  } catch (error) {
+    console.error("Failed to delete site:", error);
+    res.status(500).json({ error: "Failed to delete site" });
   }
 });
 

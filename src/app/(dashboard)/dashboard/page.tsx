@@ -13,11 +13,12 @@ import {
   ArrowRight,
   MessageCircle,
   Globe,
-  ExternalLink,
+
   LifeBuoy,
 } from "lucide-react";
 import { TelegramIcon } from "@/components/icons/telegram";
 import { SupportForm } from "@/components/dashboard/support-form";
+import { SitesList } from "@/components/dashboard/sites-list";
 
 const MODEL_DISPLAY_NAMES: Record<string, string> = {
   starter: "Healer Alpha",
@@ -186,31 +187,7 @@ export default async function DashboardPage() {
                 <Globe className="mt-0.5 h-5 w-5 text-gray-400" />
                 <div className="w-full space-y-3">
                   <h3 className="font-semibold">Your Public Sites</h3>
-                  {sites.length > 0 ? (
-                    <div className="space-y-2">
-                      {sites.map((site) => (
-                        <div
-                          key={site}
-                          className="flex items-center justify-between rounded-md border border-border px-3 py-2"
-                        >
-                          <span className="text-sm font-medium">{site}</span>
-                          <a
-                            href={`https://${site}-${instance.instanceName}.instaclaw.bot`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-1 text-sm text-primary hover:underline"
-                          >
-                            Go to site
-                            <ExternalLink className="h-3 w-3" />
-                          </a>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-sm text-gray-400">
-                      Try asking your bot: &quot;Build me a dashboard of coffee shops in Austin&quot;
-                    </p>
-                  )}
+                  <SitesList initialSites={sites} instanceName={instance.instanceName} />
                   <p className="text-xs text-gray-500">
                     Sites are accessible at{" "}
                     <code className="rounded bg-gray-100 px-1 py-0.5 font-mono text-xs dark:bg-gray-800">

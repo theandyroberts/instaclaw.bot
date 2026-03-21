@@ -81,6 +81,25 @@ export async function listSites(instanceId: string): Promise<string[]> {
   }
 }
 
+export async function deleteSite(instanceId: string, siteName: string): Promise<boolean> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 10000);
+  try {
+    const response = await fetch(`${WORKER_URL}/instances/${instanceId}/sites/${encodeURIComponent(siteName)}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${WORKER_SECRET}`,
+      },
+      signal: controller.signal,
+    });
+    return response.ok;
+  } catch {
+    return false;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export async function getConsoleUrl(
   instanceId: string,
   userId: string

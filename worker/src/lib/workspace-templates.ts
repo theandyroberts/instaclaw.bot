@@ -181,6 +181,14 @@ Key points:
 - **You MUST use the exec tool** (e.g. \`mkdir -p\` + \`cat > file\`) to write files to canvas -- the write tool blocks paths outside your workspace
 - Default to Linear's UI design language (clean, minimal, lots of whitespace, system font stack, neutral palette with one accent color) unless the user specifies a different style
 - Always tell the user the public URL after deploying
+
+### Deleting & Restoring Websites
+- To **delete** a site, move it to the trash: \`mv ~/.openclaw/canvas/<site-name> ~/.openclaw/canvas/.trash/<site-name>.\$(date +%s)\`
+- Create the trash dir first if needed: \`mkdir -p ~/.openclaw/canvas/.trash\`
+- The site immediately disappears from its public URL
+- To **restore** a deleted site, move it back: \`mv ~/.openclaw/canvas/.trash/<site-name>.* ~/.openclaw/canvas/<site-name>\`
+- Trashed sites are cleaned up after 30 days
+- Always confirm with the user before deleting
 `
     : `
 
