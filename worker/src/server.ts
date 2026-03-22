@@ -295,7 +295,7 @@ const CONSOLE_INJECT_SCRIPT = `
 <script>
 (function() {
   const HIDE_TABS = new Set([
-    "overview", "cron", "instances", "nodes", "debug", "docs"
+    "overview", "instances", "nodes", "debug", "docs"
   ]);
 
   // Also hide the "Agent" and "Resources" section headers when all their
