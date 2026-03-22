@@ -236,6 +236,7 @@ export default async function DashboardPage() {
             <SupportForm
               userEmail={session.user.email}
               userName={session.user.name}
+              instanceId={instance.id}
               instanceName={instance.instanceName}
               instanceStatus={instance.status}
               plan={subscription.plan}

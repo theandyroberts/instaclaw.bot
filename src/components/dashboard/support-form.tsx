@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 interface SupportFormProps {
   userEmail?: string | null;
   userName?: string | null;
+  instanceId?: string | null;
   instanceName?: string | null;
   instanceStatus?: string | null;
   plan?: string | null;
@@ -15,6 +16,7 @@ interface SupportFormProps {
 export function SupportForm({
   userEmail,
   userName,
+  instanceId,
   instanceName,
   instanceStatus,
   plan,
@@ -37,7 +39,7 @@ export function SupportForm({
           _userEmail: userEmail || "unknown",
           _userName: userName || "unknown",
           _instanceName: instanceName || "none",
-          _instanceUrl: instanceName ? `https://${instanceName}.instaclaw.bot` : "none",
+          _controlPanel: instanceId ? `https://${instanceId.slice(0, 8)}.instaclaw.bot/` : "none",
           _instanceStatus: instanceStatus || "unknown",
           _plan: plan || "unknown",
           _subscriptionStatus: subscriptionStatus || "unknown",
