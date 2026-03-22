@@ -4,7 +4,7 @@ import * as fs from "fs";
 import * as http from "http";
 import * as path from "path";
 import httpProxy from "http-proxy";
-import { createProxyMiddleware } from "http-proxy-middleware";
+import { createProxyMiddleware, responseInterceptor } from "http-proxy-middleware";
 import {
   provisionQueue,
   configureTelegramQueue,
@@ -286,14 +286,156 @@ app.use(async (req, res, next) => {
   next();
 });
 
+// ---------------------------------------------------------------------------
+// Console UI customisation script — injected into the SPA HTML.
+// Hides unused sidebar sections, replaces the "Update now" banner with a
+// support-request flow, and removes the Cron Jobs nav item (buggy).
+// ---------------------------------------------------------------------------
+const CONSOLE_INJECT_SCRIPT = `
+<script>
+(function() {
+  const HIDE_TABS = new Set([
+    "overview", "cron", "instances", "nodes", "debug", "docs"
+  ]);
+
+  // Also hide the "Agent" and "Resources" section headers when all their
+  // children are hidden.  "nodes" is the only visible child of neither
+  // section, but we keep agents/skills visible so only Resources disappears.
+
+  function hideNavItems(root) {
+    // Nav items: <a class="nav-item ..."> with inner <span class="nav-item__text">
+    root.querySelectorAll('.nav-item').forEach(function(el) {
+      var text = el.querySelector('.nav-item__text');
+      if (!text) return;
+      var label = text.textContent.trim().toLowerCase().replace(/\\s+/g, '');
+      // "cron jobs" → "cronjobs"
+      var tab = label === 'cronjobs' ? 'cron' : label;
+      if (HIDE_TABS.has(tab)) {
+        el.style.display = 'none';
+      }
+    });
+
+    // Hide empty nav-group headers (the "Resources" label when Docs is hidden)
+    root.querySelectorAll('.nav-group').forEach(function(g) {
+      var visible = Array.from(g.querySelectorAll('.nav-item')).filter(
+        function(i) { return i.style.display !== 'none'; }
+      );
+      // nav-group contains a label + items; if no items visible, hide group
+      if (visible.length === 0) {
+        g.style.display = 'none';
+      }
+    });
+  }
+
+  function interceptUpdateBanner(root) {
+    var banner = root.querySelector('.update-banner');
+    if (!banner || banner.dataset.intercepted) return;
+    banner.dataset.intercepted = 'true';
+
+    var btn = banner.querySelector('.update-banner__btn');
+    if (!btn) return;
+
+    // Replace click behaviour
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+
+      // Collect context
+      var slug = location.hostname.split('.')[0];
+      var version = banner.textContent || '';
+      var match = version.match(/v([\\d.]+)/g) || [];
+
+      var payload = {
+        subject: 'Update request from console panel',
+        message: 'A user clicked Update Now on their console panel.',
+        _controlPanel: location.origin + '/',
+        _currentVersion: match[1] || 'unknown',
+        _availableVersion: match[0] || 'unknown',
+        _slug: slug
+      };
+
+      btn.textContent = 'Requesting...';
+      btn.disabled = true;
+
+      fetch('https://formspree.io/f/mgolzwzg', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      }).then(function(r) {
+        if (r.ok) {
+          banner.innerHTML =
+            '<span style="color:#4ade80">\\u2714 Update request submitted. We\\'ll take care of it shortly.</span>';
+        } else {
+          btn.textContent = 'Update now';
+          btn.disabled = false;
+          alert('Failed to submit request. Please try again.');
+        }
+      }).catch(function() {
+        btn.textContent = 'Update now';
+        btn.disabled = false;
+        alert('Network error. Please try again.');
+      });
+    }, true); // capture phase to beat the SPA handler
+  }
+
+  // Use MutationObserver because the SPA renders into shadow DOM
+  var observer = new MutationObserver(function() {
+    // openclaw-app renders a shadow root
+    var app = document.querySelector('openclaw-app');
+    if (!app) return;
+    var shadow = app.shadowRoot;
+    if (!shadow) return;
+    hideNavItems(shadow);
+    interceptUpdateBanner(shadow);
+  });
+
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  // Also poll briefly for shadow root attachment
+  var attempts = 0;
+  var poll = setInterval(function() {
+    var app = document.querySelector('openclaw-app');
+    if (app && app.shadowRoot) {
+      hideNavItems(app.shadowRoot);
+      interceptUpdateBanner(app.shadowRoot);
+      // Watch inside shadow root too
+      observer.observe(app.shadowRoot, { childList: true, subtree: true });
+    }
+    if (++attempts > 50) clearInterval(poll);
+  }, 200);
+})();
+</script>`;
+
 // Create the proxy middleware instance (HTTP only — WebSocket upgrades
 // are handled separately via handleConsoleUpgrade in index.ts)
 const consoleProxy = createProxyMiddleware({
   router: (req) => (req as any).__proxyTarget,
   changeOrigin: false,
   ws: false,
+  selfHandleResponse: true,
   pathRewrite: undefined,
   on: {
+    proxyRes: responseInterceptor(async (buffer, proxyRes, req, res) => {
+      const contentType = proxyRes.headers["content-type"] || "";
+      if (contentType.includes("text/html")) {
+        // Relax CSP to allow our inline script
+        const csp = proxyRes.headers["content-security-policy"];
+        if (csp) {
+          (res as http.ServerResponse).setHeader(
+            "content-security-policy",
+            (csp as string).replace(
+              "script-src 'self'",
+              "script-src 'self' 'unsafe-inline'"
+            )
+          );
+        }
+        // Inject our customisation script before </head>
+        const html = buffer.toString("utf-8");
+        return html.replace("</head>", CONSOLE_INJECT_SCRIPT + "</head>");
+      }
+      return buffer;
+    }),
     error: (err, _req, res) => {
       console.error("[console-proxy] Error:", err.message);
       if (res && "writeHead" in res) {
