@@ -2,6 +2,7 @@ import { Worker } from "bullmq";
 import { redis, usageQueue } from "../queues";
 import { prisma } from "../lib/prisma";
 import { getKeyUsage, getActivity, PLAN_BUDGETS } from "../lib/openrouter";
+import { connectSSH, execSSH } from "../lib/ssh";
 
 // --- Hourly: collect per-instance usage snapshots ---
 export const usageCollectWorker = new Worker(
@@ -65,7 +66,7 @@ async function collectInstanceUsage(jobId: string) {
 
       // Budget alert check
       const plan = instance.user.subscription?.plan || "starter";
-      const budget = PLAN_BUDGETS[plan] || 5;
+      const budget = PLAN_BUDGETS[plan] || 15;
       const pctUsed = (usage.usage_monthly / budget) * 100;
 
       if (pctUsed > 90) {
@@ -74,6 +75,9 @@ async function collectInstanceUsage(jobId: string) {
           `[usage-collect:${jobId}] BUDGET ALERT: ${instance.user.email} at ${pctUsed.toFixed(1)}% ($${usage.usage_monthly.toFixed(2)}/$${budget})`
         );
       }
+
+      // Telegram budget warnings at 80% and 95% thresholds
+      await sendBudgetWarning(instance, pctUsed, jobId);
 
       collected++;
     } catch (error) {
@@ -87,6 +91,72 @@ async function collectInstanceUsage(jobId: string) {
   console.log(
     `[usage-collect:${jobId}] Collected usage for ${collected} instances (${alerts} budget alerts)`
   );
+}
+
+// --- Telegram budget warnings via cron-announce ---
+const BUDGET_THRESHOLDS = [
+  { pct: 100, key: "100", msg: "You've reached your monthly AI capacity. Your bot may not be able to respond until your capacity resets on your next billing date. Visit your dashboard or reply here to learn about adding more capacity." },
+  { pct: 95, key: "95", msg: "You've used 95% of your monthly AI capacity. Your bot may stop responding soon. Visit your dashboard to learn more." },
+  { pct: 80, key: "80", msg: "You've used 80% of your monthly AI capacity this month. Visit your dashboard to keep track of your usage." },
+];
+
+async function sendBudgetWarning(
+  instance: { id: string; tailscaleIp: string | null },
+  pctUsed: number,
+  jobId: string
+) {
+  if (!instance.tailscaleIp) return;
+
+  for (const threshold of BUDGET_THRESHOLDS) {
+    if (pctUsed < threshold.pct) continue;
+
+    // Check if we already sent this threshold warning this month
+    const redisKey = `instaclaw:budget-warn:${instance.id}:${threshold.key}`;
+    const alreadySent = await redis.get(redisKey);
+    if (alreadySent) continue;
+
+    // Send announcement via cron one-shot
+    try {
+      const ssh = await connectSSH(instance.tailscaleIp);
+      try {
+        const now = new Date();
+        const announceMin = (now.getUTCMinutes() + 2) % 60;
+        const announceHour = now.getUTCMinutes() >= 58
+          ? (now.getUTCHours() + 1) % 24
+          : now.getUTCHours();
+        const cronJob = {
+          version: 1,
+          jobs: [{
+            id: `budget-warn-${threshold.key}-${Date.now()}`,
+            description: `Budget ${threshold.key}% warning`,
+            schedule: { cron: `${announceMin} ${announceHour} * * *` },
+            prompt: threshold.msg,
+            sessionTarget: "isolated",
+            delivery: { mode: "announce" },
+            oneShot: true,
+          }],
+        };
+        await execSSH(
+          ssh,
+          `cat > /opt/openclaw/home/.openclaw/cron/budget-warn-${threshold.key}.json << 'CRONEOF'\n${JSON.stringify(cronJob, null, 2)}\nCRONEOF`
+        );
+        // Mark as sent with TTL that covers the rest of the month (max 31 days)
+        await redis.set(redisKey, "1", "EX", 31 * 24 * 60 * 60);
+        console.log(
+          `[usage-collect:${jobId}] Sent ${threshold.key}% budget warning to ${instance.id.slice(0, 8)}`
+        );
+      } finally {
+        ssh.dispose();
+      }
+    } catch (err) {
+      // Non-blocking — warning is best-effort
+      console.error(
+        `[usage-collect:${jobId}] Failed to send budget warning to ${instance.id.slice(0, 8)}:`,
+        err
+      );
+    }
+    break; // Only send the highest applicable threshold
+  }
 }
 
 // --- Daily: collect platform-level activity ---
