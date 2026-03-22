@@ -5,8 +5,8 @@ const API_BASE = "https://openrouter.ai/api/v1";
 
 /** Monthly spend limits per plan (USD) */
 export const PLAN_BUDGETS: Record<string, number> = {
-  starter: 5,
-  standard: 5,
+  starter: 15,
+  standard: 15,
   pro: 30,
 } satisfies Record<$Enums.Plan, number>;
 

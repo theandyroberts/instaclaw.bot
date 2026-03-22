@@ -13,7 +13,7 @@ import {
   ArrowRight,
   MessageCircle,
   Globe,
-
+  BarChart3,
   LifeBuoy,
 } from "lucide-react";
 import { TelegramIcon } from "@/components/icons/telegram";
@@ -23,6 +23,12 @@ import { SitesList } from "@/components/dashboard/sites-list";
 const MODEL_DISPLAY_NAMES: Record<string, string> = {
   starter: "Healer Alpha",
   pro: "Claude Sonnet 4.5",
+};
+
+const PLAN_BUDGETS: Record<string, number> = {
+  starter: 15,
+  standard: 15,
+  pro: 30,
 };
 
 export const dynamic = 'force-dynamic';
@@ -88,8 +94,8 @@ export default async function DashboardPage() {
         description={`Welcome back, ${session.user.name || "there"}!`}
       />
       <div className="p-8">
-        {/* 1. Status / Telegram Bot / Plan grid */}
-        <div className="grid gap-6 md:grid-cols-3">
+        {/* 1. Status / Telegram Bot / Plan / AI Capacity grid */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-gray-500">
@@ -152,6 +158,34 @@ export default async function DashboardPage() {
               </p>
             </CardContent>
           </Card>
+
+          {(() => {
+            const budget = PLAN_BUDGETS[subscription.plan] || 15;
+            const pct = Math.min(Math.round((instance.llmSpendMonthly / budget) * 100), 100);
+            const barColor = pct >= 90 ? "bg-red-500" : pct >= 70 ? "bg-yellow-500" : "bg-green-500";
+            return (
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-2">
+                  <CardTitle className="text-sm font-medium text-gray-500">
+                    AI Capacity
+                  </CardTitle>
+                  <BarChart3 className="h-4 w-4 text-gray-400" />
+                </CardHeader>
+                <CardContent>
+                  <div className="font-medium">{pct}% used</div>
+                  <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                    <div
+                      className={`h-full rounded-full transition-all ${barColor}`}
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Monthly capacity resets each billing cycle
+                  </p>
+                </CardContent>
+              </Card>
+            );
+          })()}
         </div>
 
         {/* 2. Telegram CTA */}
