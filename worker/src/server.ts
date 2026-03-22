@@ -379,30 +379,29 @@ const CONSOLE_INJECT_SCRIPT = `
     }, true); // capture phase to beat the SPA handler
   }
 
-  // Use MutationObserver because the SPA renders into shadow DOM
-  var observer = new MutationObserver(function() {
-    // openclaw-app renders a shadow root
-    var app = document.querySelector('openclaw-app');
-    if (!app) return;
-    var shadow = app.shadowRoot;
-    if (!shadow) return;
-    hideNavItems(shadow);
-    interceptUpdateBanner(shadow);
-  });
-
-  observer.observe(document.body, { childList: true, subtree: true });
-
-  // Also poll briefly for shadow root attachment
+  // Poll for Lit renderRoot (not shadowRoot — Lit exposes the shadow root
+  // via renderRoot, and element.shadowRoot may return null in some builds).
   var attempts = 0;
+  var done = false;
   var poll = setInterval(function() {
-    var app = document.querySelector('openclaw-app');
-    if (app && app.shadowRoot) {
-      hideNavItems(app.shadowRoot);
-      interceptUpdateBanner(app.shadowRoot);
-      // Watch inside shadow root too
-      observer.observe(app.shadowRoot, { childList: true, subtree: true });
+    try {
+      var app = document.querySelector('openclaw-app');
+      if (!app) return;
+      var root = app.renderRoot || app.shadowRoot;
+      if (!root || !root.querySelectorAll) return;
+      var items = root.querySelectorAll('.nav-item');
+      if (items.length > 0) {
+        hideNavItems(root);
+        interceptUpdateBanner(root);
+        if (!done) {
+          console.log('[instaclaw] customisations applied (' + items.length + ' nav items)');
+          done = true;
+        }
+      }
+    } catch (err) {
+      console.warn('[instaclaw]', err);
     }
-    if (++attempts > 50) clearInterval(poll);
+    if (++attempts > 150) clearInterval(poll);
   }, 200);
 })();
 </script>`;
