@@ -3,7 +3,23 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 
-export function SupportForm() {
+interface SupportFormProps {
+  userEmail?: string | null;
+  userName?: string | null;
+  instanceName?: string | null;
+  instanceStatus?: string | null;
+  plan?: string | null;
+  subscriptionStatus?: string | null;
+}
+
+export function SupportForm({
+  userEmail,
+  userName,
+  instanceName,
+  instanceStatus,
+  plan,
+  subscriptionStatus,
+}: SupportFormProps) {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
@@ -15,7 +31,16 @@ export function SupportForm() {
       const res = await fetch("https://formspree.io/f/mgolzwzg", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject, message }),
+        body: JSON.stringify({
+          subject,
+          message,
+          _userEmail: userEmail || "unknown",
+          _userName: userName || "unknown",
+          _instanceName: instanceName || "none",
+          _instanceStatus: instanceStatus || "unknown",
+          _plan: plan || "unknown",
+          _subscriptionStatus: subscriptionStatus || "unknown",
+        }),
       });
       if (!res.ok) throw new Error("Failed to send");
       setStatus("sent");

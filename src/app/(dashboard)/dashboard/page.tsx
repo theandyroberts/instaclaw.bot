@@ -233,7 +233,14 @@ export default async function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <SupportForm />
+            <SupportForm
+              userEmail={session.user.email}
+              userName={session.user.name}
+              instanceName={instance.instanceName}
+              instanceStatus={instance.status}
+              plan={subscription.plan}
+              subscriptionStatus={subscription.status}
+            />
           </CardContent>
         </Card>
 
