@@ -42,7 +42,7 @@ export const PLAN_MODELS: Record<string, PlanModelConfig> = {
  * and its dependencies for browser-based skills.
  */
 export function generateDockerfile(): string {
-  return `FROM alpine/openclaw:2026.3.8
+  return `FROM alpine/openclaw:2026.3.13-1
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \\
     chromium \\
