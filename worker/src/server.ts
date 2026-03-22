@@ -527,10 +527,11 @@ app.post("/console/:instanceId/token", async (req, res) => {
     const expiresAt = Math.floor(Date.now() / 1000) + CONSOLE_TOKEN_TTL;
     const consoleToken = signConsoleToken(instanceId, expiresAt);
     const slug = instanceId.slice(0, 8);
-    // ?token= is the OpenClaw gateway token (SPA reads it for WebSocket auth)
     // ?ct= is our signed console token (proxy reads it for access control)
+    // #token= is the OpenClaw gateway token (SPA reads it from hash for WebSocket auth)
+    // NOTE: v2026.3.13+ reads token from URL hash, not query string
     const gwToken = (instance as any).gatewayToken || "";
-    const consoleUrl = `https://${slug}.instaclaw.bot/?token=${gwToken}&ct=${consoleToken}`;
+    const consoleUrl = `https://${slug}.instaclaw.bot/?ct=${consoleToken}#token=${gwToken}`;
 
     res.json({ consoleUrl, token: consoleToken, expiresAt });
   } catch (error) {
