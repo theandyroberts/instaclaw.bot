@@ -19,6 +19,7 @@ import {
 import { TelegramIcon } from "@/components/icons/telegram";
 import { SupportForm } from "@/components/dashboard/support-form";
 import { SitesList } from "@/components/dashboard/sites-list";
+import { TopupButton } from "@/components/dashboard/topup-button";
 
 const MODEL_DISPLAY_NAMES: Record<string, string> = {
   starter: "Healer Alpha",
@@ -182,6 +183,7 @@ export default async function DashboardPage() {
                   <p className="mt-1 text-xs text-gray-500">
                     Monthly capacity resets each billing cycle
                   </p>
+                  {pct >= 80 && <TopupButton plan={subscription.plan} />}
                 </CardContent>
               </Card>
             );

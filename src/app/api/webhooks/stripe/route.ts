@@ -38,6 +38,47 @@ export async function POST(req: Request) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
 
+        // Handle top-up payments
+        if (session.metadata?.type === "topup" && session.payment_status === "paid") {
+          const { openrouterKeyId, creditPerUnit, userId } = session.metadata;
+          const creditPer = parseFloat(creditPerUnit || "3");
+
+          // Get the actual quantity from the line items
+          const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+          const qty = lineItems.data[0]?.quantity || 1;
+          const totalCredit = creditPer * qty;
+
+          if (openrouterKeyId) {
+            try {
+              // Fetch current key limit from OpenRouter and add credit
+              const orRes = await fetch(`https://openrouter.ai/api/v1/keys/${openrouterKeyId}`, {
+                headers: { Authorization: `Bearer ${process.env.OPENROUTER_MANAGEMENT_KEY}` },
+              });
+              if (orRes.ok) {
+                const keyData = await orRes.json();
+                const currentLimit = keyData.data?.limit || 15;
+                const newLimit = currentLimit + totalCredit;
+
+                await fetch(`https://openrouter.ai/api/v1/keys/${openrouterKeyId}`, {
+                  method: "PATCH",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${process.env.OPENROUTER_MANAGEMENT_KEY}`,
+                  },
+                  body: JSON.stringify({ limit: newLimit }),
+                });
+
+                console.log(
+                  `Top-up: ${userId} purchased ${qty}x ($${totalCredit} credit). Key limit: $${currentLimit} → $${newLimit}`
+                );
+              }
+            } catch (err) {
+              console.error("Failed to update OpenRouter key for top-up:", err);
+            }
+          }
+          break;
+        }
+
         if (session.subscription) {
           const subscriptionId =
             typeof session.subscription === "string"
