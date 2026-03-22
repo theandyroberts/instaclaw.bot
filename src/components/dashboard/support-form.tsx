@@ -37,6 +37,7 @@ export function SupportForm({
           _userEmail: userEmail || "unknown",
           _userName: userName || "unknown",
           _instanceName: instanceName || "none",
+          _instanceUrl: instanceName ? `https://${instanceName}.instaclaw.bot` : "none",
           _instanceStatus: instanceStatus || "unknown",
           _plan: plan || "unknown",
           _subscriptionStatus: subscriptionStatus || "unknown",
