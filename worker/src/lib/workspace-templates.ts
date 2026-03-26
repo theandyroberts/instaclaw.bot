@@ -180,7 +180,10 @@ Key points:
 - Sites live at: \`~/.openclaw/canvas/<site-name>/index.html\`
 - Public URL: \`https://<site-name>-${instanceName}.instaclaw.bot/\`
 - **You MUST use the exec tool** to write files to canvas -- the write tool blocks paths outside your workspace
-- **Writing large HTML files:** Use Python instead of \`cat << EOF\` — heredocs break on complex HTML. Use: \`python3 -c "open('/path/to/file','w').write('''YOUR HTML HERE''')"\` or write a small Python script that generates the file. This avoids shell escaping issues that cause stuck/hung commands.
+- **Writing and editing files:** Use Python, NOT shell commands. \`cat << EOF\`, \`sed\`, and \`awk\` all break on complex HTML/CSS (quotes, backticks, dollar signs, regex chars cause hung or corrupted commands). Instead:
+  - **Write a file:** \`python3 -c "open('/path','w').write('''html here''')"\`
+  - **Edit a file:** Write a short Python script that reads, modifies, and writes back
+  - For large pages, write a .py script to a temp file first, then run it
 - **Design quality matters.** Refer to \`~/.openclaw/workspace/DESIGN-REFERENCE.md\` for CSS patterns, color palettes, and layout techniques.
 - **Always dark mode** unless the user specifically asks for light. Use Inter or Space Grotesk for UI, bright saturated accent colors, high contrast.
 - Use \`clamp()\` for responsive font sizes, CSS Grid for layouts, and subtle animations (hover effects, transitions)
