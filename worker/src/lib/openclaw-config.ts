@@ -42,7 +42,7 @@ export const PLAN_MODELS: Record<string, PlanModelConfig> = {
  * and its dependencies for browser-based skills.
  */
 export function generateDockerfile(): string {
-  return `FROM alpine/openclaw:2026.3.13-1
+  return `FROM alpine/openclaw:2026.3.24
 USER root
 RUN apt-get update && apt-get install -y --no-install-recommends \\
     chromium \\
@@ -177,7 +177,8 @@ export function buildOpenClawConfigObject(opts: {
     messages: { ackReactionScope: "group-mentions" },
     plugins: { entries: { telegram: { enabled: true } } },
     cron: { enabled: true },
-    skills: { entries: { "nano-banana-pro": { enabled: true }, mcporter: { enabled: true } } },
+    skills: { entries: { mcporter: { enabled: true } } },
+    update: { checkOnStart: false },
   };
 
   return config;
