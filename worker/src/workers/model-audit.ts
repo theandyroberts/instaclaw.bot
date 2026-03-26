@@ -354,17 +354,22 @@ export async function runModelAudit(): Promise<AuditResult> {
     .sort((a, b) => b.hops - a.hops);
 
   // 5. Starter model health check — compare Hops Scores
+  // Note: current primary may be a paid model (e.g. Gemini Flash) that's not
+  // in the free list. Only warn if the model is completely gone from OpenRouter.
   const currentStarterId = toORId(PLAN_MODELS.standard.primary, modelMap);
+  const currentInCatalog = modelMap.has(currentStarterId);
   const currentEntry = freeMultimodal.find((m) => m.id === currentStarterId);
-  if (freeMultimodal.length > 0) {
-    const best = freeMultimodal[0]; // highest hops score
-    const currentHops = currentEntry?.hops ?? 0;
-
-    if (!currentEntry) {
-      warnings.push(`Starter primary "${currentStarterId}" not in free multimodal list — consider ${best.id} (Hops ${best.hops})`);
-    } else if (best.id !== currentStarterId && best.hops > currentHops + 5) {
-      // Only warn if meaningfully better (>5 pts difference)
-      warnings.push(`Higher Hops Score available: ${best.id} (${best.hops}) vs current ${currentStarterId} (${currentHops})`);
+  if (!currentInCatalog) {
+    // Model is gone from OpenRouter entirely — this is a real problem
+    const best = freeMultimodal[0];
+    if (best) {
+      warnings.push(`Starter primary "${currentStarterId}" no longer available on OpenRouter — consider ${best.id} (Hops ${best.hops})`);
+    }
+  } else if (currentEntry && freeMultimodal.length > 0) {
+    // Model is free — check if there's a significantly better free option
+    const best = freeMultimodal[0];
+    if (best.id !== currentStarterId && best.hops > (currentEntry.hops ?? 0) + 5) {
+      warnings.push(`Higher Hops Score available: ${best.id} (${best.hops}) vs current ${currentStarterId} (${currentEntry.hops})`);
     }
   }
 
