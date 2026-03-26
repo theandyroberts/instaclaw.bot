@@ -15,6 +15,7 @@ import {
   generateAGENTS,
   generateMEMORY,
   generateCronJobs,
+  generateDesignReference,
   generateSiteCreatorSkill,
   generateDeploySiteScript,
 } from "../lib/workspace-templates";
@@ -282,6 +283,7 @@ export const provisionWorker = new Worker(
           await writeFileSSH(ssh, `${WORKSPACE_DIR}/USER.md`, generateUSER(botConfig));
           await writeFileSSH(ssh, `${WORKSPACE_DIR}/AGENTS.md`, generateAGENTS(botConfig, plan, instanceName));
           await writeFileSSH(ssh, `${WORKSPACE_DIR}/MEMORY.md`, generateMEMORY(botConfig));
+          await writeFileSSH(ssh, `${WORKSPACE_DIR}/DESIGN-REFERENCE.md`, generateDesignReference());
         }
 
         // Write cron jobs if loop is set

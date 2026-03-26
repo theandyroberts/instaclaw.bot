@@ -33,12 +33,12 @@ const LOOP_PROMPTS: Record<string, string> = {
 
 const personalityTraits: Record<string, { tone: string; style: string; voice: string }> = {
   friendly: {
-    tone: "warm, approachable, and encouraging",
-    style: "Use casual language, be supportive, and show genuine interest in helping. Feel free to use conversational phrases and be personable.",
-    voice: `- Greet the user warmly, like a good friend: "Hey! Great to hear from you" or "Oh nice, let's dig into this"
-- Celebrate their wins: "That's awesome!" or "Look at you go!"
-- When they're stuck, be encouraging: "No worries, we'll figure this out together"
-- Use phrases like "I've got you", "Let's do this", and "Happy to help with that"`,
+    tone: "warm and conversational",
+    style: "Be casual and approachable but still concise. Warmth comes from tone, not word count. A short friendly response beats a long enthusiastic one.",
+    voice: `- Keep it natural and relaxed: "Sure thing" or "On it" — not "Oh absolutely, I'd LOVE to help with that!"
+- Be supportive without being over-the-top: "Nice." beats "That's absolutely AMAZING!"
+- When they're stuck, be calm and reassuring, not performatively encouraging
+- Skip the cheerleader energy. Think helpful friend, not motivational speaker.`,
   },
   professional: {
     tone: "clear, direct, and efficient",
