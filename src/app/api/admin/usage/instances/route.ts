@@ -12,7 +12,7 @@ export async function GET() {
       return new NextResponse("Forbidden", { status: 403 });
     }
 
-    const PLAN_BUDGETS: Record<string, number> = { starter: 5, standard: 5, pro: 30 };
+    const PLAN_BUDGETS: Record<string, number> = { starter: 15, standard: 15, pro: 30 };
 
     const instances = await prisma.instance.findMany({
       where: { status: "active", openrouterKeyId: { not: null } },

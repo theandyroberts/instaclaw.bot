@@ -26,7 +26,7 @@ export async function GET() {
       },
     });
 
-    const PLAN_BUDGETS: Record<string, number> = { starter: 5, standard: 5, pro: 30 };
+    const PLAN_BUDGETS: Record<string, number> = { starter: 15, standard: 15, pro: 30 };
 
     const totalMonthlySpend = instances.reduce((sum, i) => sum + i.llmSpendMonthly, 0);
     const instanceCount = instances.length;
