@@ -181,7 +181,7 @@ Key points:
 - Public URL: \`https://<site-name>-${instanceName}.instaclaw.bot/\`
 - **You MUST use the exec tool** (e.g. \`mkdir -p\` + \`cat > file\`) to write files to canvas -- the write tool blocks paths outside your workspace
 - **Design quality matters.** Refer to \`~/.openclaw/workspace/DESIGN-REFERENCE.md\` for CSS patterns, color palettes, and layout techniques.
-- Default to a dark theme with modern typography (Google Fonts like Playfair Display + Source Serif 4), responsive grids, and publication-quality styling unless the user specifies otherwise
+- **Always dark mode** unless the user specifically asks for light. Use Inter or Space Grotesk for UI, bright saturated accent colors, high contrast.
 - Use \`clamp()\` for responsive font sizes, CSS Grid for layouts, and subtle animations (hover effects, transitions)
 - For articles/content pages, aim for the visual quality of The Atlantic or Wired — generous whitespace, clear hierarchy, accent colors
 - For dashboards/data pages, use card-based layouts with dark backgrounds, colored accents per section, and live data via fetch() + public APIs
@@ -446,94 +446,165 @@ ${botConfig.extraContext}
 export function generateDesignReference(): string {
   return `# Web Design Reference
 
+**Default to dark mode for ALL sites** unless the user explicitly asks for light mode.
+
 ## Typography
-- Use Google Fonts: Playfair Display (headlines), Source Serif 4 or Inter (body)
+- Use Google Fonts via \`<link>\` in \`<head>\` — Inter or Space Grotesk for UI/dashboards, system font stack for fallback
+- For long-form articles ONLY: Playfair Display (headlines) + Source Serif 4 (body) — but only when the user asks for editorial/publication style
 - Responsive sizing: \`clamp(36px, 6vw, 56px)\` for hero headlines, \`clamp(16px, 2vw, 20px)\` for body
-- Letter-spacing: \`0.02em\` for headings, normal for body
-- Line-height: 1.6–1.8 for body text, 1.2 for headlines
+- Line-height: 1.5–1.6 for body text, 1.1–1.2 for headlines
+- Font-weight: use 700–800 for headlines, 400 for body. Bold contrast creates hierarchy.
 
-## Color Palettes
-
-### Dark Theme (default for dashboards)
+## Color Palette (Dark Theme — DEFAULT)
 \`\`\`css
---bg: #0a0f1e;
---card-bg: rgba(255,255,255,0.04);
---card-border: rgba(255,255,255,0.08);
---text: #f1f5f9;
---text-muted: #94a3b8;
---accent-blue: #3b82f6;
---accent-green: #22c55e;
---accent-red: #ef4444;
+:root {
+  --bg: #0a0f1e;
+  --surface: #111827;
+  --card-bg: rgba(255,255,255,0.04);
+  --card-border: rgba(255,255,255,0.08);
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --accent: #3b82f6;       /* primary blue */
+  --accent-cyan: #06b6d4;  /* bright callouts */
+  --accent-green: #22c55e; /* success, positive */
+  --accent-orange: #f59e0b;/* warning, highlight */
+  --accent-red: #ef4444;   /* error, negative */
+  --accent-purple: #a855f7;/* tags, metadata */
+}
 \`\`\`
 
-### Light Theme (articles/publications)
+Use **bright, saturated accents** against the dark background. High contrast = readable. Muted pastels = hard to read on dark.
+
+## Light Theme (ONLY when user requests it)
 \`\`\`css
---bg: #fafafa;
---card-bg: #ffffff;
---text: #1a1a2e;
---text-muted: #666;
---accent: #2d5f8a;
---link: #1a5276;
---border: #e5e5e5;
+:root { --bg: #fafafa; --card-bg: #fff; --text: #1a1a2e; --text-muted: #666; --accent: #2d5f8a; --border: #e5e5e5; }
 \`\`\`
 
-## Layout Patterns
+---
 
-### Responsive Card Grid (dashboards)
+## News Feed / Roundup Pages
+
+This is a common site type. Make it look like a modern tech news feed (think Hacker News meets The Verge), NOT a boring list of links.
+
+\`\`\`css
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 'Inter', system-ui, sans-serif; }
+.container { max-width: 900px; margin: 0 auto; padding: 24px; }
+
+/* Header: bold, gradient or accent color */
+h1 { font: 800 clamp(28px, 5vw, 42px)/1.1 'Inter', system-ui, sans-serif; margin: 0 0 8px; }
+.subtitle { color: var(--text-muted); font-size: 14px; margin-bottom: 32px; }
+
+/* News cards: left accent border, hover lift */
+.news-card {
+  display: block; text-decoration: none; color: inherit;
+  background: var(--surface);
+  border: 1px solid var(--card-border);
+  border-left: 4px solid var(--accent-cyan);
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 16px;
+  transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+}
+.news-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  border-left-color: var(--accent);
+}
+.news-card .headline { font-weight: 700; font-size: 18px; margin-bottom: 6px; }
+.news-card .summary { color: var(--text-muted); font-size: 14px; line-height: 1.5; margin-bottom: 8px; }
+.news-card .meta { font-size: 12px; color: var(--text-muted); opacity: 0.7; }
+.news-card .meta .source { color: var(--accent-cyan); font-weight: 600; }
+
+/* NEW badge for today's articles */
+.badge-new {
+  display: inline-block; background: var(--accent-green); color: #000;
+  font-size: 10px; font-weight: 800; text-transform: uppercase;
+  padding: 2px 8px; border-radius: 4px; margin-left: 8px; vertical-align: middle;
+}
+
+/* Last updated timestamp */
+.updated { text-align: center; color: var(--text-muted); font-size: 12px; margin-top: 32px; }
+\`\`\`
+
+### News Feed Rules
+- Cards are **full-width** (not a grid) — one column, scannable
+- Each card: headline (bold), 1-2 sentence summary, source + date
+- Left border accent color: vary by category or use cyan default
+- Newest items at top, older items below
+- Add a "NEW" badge to items added today
+- Link the entire card (wrap in \`<a>\`) — not just the headline
+- **Never duplicate articles.** Deduplicate by URL or headline before rendering.
+- Include a "Last updated" timestamp at the bottom
+
+---
+
+## Dashboard / Data Pages
+
 \`\`\`css
 .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; max-width: 1100px; margin: 0 auto; padding: 24px; }
-.card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 24px; transition: transform 0.2s, box-shadow 0.2s; }
+.card { background: var(--surface); border: 1px solid var(--card-border); border-radius: 16px; padding: 24px; transition: transform 0.2s, box-shadow 0.2s; }
 .card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+/* Top border accent per card — use different colors per section */
+.card--blue { border-top: 3px solid var(--accent); }
+.card--green { border-top: 3px solid var(--accent-green); }
+.card--orange { border-top: 3px solid var(--accent-orange); }
+
+/* Big stat numbers */
+.stat { font-size: 48px; font-weight: 800; line-height: 1; }
+.stat-label { font-size: 13px; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 4px; }
 \`\`\`
 
-### Article Layout (publications)
+### Dashboard Rules
+- Use card grid with colored top borders (different color per city/category)
+- Big bold numbers for key metrics
+- Auto-refresh with countdown timer via \`setInterval\` + \`fetch()\`
+- Use public APIs (Open-Meteo for weather, etc.) — never hardcode data
+- Show a "Last updated" timestamp
+
+---
+
+## Article / Long-Form Pages (only when requested)
+
 \`\`\`css
-body { max-width: 720px; margin: 0 auto; padding: 40px 24px; font: 18px/1.7 'Source Serif 4', Georgia, serif; }
+body { max-width: 720px; margin: 0 auto; padding: 40px 24px; background: var(--bg); color: var(--text); font: 18px/1.7 'Source Serif 4', Georgia, serif; }
 h1 { font: 700 clamp(36px, 6vw, 56px)/1.15 'Playfair Display', serif; margin: 0 0 16px; }
-.subtitle { font-size: 22px; color: var(--text-muted); margin-bottom: 32px; }
-img { width: min(960px, 100%); margin: 32px auto; border-radius: 8px; }
 blockquote { border-left: 3px solid var(--accent); padding-left: 20px; font-style: italic; color: var(--text-muted); }
 \`\`\`
 
-## Bar Charts (data visualization)
+---
+
+## Bar Charts
 \`\`\`css
 .bar-chart { display: flex; flex-direction: column; gap: 14px; }
 .bar-row { display: grid; grid-template-columns: 140px 1fr; align-items: center; gap: 12px; }
 .bar-track { height: 36px; background: rgba(255,255,255,0.1); border-radius: 3px; display: flex; align-items: stretch; overflow: hidden; }
 .bar-fill { flex-shrink: 0; border-radius: 3px; display: flex; align-items: center; padding: 0 10px; color: #fff; font-weight: 700; font-size: 13px; }
 \`\`\`
-
 Width formula: \`width: calc((value / maxValue) * 80%)\`
-- Bars < 25% width: put label OUTSIDE the bar (as a sibling inside .bar-track)
-- Color coding: green = best/cheapest, blue = mid, orange = high, red = worst/expensive
+- Bars < 25% width: put label OUTSIDE the bar (sibling inside .bar-track)
+- Color coding: green = best, blue = mid, orange = high, red = worst
 
-## Semantic Colors
-\`\`\`css
---green: #2d8a4e;   /* positive, cheap, success */
---blue: #355f86;    /* neutral, info, mid-range */
---orange: #d4820a;  /* warning, mid-high */
---red: #c0392b;     /* negative, expensive, error */
---purple: #7c3aed;  /* accent, metadata, tags */
-\`\`\`
-
-## Mobile Breakpoint
+## Mobile
 \`\`\`css
 @media (max-width: 600px) {
   .grid { grid-template-columns: 1fr; padding: 16px; }
   .bar-row { grid-template-columns: 110px 1fr; }
-  .bar-track { height: 28px; }
-  h1 { font-size: clamp(28px, 5vw, 36px); }
+  h1 { font-size: clamp(24px, 5vw, 32px); }
+  .news-card { padding: 16px; }
 }
 \`\`\`
 
 ## Best Practices
-- Always use \`clamp()\` for responsive text — never fixed px for headings
-- Use CSS Grid for layouts, not flexbox (prevents squeezing)
+- **Dark mode by default.** Always. Unless the user explicitly says light.
+- Bright, saturated accent colors on dark backgrounds — not muted pastels
+- \`clamp()\` for all heading sizes — never fixed px
+- CSS Grid for layouts — not flexbox
 - Include \`<meta name="viewport" content="width=device-width, initial-scale=1">\`
-- Load Google Fonts via \`<link>\` in \`<head>\` — don't use system fonts for publication pages
-- Add subtle hover effects on interactive cards (\`transform: translateY(-2px)\`)
-- Use \`max-width\` constraints: 720px for articles, 1100px for dashboards
-- Dark theme for dashboards/data, light theme for articles/reading
+- Hover effects on all clickable cards (\`translateY(-2px)\` + shadow)
+- \`max-width\` constraints: 720px articles, 900px news feeds, 1100px dashboards
+- Load Google Fonts via \`<link>\` — Inter for UI, Source Serif for articles
+- **Never duplicate content.** Deduplicate by URL or title.
+- **Always include a "Last updated" timestamp** on data-driven pages
 `;
 }
 
