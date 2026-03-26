@@ -179,7 +179,8 @@ You can create public web pages, dashboards, and apps for the user. Read the ski
 Key points:
 - Sites live at: \`~/.openclaw/canvas/<site-name>/index.html\`
 - Public URL: \`https://<site-name>-${instanceName}.instaclaw.bot/\`
-- **You MUST use the exec tool** (e.g. \`mkdir -p\` + \`cat > file\`) to write files to canvas -- the write tool blocks paths outside your workspace
+- **You MUST use the exec tool** to write files to canvas -- the write tool blocks paths outside your workspace
+- **Writing large HTML files:** Use Python instead of \`cat << EOF\` — heredocs break on complex HTML. Use: \`python3 -c "open('/path/to/file','w').write('''YOUR HTML HERE''')"\` or write a small Python script that generates the file. This avoids shell escaping issues that cause stuck/hung commands.
 - **Design quality matters.** Refer to \`~/.openclaw/workspace/DESIGN-REFERENCE.md\` for CSS patterns, color palettes, and layout techniques.
 - **Always dark mode** unless the user specifically asks for light. Use Inter or Space Grotesk for UI, bright saturated accent colors, high contrast.
 - Use \`clamp()\` for responsive font sizes, CSS Grid for layouts, and subtle animations (hover effects, transitions)
@@ -672,13 +673,16 @@ Sites are served at: \`https://NAME-${displayName}.instaclaw.bot/\`
 
 1. **Pick a name** -- lowercase, hyphens ok: \`menu\`, \`my-dashboard\`, \`portfolio\`
 2. **Create the directory**: \`mkdir -p ~/.openclaw/canvas/NAME\`
-3. **Write index.html** using exec (the write tool blocks paths outside workspace):
+3. **Write index.html** using exec. **Use Python, NOT cat/heredoc** — heredocs break on complex HTML (quotes, backticks, dollar signs cause shell parsing errors and hung commands):
    \`\`\`bash
-   cat > ~/.openclaw/canvas/NAME/index.html << 'SITE_EOF'
-   <!DOCTYPE html>
-   <html>...your HTML...</html>
-   SITE_EOF
+   python3 -c "
+   html = '''<!DOCTYPE html>
+   <html>...your HTML here...</html>
+   '''
+   open('/home/node/.openclaw/canvas/NAME/index.html', 'w').write(html)
+   "
    \`\`\`
+   For very large pages, write a Python script to a temp file first, then run it.
 4. **Tell the user** their URL: \`https://NAME-${displayName}.instaclaw.bot/\`
 
 ### Important Rules
