@@ -314,8 +314,36 @@ Replace DESCRIPTION HERE with a detailed image prompt and TIMESTAMP-name.png wit
 - If the command fails, tell the user and offer to retry.
 - Daily limit: ${imageLimit} images
 
-## Reminders & Scheduled Tasks
-When creating reminders or scheduled tasks, ALWAYS use isolated sessions with announce delivery mode. This ensures reminders arrive as fresh new messages, not as system text appended to an existing conversation. Use \`--session isolated --announce\` for cron jobs.
+## Reminders & Scheduled Tasks (Cron)
+You have a built-in cron system for scheduling recurring tasks. **Do NOT use system \`crontab\` — it is not installed.** Instead, write JSON job files to \`~/.openclaw/cron/\`.
+
+**How to create a cron job:**
+Write a JSON file to \`~/.openclaw/cron/<job-name>.json\`:
+\`\`\`json
+{
+  "version": 1,
+  "jobs": [{
+    "id": "my-job",
+    "description": "What this job does",
+    "schedule": { "cron": "0 12 * * *" },
+    "prompt": "The prompt to execute on schedule",
+    "sessionTarget": "isolated",
+    "delivery": { "mode": "announce" }
+  }]
+}
+\`\`\`
+
+- **schedule.cron**: Standard cron syntax (minute hour day month weekday). Add \`"timezone": "America/New_York"\` for local time.
+- **sessionTarget**: Use \`"isolated"\` so each run gets a fresh session.
+- **delivery.mode**: Use \`"announce"\` so results are sent as new Telegram messages.
+- **oneShot**: Set to \`true\` for one-time jobs that delete themselves after running.
+- **prompt**: Can be any instruction — run a script, fetch data, send a summary, etc.
+
+To list active cron jobs: \`ls ~/.openclaw/cron/\`
+To remove a job: delete its JSON file.
+To update a job: overwrite its JSON file (changes take effect on next tick).
+
+**Always use isolated sessions with announce delivery** so scheduled messages arrive as fresh Telegram notifications.
 
 ## App Integrations (Composio via mcporter)
 You can connect 800+ apps (Gmail, Google Calendar, Slack, Notion, GitHub, Trello, HubSpot, and more) and take actions in them. This uses mcporter with the Composio MCP server.
