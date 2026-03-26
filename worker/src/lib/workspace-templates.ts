@@ -179,7 +179,11 @@ Key points:
 - Sites live at: \`~/.openclaw/canvas/<site-name>/index.html\`
 - Public URL: \`https://<site-name>-${instanceName}.instaclaw.bot/\`
 - **You MUST use the exec tool** (e.g. \`mkdir -p\` + \`cat > file\`) to write files to canvas -- the write tool blocks paths outside your workspace
-- Default to Linear's UI design language (clean, minimal, lots of whitespace, system font stack, neutral palette with one accent color) unless the user specifies a different style
+- **Design quality matters.** Refer to \`~/.openclaw/workspace/DESIGN-REFERENCE.md\` for CSS patterns, color palettes, and layout techniques.
+- Default to a dark theme with modern typography (Google Fonts like Playfair Display + Source Serif 4), responsive grids, and publication-quality styling unless the user specifies otherwise
+- Use \`clamp()\` for responsive font sizes, CSS Grid for layouts, and subtle animations (hover effects, transitions)
+- For articles/content pages, aim for the visual quality of The Atlantic or Wired — generous whitespace, clear hierarchy, accent colors
+- For dashboards/data pages, use card-based layouts with dark backgrounds, colored accents per section, and live data via fetch() + public APIs
 - Always tell the user the public URL after deploying
 
 ### Deleting & Restoring Websites
@@ -432,6 +436,100 @@ ${botConfig.extraContext}
   }
 
   return content;
+}
+
+export function generateDesignReference(): string {
+  return `# Web Design Reference
+
+## Typography
+- Use Google Fonts: Playfair Display (headlines), Source Serif 4 or Inter (body)
+- Responsive sizing: \`clamp(36px, 6vw, 56px)\` for hero headlines, \`clamp(16px, 2vw, 20px)\` for body
+- Letter-spacing: \`0.02em\` for headings, normal for body
+- Line-height: 1.6–1.8 for body text, 1.2 for headlines
+
+## Color Palettes
+
+### Dark Theme (default for dashboards)
+\`\`\`css
+--bg: #0a0f1e;
+--card-bg: rgba(255,255,255,0.04);
+--card-border: rgba(255,255,255,0.08);
+--text: #f1f5f9;
+--text-muted: #94a3b8;
+--accent-blue: #3b82f6;
+--accent-green: #22c55e;
+--accent-red: #ef4444;
+\`\`\`
+
+### Light Theme (articles/publications)
+\`\`\`css
+--bg: #fafafa;
+--card-bg: #ffffff;
+--text: #1a1a2e;
+--text-muted: #666;
+--accent: #2d5f8a;
+--link: #1a5276;
+--border: #e5e5e5;
+\`\`\`
+
+## Layout Patterns
+
+### Responsive Card Grid (dashboards)
+\`\`\`css
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; max-width: 1100px; margin: 0 auto; padding: 24px; }
+.card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 16px; padding: 24px; transition: transform 0.2s, box-shadow 0.2s; }
+.card:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,0,0,0.3); }
+\`\`\`
+
+### Article Layout (publications)
+\`\`\`css
+body { max-width: 720px; margin: 0 auto; padding: 40px 24px; font: 18px/1.7 'Source Serif 4', Georgia, serif; }
+h1 { font: 700 clamp(36px, 6vw, 56px)/1.15 'Playfair Display', serif; margin: 0 0 16px; }
+.subtitle { font-size: 22px; color: var(--text-muted); margin-bottom: 32px; }
+img { width: min(960px, 100%); margin: 32px auto; border-radius: 8px; }
+blockquote { border-left: 3px solid var(--accent); padding-left: 20px; font-style: italic; color: var(--text-muted); }
+\`\`\`
+
+## Bar Charts (data visualization)
+\`\`\`css
+.bar-chart { display: flex; flex-direction: column; gap: 14px; }
+.bar-row { display: grid; grid-template-columns: 140px 1fr; align-items: center; gap: 12px; }
+.bar-track { height: 36px; background: rgba(255,255,255,0.1); border-radius: 3px; display: flex; align-items: stretch; overflow: hidden; }
+.bar-fill { flex-shrink: 0; border-radius: 3px; display: flex; align-items: center; padding: 0 10px; color: #fff; font-weight: 700; font-size: 13px; }
+\`\`\`
+
+Width formula: \`width: calc((value / maxValue) * 80%)\`
+- Bars < 25% width: put label OUTSIDE the bar (as a sibling inside .bar-track)
+- Color coding: green = best/cheapest, blue = mid, orange = high, red = worst/expensive
+
+## Semantic Colors
+\`\`\`css
+--green: #2d8a4e;   /* positive, cheap, success */
+--blue: #355f86;    /* neutral, info, mid-range */
+--orange: #d4820a;  /* warning, mid-high */
+--red: #c0392b;     /* negative, expensive, error */
+--purple: #7c3aed;  /* accent, metadata, tags */
+\`\`\`
+
+## Mobile Breakpoint
+\`\`\`css
+@media (max-width: 600px) {
+  .grid { grid-template-columns: 1fr; padding: 16px; }
+  .bar-row { grid-template-columns: 110px 1fr; }
+  .bar-track { height: 28px; }
+  h1 { font-size: clamp(28px, 5vw, 36px); }
+}
+\`\`\`
+
+## Best Practices
+- Always use \`clamp()\` for responsive text — never fixed px for headings
+- Use CSS Grid for layouts, not flexbox (prevents squeezing)
+- Include \`<meta name="viewport" content="width=device-width, initial-scale=1">\`
+- Load Google Fonts via \`<link>\` in \`<head>\` — don't use system fonts for publication pages
+- Add subtle hover effects on interactive cards (\`transform: translateY(-2px)\`)
+- Use \`max-width\` constraints: 720px for articles, 1100px for dashboards
+- Dark theme for dashboards/data, light theme for articles/reading
+`;
 }
 
 export function generateCronJobs(loop: string, timezone?: string): string | null {

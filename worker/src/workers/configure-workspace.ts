@@ -8,6 +8,7 @@ import {
   generateUSER,
   generateAGENTS,
   generateMEMORY,
+  generateDesignReference,
   generateCronJobs,
   generateSiteCreatorSkill,
   generateDeploySiteScript,
@@ -117,6 +118,7 @@ export const configureWorkspaceWorker = new Worker(
         await writeFileSSH(ssh, `${WORKSPACE_DIR}/USER.md`, userMd);
         await writeFileSSH(ssh, `${WORKSPACE_DIR}/AGENTS.md`, agentsMd);
         await writeFileSSH(ssh, `${WORKSPACE_DIR}/MEMORY.md`, memoryMd);
+        await writeFileSSH(ssh, `${WORKSPACE_DIR}/DESIGN-REFERENCE.md`, generateDesignReference());
 
         // Write public-site-creator skill (always — handles missing instanceName gracefully)
         const skillDir = `${WORKSPACE_DIR}/skills/public-site-creator/scripts`;
