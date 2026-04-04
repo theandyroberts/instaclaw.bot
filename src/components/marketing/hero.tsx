@@ -56,11 +56,11 @@ export function Hero() {
 
           {/* Right — Animated Illustration */}
           <div className="relative flex items-center justify-center">
-            <div className="relative h-80 w-80 lg:h-[420px] lg:w-[420px]">
+            <div className="relative h-80 w-80 lg:h-[420px] lg:w-[420px] rounded-3xl border-[3px] border-foreground/80 bg-[#f5f4f0] overflow-hidden">
 
-              {/* Pulsing teal glow behind mascot */}
+              {/* Pulsing glow behind mascot */}
               <div
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-52 w-52 rounded-full bg-lime/15 blur-3xl"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-52 w-52 rounded-full bg-lime/20 blur-3xl"
                 style={{ animation: "glow-pulse 6s ease-in-out infinite" }}
               />
 
@@ -80,7 +80,7 @@ export function Hero() {
 
               {/* OpenClaw logo — top left */}
               <div
-                className="absolute left-2 top-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-card shadow-md"
+                className="absolute left-2 top-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-md"
                 style={{ animation: "float-a 4.2s ease-in-out infinite" }}
               >
                 <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -92,7 +92,7 @@ export function Hero() {
 
               {/* OpenAI logo — top right */}
               <div
-                className="absolute right-2 top-10 flex h-16 w-16 items-center justify-center rounded-2xl bg-card shadow-md"
+                className="absolute right-2 top-10 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-md"
                 style={{ animation: "float-b 5.1s ease-in-out infinite" }}
               >
                 <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -102,7 +102,7 @@ export function Hero() {
 
               {/* Claude logo — bottom left */}
               <div
-                className="absolute bottom-16 left-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-card shadow-md"
+                className="absolute bottom-16 left-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-md"
                 style={{ animation: "float-c 4.7s ease-in-out infinite" }}
               >
                 <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -113,25 +113,25 @@ export function Hero() {
 
               {/* Report ready pill — bottom right */}
               <div
-                className="absolute bottom-20 right-6 flex h-14 w-32 items-center justify-center rounded-xl bg-card shadow-md border border-border"
+                className="absolute bottom-20 right-6 flex h-14 w-32 items-center justify-center rounded-xl bg-white shadow-md"
                 style={{ animation: "float-d 3.9s ease-in-out infinite" }}
               >
-                <span className="text-sm text-muted-foreground font-medium">Report ready</span>
+                <span className="text-sm text-gray-600 font-medium">Report ready</span>
               </div>
 
               {/* Browser mockup — right side */}
               <div
-                className="absolute -right-4 top-28 w-36 rounded-lg bg-card shadow-lg border border-border overflow-hidden"
+                className="absolute -right-4 top-28 w-36 rounded-lg bg-white shadow-lg overflow-hidden"
                 style={{ animation: "float-b 6s ease-in-out infinite 1.5s" }}
               >
-                <div className="flex items-center gap-1 px-2 py-1.5 bg-secondary border-b border-border">
+                <div className="flex items-center gap-1 px-2 py-1.5 bg-gray-100 border-b border-gray-200">
                   <div className="h-1.5 w-1.5 rounded-full bg-ember/50" />
                   <div className="h-1.5 w-1.5 rounded-full bg-peach/50" />
                   <div className="h-1.5 w-1.5 rounded-full bg-lime/50" />
                 </div>
                 <div className="px-2 py-2 space-y-1.5">
                   <div className="h-1.5 w-full rounded bg-lime/15" />
-                  <div className="h-1.5 w-3/4 rounded bg-card" />
+                  <div className="h-1.5 w-3/4 rounded bg-gray-200" />
                   <div className="h-1.5 w-5/6 rounded bg-lime/10" />
                 </div>
               </div>
@@ -145,7 +145,7 @@ export function Hero() {
               >
                 <path
                   d="M80 70 L175 180"
-                  stroke="#BFF549"
+                  stroke="#8bc34a"
                   strokeWidth="1.5"
                   strokeDasharray="4 4"
                   opacity="0.35"
@@ -153,7 +153,7 @@ export function Hero() {
                 />
                 <path
                   d="M340 80 L245 180"
-                  stroke="#BFF549"
+                  stroke="#8bc34a"
                   strokeWidth="1.5"
                   strokeDasharray="4 4"
                   opacity="0.35"
@@ -161,7 +161,7 @@ export function Hero() {
                 />
                 <path
                   d="M90 320 L175 240"
-                  stroke="#BFF549"
+                  stroke="#8bc34a"
                   strokeWidth="1.5"
                   strokeDasharray="4 4"
                   opacity="0.35"
@@ -169,7 +169,7 @@ export function Hero() {
                 />
                 <path
                   d="M320 300 L245 240"
-                  stroke="#BFF549"
+                  stroke="#8bc34a"
                   strokeWidth="1.5"
                   strokeDasharray="4 4"
                   opacity="0.35"
