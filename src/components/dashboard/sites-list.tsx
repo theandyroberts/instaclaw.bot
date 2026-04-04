@@ -59,77 +59,68 @@ export function SitesList({
 
   return (
     <div className="space-y-2">
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <div className="grid grid-cols-2 gap-2 lg:grid-cols-3">
         {sites.map((site) => (
-          <div key={site.name}>
+          <div key={site.name} className="group relative">
             <a
               href={siteUrl(site.name)}
               target="_blank"
               rel="noopener noreferrer"
-              className="group block overflow-hidden rounded-lg border border-border transition-all hover:border-primary/40 hover:shadow-md"
+              className="block overflow-hidden rounded-md border border-border transition-all hover:border-primary/40 hover:shadow-md"
             >
-              {/* Screenshot or placeholder */}
+              {/* Thumbnail */}
               {site.screenshot ? (
-                <div className="aspect-[16/9] w-full overflow-hidden bg-gray-900">
+                <div className="aspect-[4/3] w-full overflow-hidden bg-gray-900">
                   <img
                     src={screenshotUrl(site)}
                     alt={site.title || site.name}
-                    className="h-full w-full object-cover object-top transition-transform group-hover:scale-[1.02]"
+                    className="h-full w-full object-cover object-top transition-transform group-hover:scale-[1.03]"
                     loading="lazy"
                   />
                 </div>
               ) : (
-                <div className="flex aspect-[16/9] w-full items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
-                  <Globe className="h-8 w-8 text-gray-600" />
+                <div className="flex aspect-[4/3] w-full items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+                  <Globe className="h-5 w-5 text-gray-600" />
                 </div>
               )}
 
-              {/* Content */}
-              <div className="p-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0 flex-1">
-                    <h4 className="truncate text-sm font-semibold group-hover:text-primary">
-                      {site.title || site.name}
-                    </h4>
-                    {site.description ? (
-                      <p className="mt-0.5 line-clamp-2 text-xs text-gray-400">
-                        {site.description}
-                      </p>
-                    ) : (
-                      <p className="mt-0.5 text-xs text-gray-500">{site.name}</p>
-                    )}
-                  </div>
-                  <ExternalLink className="mt-0.5 h-3.5 w-3.5 flex-shrink-0 text-gray-500 group-hover:text-primary" />
-                </div>
+              {/* Label */}
+              <div className="px-2 py-1.5">
+                <h4 className="truncate text-xs font-medium group-hover:text-primary">
+                  {site.title || site.name}
+                </h4>
+                {site.description && (
+                  <p className="mt-0.5 truncate text-[10px] text-gray-500">
+                    {site.description}
+                  </p>
+                )}
               </div>
             </a>
 
-            {/* Delete button below card */}
-            <div className="mt-1 flex items-center justify-end gap-1">
-              <span className="text-[10px] text-gray-500 font-mono">{site.name}</span>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleDelete(site.name);
-                }}
-                disabled={deleting === site.name}
-                className={`rounded p-1 transition-colors ${
-                  confirmDelete === site.name
-                    ? "bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400"
-                    : "text-gray-400 hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-gray-800 dark:hover:text-gray-300"
-                }`}
-                title={confirmDelete === site.name ? "Click again to confirm" : "Delete site"}
-              >
-                {deleting === site.name ? (
-                  <Loader2 className="h-3 w-3 animate-spin" />
-                ) : (
-                  <Trash2 className="h-3 w-3" />
-                )}
-              </button>
-            </div>
+            {/* Delete — top-right corner on hover */}
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                handleDelete(site.name);
+              }}
+              disabled={deleting === site.name}
+              className={`absolute right-1 top-1 rounded p-1 opacity-0 transition-all group-hover:opacity-100 ${
+                confirmDelete === site.name
+                  ? "bg-red-600/90 text-white opacity-100"
+                  : "bg-black/60 text-gray-300 hover:bg-red-600/80 hover:text-white"
+              }`}
+              title={confirmDelete === site.name ? "Click again to confirm" : "Delete site"}
+            >
+              {deleting === site.name ? (
+                <Loader2 className="h-3 w-3 animate-spin" />
+              ) : (
+                <Trash2 className="h-3 w-3" />
+              )}
+            </button>
             {confirmDelete === site.name && (
-              <p className="mt-0.5 text-[10px] text-red-500 text-right">
-                Click trash again to confirm. Recoverable for 30 days.
+              <p className="mt-0.5 text-center text-[10px] text-red-500">
+                Click again to confirm
               </p>
             )}
           </div>
