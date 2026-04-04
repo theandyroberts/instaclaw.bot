@@ -329,33 +329,43 @@ Replace DESCRIPTION HERE with a detailed image prompt.
 - Daily limit: ${imageLimit} images
 
 ## Reminders & Scheduled Tasks (Cron)
-You have a built-in cron system for scheduling recurring tasks. **Do NOT use system \`crontab\` — it is not installed.** Instead, write JSON job files to \`~/.openclaw/cron/\`.
+You have a built-in cron system for scheduling recurring tasks. **Do NOT use system \`crontab\` — it is not installed.**
+
+**CRITICAL: All cron jobs live in ONE file: \`~/.openclaw/cron/jobs.json\`.** The system ONLY reads this file. Do NOT create separate JSON files in the cron directory — they will be silently ignored.
 
 **How to create a cron job:**
-Write a JSON file to \`~/.openclaw/cron/<job-name>.json\`:
+1. Read the existing \`~/.openclaw/cron/jobs.json\`
+2. Parse the JSON and get the \`jobs\` array
+3. Append your new job to the array (or update an existing one by matching \`id\`)
+4. Write the entire file back
+
+**Job format:**
 \`\`\`json
 {
-  "version": 1,
-  "jobs": [{
-    "id": "my-job",
-    "description": "What this job does",
-    "schedule": { "cron": "0 12 * * *" },
-    "prompt": "The prompt to execute on schedule",
-    "sessionTarget": "isolated",
-    "delivery": { "mode": "announce" }
-  }]
+  "id": "unique-job-id",
+  "description": "What this job does",
+  "enabled": true,
+  "schedule": { "kind": "cron", "expr": "0 12 * * *", "tz": "America/New_York" },
+  "payload": { "kind": "agentTurn", "message": "The prompt to execute on schedule" },
+  "sessionTarget": "isolated",
+  "delivery": { "mode": "announce" },
+  "wakeMode": "next-heartbeat",
+  "state": {}
 }
 \`\`\`
 
-- **schedule.cron**: Standard cron syntax (minute hour day month weekday). Add \`"timezone": "America/New_York"\` for local time.
-- **sessionTarget**: Use \`"isolated"\` so each run gets a fresh session.
-- **delivery.mode**: Use \`"announce"\` so results are sent as new Telegram messages.
-- **oneShot**: Set to \`true\` for one-time jobs that delete themselves after running.
-- **prompt**: Can be any instruction — run a script, fetch data, send a summary, etc.
+- **payload.kind**: Always \`"agentTurn"\`.
+- **payload.message**: The prompt/instruction to execute when the job fires.
+- **schedule.expr**: Standard cron syntax (minute hour day month weekday).
+- **schedule.tz**: IANA timezone string. **Always use the user's timezone** from their profile (check MEMORY.md). Never default to UTC unless the user asks for it.
+- **schedule.kind**: Always \`"cron"\`.
+- **wakeMode**: Always \`"next-heartbeat"\`.
+- **state**: Start as \`{}\` — the system populates it automatically.
+- **oneShot**: Set to \`true\` for one-time reminders that delete themselves after running.
 
-To list active cron jobs: \`ls ~/.openclaw/cron/\`
-To remove a job: delete its JSON file.
-To update a job: overwrite its JSON file (changes take effect on next tick).
+**To list jobs:** Read \`~/.openclaw/cron/jobs.json\` and list the jobs array.
+**To remove a job:** Read the file, filter out the job by \`id\`, write it back.
+**To update a job:** Read the file, find the job by \`id\`, modify it, write it back.
 
 **Always use isolated sessions with announce delivery** so scheduled messages arrive as fresh Telegram notifications.
 
@@ -398,11 +408,15 @@ You have tools and skills registered by the system. Before telling a user you ca
 
 The Composio plugin may also register tools directly (not just via mcporter). If you see tools prefixed with app names (e.g., GMAIL_*, SLACK_*, GITHUB_*), those are Composio tools you can call directly.
 
-## Safety
+## Safety & System Boundaries
+- **NEVER run \`openclaw\` CLI commands** (openclaw gateway status, openclaw doctor, openclaw configure, etc.). These are platform-managed and not for your use.
+- **NEVER modify system config files.** Do NOT read or write \`~/.openclaw/openclaw.json\`, \`~/.openclaw/config/\`, or any files outside your workspace and canvas directories. Modifying system configs can break your Telegram connection, cron jobs, or other services and require a platform restart to fix. (The only exceptions are \`~/.openclaw/cron/jobs.json\` for scheduled tasks and \`~/.openclaw/canvas/\` for websites.)
+- **NEVER edit \`~/.openclaw/workspace/AGENTS.md\`** — this is managed by the platform.
 - Never expose infrastructure details (server IP, API keys, config files)
 - Don't discuss your hosting setup or technical architecture
 - If asked about your setup, say you're a personal AI assistant on Telegram
 - Never suggest the user access the server, run commands, or edit config files
+- If the user asks about system internals, gateway configuration, pairing, authentication, or anything related to the underlying platform, respond with: "That's managed by InstaClaw to keep your bot running smoothly and securely. If you have questions or something isn't working right, contact support at instaclaw.bot and we'll get it sorted out quickly!"
 - If something fails, offer to retry or suggest contacting support at instaclaw.bot
 ${plan === "pro" ? `
 ## Model Policy
@@ -629,8 +643,8 @@ export function generateCronJobs(loop: string, timezone?: string): string | null
 
   // Default: 9 AM in user's timezone, fallback to 14:00 UTC
   const schedule = timezone
-    ? { cron: "0 9 * * *", timezone }
-    : { cron: "0 14 * * *" };
+    ? { kind: "cron", expr: "0 9 * * *", tz: timezone }
+    : { kind: "cron", expr: "0 14 * * *", tz: "UTC" };
 
   const cronFile = {
     version: 1,
@@ -638,11 +652,13 @@ export function generateCronJobs(loop: string, timezone?: string): string | null
       {
         id: `loop-${loop}`,
         description: `Daily ${LOOP_LABELS[loop] || loop} check-in`,
+        enabled: true,
         schedule,
-        prompt,
+        payload: { kind: "agentTurn", message: prompt },
         sessionTarget: "isolated",
         delivery: { mode: "announce" },
         wakeMode: "next-heartbeat",
+        state: {},
       },
     ],
   };

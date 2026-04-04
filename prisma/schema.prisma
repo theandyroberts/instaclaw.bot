@@ -90,6 +90,7 @@ model Instance {
   onboardingStep      OnboardingStep @default(awaiting_provision)
   telegramBotToken    String?        @db.Text
   telegramBotUsername  String?
+  telegramChatId      String?
   llmProvider         LLMProvider    @default(kimi)
   openrouterKeyId     String?
   llmConfigured       Boolean        @default(false)

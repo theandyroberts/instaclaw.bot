@@ -209,6 +209,11 @@ export function OnboardingFunnel({
     if (!justSignedIn || !isAuthenticated || justSignedInHandled.current) return;
     justSignedInHandled.current = true;
 
+    // Fire Meta Pixel Lead event on signup
+    if (typeof window !== "undefined" && typeof (window as any).fbq === "function") {
+      (window as any).fbq("track", "Lead");
+    }
+
     const saved = loadWizardState();
     if (!saved) return;
 

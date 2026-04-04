@@ -122,17 +122,25 @@ describe("generateCronJobs", () => {
     expect(generateCronJobs("nonexistent")).toBeNull();
   });
 
-  it("uses provided timezone", () => {
+  it("uses provided timezone with correct field names", () => {
     const result = generateCronJobs("better-writer", "America/New_York");
     const parsed = JSON.parse(result!);
-    expect(parsed.jobs[0].schedule.timezone).toBe("America/New_York");
+    expect(parsed.jobs[0].schedule.kind).toBe("cron");
+    expect(parsed.jobs[0].schedule.expr).toBe("0 9 * * *");
+    expect(parsed.jobs[0].schedule.tz).toBe("America/New_York");
+    expect(parsed.jobs[0].payload.kind).toBe("agentTurn");
+    expect(parsed.jobs[0].payload.message).toBeTruthy();
+    expect(parsed.jobs[0].prompt).toBeUndefined();
+    expect(parsed.jobs[0].enabled).toBe(true);
+    expect(parsed.jobs[0].state).toEqual({});
   });
 
   it("uses UTC fallback when no timezone", () => {
     const result = generateCronJobs("better-writer");
     const parsed = JSON.parse(result!);
-    expect(parsed.jobs[0].schedule.cron).toBe("0 14 * * *");
-    expect(parsed.jobs[0].schedule.timezone).toBeUndefined();
+    expect(parsed.jobs[0].schedule.kind).toBe("cron");
+    expect(parsed.jobs[0].schedule.expr).toBe("0 14 * * *");
+    expect(parsed.jobs[0].schedule.tz).toBe("UTC");
   });
 });
 

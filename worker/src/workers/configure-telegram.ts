@@ -37,6 +37,8 @@ export const configureTelegramWorker = new Worker(
 
         // Update Telegram configuration (OpenClaw format)
         const channels = (config.channels as Record<string, unknown>) || {};
+        // Start with open DM policy — health check will lock to allowlist
+        // once we capture the user's chat ID from the first /start message
         channels.telegram = {
           enabled: true,
           botToken: token,

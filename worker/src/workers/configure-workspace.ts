@@ -126,14 +126,29 @@ export const configureWorkspaceWorker = new Worker(
         await writeFileSSH(ssh, `${WORKSPACE_DIR}/skills/public-site-creator/SKILL.md`, generateSiteCreatorSkill(instance.instanceName));
         await writeFileSSH(ssh, `${skillDir}/deploy_site.py`, generateDeploySiteScript(instance.instanceName));
 
-        // Write cron jobs if loop is set
+        // Write cron jobs if loop is set — merge with existing jobs.json to preserve agent-created jobs
         if (botConfig.loop && botConfig.loop !== "just-exploring") {
           const cronJson = generateCronJobs(botConfig.loop, botConfig.timezone);
           if (cronJson) {
             const cronDir = "/opt/openclaw/home/.openclaw/cron";
+            const cronPath = `${cronDir}/jobs.json`;
             await execSSH(ssh, `mkdir -p ${cronDir}`);
-            await writeFileSSH(ssh, `${cronDir}/jobs.json`, cronJson);
-            console.log(`[configure-workspace:${job.id}] Wrote cron/jobs.json for loop: ${botConfig.loop}`);
+
+            // Read existing jobs.json and preserve non-loop jobs
+            let existingJobs: { id: string }[] = [];
+            try {
+              const existing = JSON.parse(await execSSH(ssh, `cat ${cronPath}`));
+              existingJobs = (existing.jobs || []).filter(
+                (j: { id: string }) => !j.id.startsWith("loop-")
+              );
+            } catch {
+              // No existing file or invalid JSON
+            }
+
+            const loopFile = JSON.parse(cronJson);
+            loopFile.jobs = [...loopFile.jobs, ...existingJobs];
+            await writeFileSSH(ssh, cronPath, JSON.stringify(loopFile, null, 2));
+            console.log(`[configure-workspace:${job.id}] Wrote cron/jobs.json for loop: ${botConfig.loop} (preserved ${existingJobs.length} existing jobs)`);
           }
         }
 

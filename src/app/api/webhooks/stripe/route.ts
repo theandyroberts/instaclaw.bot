@@ -6,6 +6,33 @@ import { headers } from "next/headers";
 import type Stripe from "stripe";
 import { NextResponse } from "next/server";
 
+const META_PIXEL_ID = "1155286039988555";
+const META_ACCESS_TOKEN = process.env.META_CONVERSIONS_API_TOKEN;
+
+async function fireMetaPurchase(email: string, amountUsd: number) {
+  if (!META_ACCESS_TOKEN) return;
+  try {
+    const crypto = await import("crypto");
+    const hashedEmail = crypto.createHash("sha256").update(email.toLowerCase().trim()).digest("hex");
+    await fetch(`https://graph.facebook.com/v21.0/${META_PIXEL_ID}/events`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        data: [{
+          event_name: "Purchase",
+          event_time: Math.floor(Date.now() / 1000),
+          action_source: "website",
+          user_data: { em: [hashedEmail] },
+          custom_data: { currency: "USD", value: amountUsd },
+        }],
+        access_token: META_ACCESS_TOKEN,
+      }),
+    });
+  } catch (err) {
+    console.error("Meta CAPI Purchase failed:", err);
+  }
+}
+
 export const dynamic = 'force-dynamic';
 
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -124,6 +151,13 @@ export async function POST(req: Request) {
               currentPeriodEnd: period.currentPeriodEnd,
             },
           });
+
+          // Fire Meta Pixel Purchase via Conversions API
+          const amount = session.amount_total
+            ? session.amount_total / 100
+            : 35;
+          const customerEmail = session.customer_details?.email || session.customer_email || "";
+          fireMetaPurchase(customerEmail, amount);
 
           // Create instance and trigger provisioning
           const instance = await prisma.instance.create({

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle2, ExternalLink, MessageCircle } from "lucide-react";
 import Link from "next/link";
@@ -33,6 +33,17 @@ const confettiColors = [
 ];
 
 export function StepCelebration({ botUsername, botName }: StepCelebrationProps) {
+  // Fire Meta Pixel Purchase event once on mount
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const fbq = (window as any).fbq;
+    if (typeof fbq !== "function") return;
+    // Dedupe: only fire once per session
+    if (sessionStorage.getItem("instaclaw_purchase_fired")) return;
+    sessionStorage.setItem("instaclaw_purchase_fired", "1");
+    fbq("track", "Purchase", { currency: "USD", value: 0 });
+  }, []);
+
   const confettiPieces = useMemo(() => {
     return Array.from({ length: 24 }, (_, i) => ({
       id: i,

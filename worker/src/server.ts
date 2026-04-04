@@ -172,6 +172,7 @@ app.use(async (req, res, next) => {
         req.headers.host = "127.0.0.1:18789";
         req.headers.origin = "http://127.0.0.1:18789";
         (req as any).__proxyTarget = `http://${customDomain.instance.tailscaleIp}:18789`;
+        (req as any).__isCanvasSite = true;
         return next();
       }
     }
@@ -217,6 +218,7 @@ app.use(async (req, res, next) => {
     req.headers.origin = "http://127.0.0.1:18789";
 
     (req as any).__proxyTarget = `http://${instance.tailscaleIp}:18789`;
+    (req as any).__isCanvasSite = true;
     return next();
   }
 
@@ -285,6 +287,32 @@ app.use(async (req, res, next) => {
   req.headers.origin = "http://127.0.0.1:18789";
   next();
 });
+
+// ---------------------------------------------------------------------------
+// Canvas site injection — GA4 analytics, SEO meta, and "Built with" footer.
+// Injected into every public canvas site HTML response.
+// ---------------------------------------------------------------------------
+const GA_MEASUREMENT_ID = process.env.GA_MEASUREMENT_ID || "";
+
+const CANVAS_HEAD_INJECT = GA_MEASUREMENT_ID
+  ? `<!-- InstaClaw Analytics & SEO -->
+<meta name="generator" content="InstaClaw">
+<meta property="og:site_name" content="InstaClaw">
+<link rel="icon" href="https://instaclaw.bot/favicon.ico">
+<script async src="https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}"></script>
+<script>
+window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}
+gtag('js',new Date());gtag('config','${GA_MEASUREMENT_ID}',{cookie_flags:'SameSite=None;Secure'});
+</script>`
+  : `<!-- InstaClaw SEO -->
+<meta name="generator" content="InstaClaw">
+<meta property="og:site_name" content="InstaClaw">
+<link rel="icon" href="https://instaclaw.bot/favicon.ico">`;
+
+const CANVAS_BODY_INJECT = `
+<div style="text-align:center;padding:24px 16px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;color:#888;border-top:1px solid rgba(128,128,128,0.15);margin-top:40px">
+  Built with <a href="https://instaclaw.bot?ref=canvas" target="_blank" rel="noopener" style="color:#3b82f6;text-decoration:none;font-weight:500">InstaClaw</a>
+</div>`;
 
 // ---------------------------------------------------------------------------
 // Console UI customisation script — injected into the SPA HTML.
@@ -429,9 +457,19 @@ const consoleProxy = createProxyMiddleware({
             )
           );
         }
-        // Inject our customisation script before </head>
-        const html = buffer.toString("utf-8");
-        return html.replace("</head>", CONSOLE_INJECT_SCRIPT + "</head>");
+
+        let html = buffer.toString("utf-8");
+
+        if ((req as any).__isCanvasSite) {
+          // Canvas site: inject analytics + SEO in head, "Built with" footer before </body>
+          html = html.replace("</head>", CANVAS_HEAD_INJECT + "\n</head>");
+          html = html.replace("</body>", CANVAS_BODY_INJECT + "\n</body>");
+        } else {
+          // Console UI: inject customisation script
+          html = html.replace("</head>", CONSOLE_INJECT_SCRIPT + "</head>");
+        }
+
+        return html;
       }
       return buffer;
     }),
