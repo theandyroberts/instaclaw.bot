@@ -80,7 +80,7 @@ export function Hero() {
 
               {/* OpenClaw logo — top left */}
               <div
-                className="absolute left-2 top-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-md"
+                className="absolute left-6 top-10 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-md"
                 style={{ animation: "float-a 4.2s ease-in-out infinite" }}
               >
                 <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -92,7 +92,7 @@ export function Hero() {
 
               {/* OpenAI logo — top right */}
               <div
-                className="absolute right-2 top-10 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-md"
+                className="absolute right-6 top-10 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-md"
                 style={{ animation: "float-b 5.1s ease-in-out infinite" }}
               >
                 <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -102,7 +102,7 @@ export function Hero() {
 
               {/* Claude logo — bottom left */}
               <div
-                className="absolute bottom-16 left-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-md"
+                className="absolute bottom-20 left-8 flex h-16 w-16 items-center justify-center rounded-2xl bg-white shadow-md"
                 style={{ animation: "float-c 4.7s ease-in-out infinite" }}
               >
                 <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -113,7 +113,7 @@ export function Hero() {
 
               {/* Report ready pill — bottom right */}
               <div
-                className="absolute bottom-20 right-6 flex h-14 w-32 items-center justify-center rounded-xl bg-white shadow-md"
+                className="absolute bottom-8 right-8 flex h-14 w-32 items-center justify-center rounded-xl bg-white shadow-md"
                 style={{ animation: "float-d 3.9s ease-in-out infinite" }}
               >
                 <span className="text-sm text-gray-600 font-medium">Report ready</span>
@@ -121,7 +121,7 @@ export function Hero() {
 
               {/* Browser mockup — right side */}
               <div
-                className="absolute -right-4 top-28 w-36 rounded-lg bg-white shadow-lg overflow-hidden"
+                className="absolute right-4 top-[140px] w-36 rounded-lg bg-white shadow-lg overflow-hidden"
                 style={{ animation: "float-b 6s ease-in-out infinite 1.5s" }}
               >
                 <div className="flex items-center gap-1 px-2 py-1.5 bg-gray-100 border-b border-gray-200">
@@ -144,7 +144,7 @@ export function Hero() {
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <path
-                  d="M80 70 L175 180"
+                  d="M90 85 L175 180"
                   stroke="#8bc34a"
                   strokeWidth="1.5"
                   strokeDasharray="4 4"
@@ -152,7 +152,7 @@ export function Hero() {
                   style={{ animation: "dash-flow 2s linear infinite" }}
                 />
                 <path
-                  d="M340 80 L245 180"
+                  d="M330 85 L245 180"
                   stroke="#8bc34a"
                   strokeWidth="1.5"
                   strokeDasharray="4 4"
@@ -160,7 +160,7 @@ export function Hero() {
                   style={{ animation: "dash-flow 2.4s linear infinite reverse" }}
                 />
                 <path
-                  d="M90 320 L175 240"
+                  d="M100 310 L175 240"
                   stroke="#8bc34a"
                   strokeWidth="1.5"
                   strokeDasharray="4 4"
@@ -168,7 +168,7 @@ export function Hero() {
                   style={{ animation: "dash-flow 1.8s linear infinite 0.5s" }}
                 />
                 <path
-                  d="M320 300 L245 240"
+                  d="M310 330 L245 240"
                   stroke="#8bc34a"
                   strokeWidth="1.5"
                   strokeDasharray="4 4"
