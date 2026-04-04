@@ -15,10 +15,10 @@ export function StepWelcome({ planName, planPrice, onNext, onClose }: StepWelcom
   return (
     <div className="mx-auto max-w-lg space-y-8 text-center">
       <div>
-        <h2 className="text-3xl font-bold text-gray-100">
+        <h2 className="text-3xl font-bold text-foreground">
           Let&apos;s get you set up with your AI assistant!
         </h2>
-        <p className="mt-3 text-lg text-gray-400">
+        <p className="mt-3 text-lg text-muted-foreground">
           We&apos;ll walk you through a few quick steps to personalize your bot.
         </p>
       </div>
@@ -31,7 +31,7 @@ export function StepWelcome({ planName, planPrice, onNext, onClose }: StepWelcom
           <button
             type="button"
             onClick={onClose}
-            className="text-sm text-gray-500 hover:text-gray-300 underline"
+            className="text-sm text-muted-foreground hover:text-foreground underline"
           >
             Change plan
           </button>
