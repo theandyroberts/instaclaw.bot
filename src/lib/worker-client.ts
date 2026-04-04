@@ -60,9 +60,16 @@ export async function enqueueNameUpdate(instanceId: string) {
   return callWorker("/jobs/update-instance-name", { instanceId });
 }
 
-export async function listSites(instanceId: string): Promise<string[]> {
+export interface SiteInfo {
+  name: string;
+  title: string;
+  description: string;
+  screenshot: string;
+}
+
+export async function listSites(instanceId: string): Promise<SiteInfo[]> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 5000);
+  const timeout = setTimeout(() => controller.abort(), 10000);
   try {
     const response = await fetch(`${WORKER_URL}/instances/${instanceId}/sites`, {
       headers: {
@@ -73,7 +80,11 @@ export async function listSites(instanceId: string): Promise<string[]> {
 
     if (!response.ok) return [];
     const data = await response.json();
-    return data.sites || [];
+    const sites = data.sites || [];
+    // Handle both old format (string[]) and new format (SiteInfo[])
+    return sites.map((s: string | SiteInfo) =>
+      typeof s === "string" ? { name: s, title: "", description: "", screenshot: "" } : s
+    );
   } catch {
     return [];
   } finally {

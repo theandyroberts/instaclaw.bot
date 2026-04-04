@@ -79,7 +79,7 @@ export default async function DashboardPage() {
   if (!instance || !subscription) redirect("/onboarding");
 
   // Fetch sites list if instance has a name
-  let sites: string[] = [];
+  let sites: import("@/lib/worker-client").SiteInfo[] = [];
   if (instance.status === "active" && instance.instanceName) {
     try {
       sites = await listSites(instance.id);

@@ -15,6 +15,7 @@ import { scheduleHealthChecks } from "./workers/health-check";
 import { schedulePoolMaintenance } from "./workers/pool-maintain";
 import { scheduleModelWatch } from "./workers/model-audit";
 import { scheduleUsageCollection } from "./workers/usage-collect";
+import { scheduleScreenshots } from "./workers/site-screenshots";
 import { ensureFirewall } from "./lib/firewall";
 
 const PORT = parseInt(process.env.PORT || "3001");
@@ -49,6 +50,11 @@ const server = app.listen(PORT, async () => {
   // Schedule LLM usage collection
   scheduleUsageCollection().catch((err) => {
     console.error("Failed to schedule usage collection:", err);
+  });
+
+  // Schedule site screenshot capture
+  scheduleScreenshots().catch((err) => {
+    console.error("Failed to schedule site screenshots:", err);
   });
 });
 

@@ -711,7 +711,7 @@ app.post("/jobs/update-instance-name", async (req, res) => {
   }
 });
 
-// List public sites for an instance
+// List public sites for an instance (with metadata scraped from HTML)
 app.get("/instances/:instanceId/sites", async (req, res) => {
   try {
     const { instanceId } = req.params;
@@ -732,10 +732,42 @@ app.get("/instances/:instanceId/sites", async (req, res) => {
         ssh,
         "ls /opt/openclaw/home/.openclaw/canvas/ 2>/dev/null || true"
       );
-      const sites = output
+      const siteNames = output
         .split("\n")
         .map((s) => s.trim())
         .filter((s) => s && s !== ".trash");
+
+      // Scrape title + description from each site's index.html
+      const sites = await Promise.all(
+        siteNames.map(async (name) => {
+          let title = "";
+          let description = "";
+          let screenshot = "";
+          try {
+            const head = await execSSH(
+              ssh,
+              `head -50 /opt/openclaw/home/.openclaw/canvas/${name}/index.html 2>/dev/null || true`
+            );
+            const titleMatch = head.match(/<title[^>]*>([^<]+)<\/title>/i);
+            if (titleMatch) title = titleMatch[1].trim();
+            const descMatch = head.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
+              || head.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
+            if (descMatch) description = descMatch[1].trim();
+            // Check for screenshot
+            const hasScreenshot = await execSSH(
+              ssh,
+              `test -f /opt/openclaw/home/.openclaw/canvas/${name}/.screenshot.jpg && echo yes || echo no`
+            );
+            if (hasScreenshot.trim() === "yes") {
+              screenshot = `/__openclaw__/canvas/${name}/.screenshot.jpg`;
+            }
+          } catch {
+            // Non-blocking — site still appears without metadata
+          }
+          return { name, title, description, screenshot };
+        })
+      );
+
       res.json({ sites });
     } finally {
       ssh.dispose();
