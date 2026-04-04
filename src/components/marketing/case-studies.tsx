@@ -37,7 +37,7 @@ export function CaseStudies() {
       id="examples"
       className="relative px-4 py-24 overflow-hidden"
       style={{
-        background: "linear-gradient(160deg, rgba(252,239,195,0.4) 0%, rgba(0,206,200,0.06) 60%, rgba(255,156,95,0.08) 100%)",
+        background: "linear-gradient(160deg, rgba(191,245,73,0.04) 0%, rgba(235,66,3,0.06) 60%, rgba(191,245,73,0.03) 100%)",
       }}
     >
       <div className="relative mx-auto max-w-6xl">
@@ -54,14 +54,14 @@ export function CaseStudies() {
           {caseStudies.map((study) => (
             <div
               key={study.name}
-              className="rounded-2xl bg-white border border-border overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1"
+              className="rounded-2xl bg-card border border-border overflow-hidden transition-all hover:shadow-xl hover:-translate-y-1"
             >
               {/* Screenshot */}
               <div className="border-b border-border bg-secondary">
                 <div className="flex items-center gap-1.5 px-4 py-2.5">
                   <div className="h-2.5 w-2.5 rounded-full bg-ember/40" />
                   <div className="h-2.5 w-2.5 rounded-full bg-peach/50" />
-                  <div className="h-2.5 w-2.5 rounded-full bg-teal/40" />
+                  <div className="h-2.5 w-2.5 rounded-full bg-lime/40" />
                   <span className="ml-3 text-xs text-muted-foreground truncate">{study.siteUrl}</span>
                 </div>
                 <div className="relative h-56 overflow-hidden">
@@ -88,7 +88,7 @@ export function CaseStudies() {
                 </p>
 
                 {study.quote && (
-                  <blockquote className="mb-4 border-l-4 border-teal pl-4">
+                  <blockquote className="mb-4 border-l-4 border-lime pl-4">
                     <p className="text-foreground italic leading-relaxed">
                       &ldquo;{study.quote}&rdquo;
                     </p>
@@ -116,7 +116,7 @@ export function CaseStudies() {
                     href={study.siteUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm text-teal hover:text-teal/80 font-medium transition-colors"
+                    className="inline-flex items-center gap-1.5 text-sm text-lime hover:text-lime/80 font-medium transition-colors"
                   >
                     View live site
                     <ExternalLink className="h-3.5 w-3.5" />

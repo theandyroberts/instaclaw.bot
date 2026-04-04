@@ -41,10 +41,10 @@ export function Capabilities() {
           {capabilities.map((cap) => (
             <div
               key={cap.title}
-              className="rounded-2xl bg-sand p-10 transition-all hover:shadow-lg hover:-translate-y-1"
+              className="rounded-2xl bg-card p-10 transition-all hover:shadow-lg hover:-translate-y-1"
             >
-              <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-teal/10">
-                <cap.icon className="h-7 w-7 text-teal" />
+              <div className="mb-5 flex h-14 w-14 items-center justify-center rounded-xl bg-lime/10">
+                <cap.icon className="h-7 w-7 text-lime" />
               </div>
               <h3
                 className="mb-3 text-2xl font-bold text-foreground"

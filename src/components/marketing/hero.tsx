@@ -8,11 +8,11 @@ import { smoothScrollTo } from "@/lib/smooth-scroll";
 export function Hero() {
   return (
     <section className="relative overflow-hidden px-4 py-28 md:py-40">
-      {/* Warm gradient background */}
+      {/* Subtle gradient glow */}
       <div
         className="absolute inset-0"
         style={{
-          background: "linear-gradient(135deg, rgba(0,206,200,0.08) 0%, rgba(252,239,195,0.3) 40%, rgba(255,156,95,0.1) 100%)",
+          background: "linear-gradient(135deg, rgba(191,245,73,0.04) 0%, rgba(235,66,3,0.06) 50%, rgba(191,245,73,0.03) 100%)",
         }}
       />
 
@@ -20,7 +20,7 @@ export function Hero() {
         <div className="grid items-center gap-12 md:grid-cols-2 md:gap-8 lg:gap-16">
           {/* Left — Copy */}
           <div>
-            <div className="mb-6 inline-flex items-center rounded-full border border-border bg-white px-4 py-1.5 text-sm text-foreground shadow-sm">
+            <div className="mb-6 inline-flex items-center rounded-full border border-border bg-card px-4 py-1.5 text-sm text-foreground shadow-sm">
               <Zap className="mr-2 h-4 w-4 text-ember" />
               Powered by OpenClaw — the #1 open-source AI assistant
             </div>
@@ -30,7 +30,7 @@ export function Hero() {
               style={{ fontFamily: "var(--font-heading)" }}
             >
               Meet your<br />
-              <span className="text-teal">AI teammate.</span>
+              <span className="text-lime">AI teammate.</span>
             </h1>
 
             <p className="mb-5 max-w-lg text-xl text-muted-foreground md:text-2xl leading-relaxed">
@@ -60,7 +60,7 @@ export function Hero() {
 
               {/* Pulsing teal glow behind mascot */}
               <div
-                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-52 w-52 rounded-full bg-teal/15 blur-3xl"
+                className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 h-52 w-52 rounded-full bg-lime/15 blur-3xl"
                 style={{ animation: "glow-pulse 6s ease-in-out infinite" }}
               />
 
@@ -80,11 +80,11 @@ export function Hero() {
 
               {/* OpenClaw logo — top left */}
               <div
-                className="absolute left-2 top-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-sand shadow-md"
+                className="absolute left-2 top-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-card shadow-md"
                 style={{ animation: "float-a 4.2s ease-in-out infinite" }}
               >
                 <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M12 2C8.5 2 5 4.5 5 9c0 2 .8 3.5 2 4.5L5.5 18c-.3.8.1 1.5.8 1.8l1.5.6c.7.3 1.5-.1 1.8-.8l1-3c.4.1.9.1 1.4.1s1-.1 1.4-.1l1 3c.3.7 1.1 1.1 1.8.8l1.5-.6c.7-.3 1.1-1 .8-1.8L16 13.5c1.2-1 2-2.5 2-4.5 0-4.5-3.5-7-6-7Z" fill="#00CEC8" />
+                  <path d="M12 2C8.5 2 5 4.5 5 9c0 2 .8 3.5 2 4.5L5.5 18c-.3.8.1 1.5.8 1.8l1.5.6c.7.3 1.5-.1 1.8-.8l1-3c.4.1.9.1 1.4.1s1-.1 1.4-.1l1 3c.3.7 1.1 1.1 1.8.8l1.5-.6c.7-.3 1.1-1 .8-1.8L16 13.5c1.2-1 2-2.5 2-4.5 0-4.5-3.5-7-6-7Z" fill="#BFF549" />
                   <circle cx="9.5" cy="8.5" r="1.5" fill="white" />
                   <circle cx="14.5" cy="8.5" r="1.5" fill="white" />
                 </svg>
@@ -92,7 +92,7 @@ export function Hero() {
 
               {/* OpenAI logo — top right */}
               <div
-                className="absolute right-2 top-10 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#f7f7f8] shadow-md"
+                className="absolute right-2 top-10 flex h-16 w-16 items-center justify-center rounded-2xl bg-card shadow-md"
                 style={{ animation: "float-b 5.1s ease-in-out infinite" }}
               >
                 <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -102,7 +102,7 @@ export function Hero() {
 
               {/* Claude logo — bottom left */}
               <div
-                className="absolute bottom-16 left-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#faf5f1] shadow-md"
+                className="absolute bottom-16 left-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-card shadow-md"
                 style={{ animation: "float-c 4.7s ease-in-out infinite" }}
               >
                 <svg className="h-8 w-8" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -113,7 +113,7 @@ export function Hero() {
 
               {/* Report ready pill — bottom right */}
               <div
-                className="absolute bottom-20 right-6 flex h-14 w-32 items-center justify-center rounded-xl bg-white shadow-md border border-border"
+                className="absolute bottom-20 right-6 flex h-14 w-32 items-center justify-center rounded-xl bg-card shadow-md border border-border"
                 style={{ animation: "float-d 3.9s ease-in-out infinite" }}
               >
                 <span className="text-sm text-muted-foreground font-medium">Report ready</span>
@@ -121,18 +121,18 @@ export function Hero() {
 
               {/* Browser mockup — right side */}
               <div
-                className="absolute -right-4 top-28 w-36 rounded-lg bg-white shadow-lg border border-border overflow-hidden"
+                className="absolute -right-4 top-28 w-36 rounded-lg bg-card shadow-lg border border-border overflow-hidden"
                 style={{ animation: "float-b 6s ease-in-out infinite 1.5s" }}
               >
                 <div className="flex items-center gap-1 px-2 py-1.5 bg-secondary border-b border-border">
                   <div className="h-1.5 w-1.5 rounded-full bg-ember/50" />
                   <div className="h-1.5 w-1.5 rounded-full bg-peach/50" />
-                  <div className="h-1.5 w-1.5 rounded-full bg-teal/50" />
+                  <div className="h-1.5 w-1.5 rounded-full bg-lime/50" />
                 </div>
                 <div className="px-2 py-2 space-y-1.5">
-                  <div className="h-1.5 w-full rounded bg-teal/15" />
-                  <div className="h-1.5 w-3/4 rounded bg-sand" />
-                  <div className="h-1.5 w-5/6 rounded bg-teal/10" />
+                  <div className="h-1.5 w-full rounded bg-lime/15" />
+                  <div className="h-1.5 w-3/4 rounded bg-card" />
+                  <div className="h-1.5 w-5/6 rounded bg-lime/10" />
                 </div>
               </div>
 
@@ -145,7 +145,7 @@ export function Hero() {
               >
                 <path
                   d="M80 70 L175 180"
-                  stroke="#00CEC8"
+                  stroke="#BFF549"
                   strokeWidth="1.5"
                   strokeDasharray="4 4"
                   opacity="0.35"
@@ -153,7 +153,7 @@ export function Hero() {
                 />
                 <path
                   d="M340 80 L245 180"
-                  stroke="#00CEC8"
+                  stroke="#BFF549"
                   strokeWidth="1.5"
                   strokeDasharray="4 4"
                   opacity="0.35"
@@ -161,7 +161,7 @@ export function Hero() {
                 />
                 <path
                   d="M90 320 L175 240"
-                  stroke="#00CEC8"
+                  stroke="#BFF549"
                   strokeWidth="1.5"
                   strokeDasharray="4 4"
                   opacity="0.35"
@@ -169,7 +169,7 @@ export function Hero() {
                 />
                 <path
                   d="M320 300 L245 240"
-                  stroke="#00CEC8"
+                  stroke="#BFF549"
                   strokeWidth="1.5"
                   strokeDasharray="4 4"
                   opacity="0.35"

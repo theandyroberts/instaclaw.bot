@@ -37,8 +37,8 @@ export function HowItWorks() {
         <div className="grid gap-10 md:grid-cols-3">
           {features.map((feature) => (
             <div key={feature.title} className="text-center">
-              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-teal/10">
-                <feature.icon className="h-10 w-10 text-teal" />
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-lime/10">
+                <feature.icon className="h-10 w-10 text-lime" />
               </div>
               <h3
                 className="mb-4 text-xl font-bold text-foreground"

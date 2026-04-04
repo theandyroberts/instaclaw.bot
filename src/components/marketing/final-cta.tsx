@@ -9,7 +9,7 @@ export function FinalCTA() {
     <section
       className="relative px-4 py-28 overflow-hidden"
       style={{
-        background: "linear-gradient(135deg, rgba(0,206,200,0.06) 0%, rgba(252,239,195,0.25) 50%, rgba(255,156,95,0.08) 100%)",
+        background: "linear-gradient(135deg, rgba(191,245,73,0.04) 0%, rgba(235,66,3,0.06) 50%, rgba(191,245,73,0.03) 100%)",
       }}
     >
       <div className="relative mx-auto max-w-3xl text-center">

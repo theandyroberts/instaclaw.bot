@@ -199,7 +199,7 @@ export function Pricing() {
                     isSelected
                       ? isEnterprise
                         ? "border-2 border-muted-foreground/40 ring-2 ring-muted-foreground/20 shadow-lg"
-                        : "border-2 border-teal ring-2 ring-teal/30 shadow-lg shadow-teal/10"
+                        : "border-2 border-lime ring-2 ring-lime/30 shadow-lg shadow-lime/10"
                       : "border-2 border-border hover:border-muted-foreground/30"
                   } ${isEnterprise ? "opacity-75" : ""}`}
                 >
@@ -241,7 +241,7 @@ export function Pricing() {
                         <li key={feature} className="flex items-start gap-2">
                           <Check
                             className={`mt-0.5 h-4 w-4 shrink-0 ${
-                              isEnterprise ? "text-muted-foreground/50" : "text-teal"
+                              isEnterprise ? "text-muted-foreground/50" : "text-lime"
                             }`}
                           />
                           <span
@@ -262,7 +262,7 @@ export function Pricing() {
                     {isEnterprise && (
                       <a
                         href="mailto:andy@sparkpoint.studio?subject=InstaClaw.bot Enterprise"
-                        className="mt-6 block text-center text-sm text-teal hover:text-teal/80 hover:underline"
+                        className="mt-6 block text-center text-sm text-lime hover:text-lime/80 hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >
                         Contact us for pricing

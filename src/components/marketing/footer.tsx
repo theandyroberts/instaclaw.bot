@@ -42,7 +42,7 @@ export function Footer() {
             href="https://github.com/openclaw"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-teal hover:underline"
+            className="text-lime hover:underline"
           >
             OpenClaw
           </a>

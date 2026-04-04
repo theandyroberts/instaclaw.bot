@@ -447,9 +447,9 @@ export function OnboardingFunnel({
                   <div
                     className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-full text-xs sm:text-sm font-medium transition-colors ${
                       isCompleted
-                        ? "bg-primary text-white"
+                        ? "bg-primary text-primary-foreground"
                         : isCurrent
-                          ? "bg-primary text-white ring-2 ring-yellow-400 ring-offset-2 ring-offset-background"
+                          ? "bg-primary text-primary-foreground ring-2 ring-yellow-400 ring-offset-2 ring-offset-background"
                           : "bg-muted text-muted-foreground"
                     }`}
                   >
@@ -493,7 +493,7 @@ export function OnboardingFunnel({
                   <div
                     className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
                       isActive
-                        ? "bg-primary text-white"
+                        ? "bg-primary text-primary-foreground"
                         : "bg-muted text-muted-foreground"
                     } ${isCurrent ? "ring-2 ring-yellow-400 ring-offset-2 ring-offset-background" : ""}`}
                   >
