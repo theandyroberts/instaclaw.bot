@@ -1,9 +1,10 @@
 import { Hero } from "@/components/marketing/hero";
-import { Features } from "@/components/marketing/features";
-import { Loops } from "@/components/marketing/loops";
+import { Capabilities } from "@/components/marketing/capabilities";
+import { CaseStudies } from "@/components/marketing/case-studies";
+import { HowItWorks } from "@/components/marketing/how-it-works";
 import { Integrations } from "@/components/marketing/integrations";
 import { Pricing } from "@/components/marketing/pricing";
-import { FAQ } from "@/components/marketing/faq";
+import { FinalCTA } from "@/components/marketing/final-cta";
 import { Navbar } from "@/components/marketing/navbar";
 import { Footer } from "@/components/marketing/footer";
 
@@ -13,11 +14,12 @@ export default function HomePage() {
       <Navbar />
       <main>
         <Hero />
-        <Features />
-        <Loops />
+        <Capabilities />
+        <CaseStudies />
+        <HowItWorks />
         <Integrations />
         <Pricing />
-        <FAQ />
+        <FinalCTA />
       </main>
       <Footer />
     </>

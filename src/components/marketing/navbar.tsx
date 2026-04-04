@@ -8,28 +8,28 @@ export function Navbar() {
   return (
     <nav className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur-md">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
-        <Link href="/" className="text-2xl font-bold">
-          <span className="text-white">Insta</span><span className="text-primary">Claw</span><span className="text-white">.bot</span>
+        <Link href="/" className="text-2xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+          <span className="text-foreground">Insta</span><span className="text-ember">Claw</span><span className="text-foreground">.bot</span>
         </Link>
 
         <div className="hidden items-center gap-6 md:flex">
           <button
-            onClick={() => smoothScrollTo("#features")}
-            className="text-sm text-muted-foreground hover:text-foreground"
+            onClick={() => smoothScrollTo("#how-it-works")}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
-            Features
+            How It Works
+          </button>
+          <button
+            onClick={() => smoothScrollTo("#examples")}
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Examples
           </button>
           <button
             onClick={() => smoothScrollTo("#pricing")}
-            className="text-sm text-muted-foreground hover:text-foreground"
+            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
           >
             Pricing
-          </button>
-          <button
-            onClick={() => smoothScrollTo("#faq")}
-            className="text-sm text-muted-foreground hover:text-foreground"
-          >
-            FAQ
           </button>
         </div>
 
@@ -40,8 +40,11 @@ export function Navbar() {
           >
             Sign In
           </Link>
-          <Button onClick={() => smoothScrollTo("#pricing")}>
-            Get Started
+          <Button
+            onClick={() => smoothScrollTo("#pricing")}
+            className="bg-ember hover:bg-ember/90 text-white font-semibold"
+          >
+            Get Your AI Teammate
           </Button>
         </div>
       </div>

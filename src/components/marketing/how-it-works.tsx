@@ -1,49 +1,54 @@
-import { UserPlus, Bot, MessageSquare } from "lucide-react";
+import { Shield, RefreshCw, Sparkles } from "lucide-react";
 
-const steps = [
+const features = [
   {
-    icon: UserPlus,
-    title: "1. Sign Up & Choose Your Plan",
+    icon: Shield,
+    title: "OpenClaw, Hosted and Ready",
     description:
-      "Create your account, pick Starter ($29/mo) or Pro ($49/mo). We instantly start setting up your dedicated AI server.",
+      "Each AI teammate is a full OpenClaw instance running on a secure, dedicated server. No server setup, no Docker, no technical configuration required.",
   },
   {
-    icon: Bot,
-    title: "2. Create Your Telegram Bot",
+    icon: RefreshCw,
+    title: "Continuous Work Loops",
     description:
-      "Open @BotFather on Telegram, create a new bot, and paste the token into your dashboard. Takes about 60 seconds.",
+      "Your OpenClaw teammate keeps working toward the goal you gave it. It continues researching, monitoring, and updating results over time.",
   },
   {
-    icon: MessageSquare,
-    title: "3. Start Chatting",
+    icon: Sparkles,
+    title: "Automatic AI Brain Upgrades",
     description:
-      "That's it! Open your new bot on Telegram and start chatting. Ask questions, get research help, write code -- anything.",
+      "Every two hours InstaClaw evaluates the best free AI models available and upgrades your OpenClaw instance automatically. Your bot keeps getting smarter without you managing anything.",
   },
 ];
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="bg-background px-4 py-20">
+    <section id="how-it-works" className="px-4 py-24">
       <div className="mx-auto max-w-6xl">
-        <div className="mb-12 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
-            Live in 5 Minutes. Seriously.
+        <div className="mb-14 text-center">
+          <h2
+            className="mb-4 text-3xl font-bold text-foreground md:text-5xl"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
+            OpenClaw in the Cloud, Built for You
           </h2>
-          <p className="mx-auto max-w-2xl text-muted-foreground">
-            No servers to configure. No code to write. No Docker, no terminal, no headaches.
-          </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-3">
-          {steps.map((step) => (
-            <div key={step.title} className="text-center">
-              <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-                <step.icon className="h-8 w-8 text-primary" />
+        <div className="grid gap-10 md:grid-cols-3">
+          {features.map((feature) => (
+            <div key={feature.title} className="text-center">
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-teal/10">
+                <feature.icon className="h-10 w-10 text-teal" />
               </div>
-              <h3 className="mb-2 text-xl font-semibold text-foreground">
-                {step.title}
+              <h3
+                className="mb-4 text-xl font-bold text-foreground"
+                style={{ fontFamily: "var(--font-heading)" }}
+              >
+                {feature.title}
               </h3>
-              <p className="text-muted-foreground">{step.description}</p>
+              <p className="text-base text-muted-foreground leading-relaxed">
+                {feature.description}
+              </p>
             </div>
           ))}
         </div>

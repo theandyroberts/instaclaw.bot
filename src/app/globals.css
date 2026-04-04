@@ -7,7 +7,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-heading), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -45,18 +45,49 @@
   --radius-2xl: calc(var(--radius) + 8px);
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
+  --color-teal: #00CEC8;
+  --color-sand: #FCEFC3;
+  --color-peach: #FF9C5F;
+  --color-ember: #EB4203;
 }
 
 :root {
   --radius: 0.625rem;
-  /* Cool dark palette — flat neutral gray inspired by zenbrowser.app */
+  /* Tropical Heat — light marketing theme */
+  --background: #FAFAF8;
+  --foreground: #1a1a1a;
+  --card: #FCEFC3;
+  --card-foreground: #1a1a1a;
+  --popover: #ffffff;
+  --popover-foreground: #1a1a1a;
+  --primary: #00CEC8;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f0;
+  --secondary-foreground: #1a1a1a;
+  --muted: #f0efe8;
+  --muted-foreground: #6b6b6b;
+  --accent: #FF9C5F;
+  --accent-foreground: #ffffff;
+  --destructive: #EB4203;
+  --border: rgba(26 26 26 / 10%);
+  --input: rgba(26 26 26 / 12%);
+  --ring: #00CEC8;
+  --chart-1: #00CEC8;
+  --chart-2: #FF9C5F;
+  --chart-3: #EB4203;
+  --chart-4: #FCEFC3;
+  --chart-5: #1a1a1a;
+}
+
+/* Dashboard uses dark theme */
+.dark {
   --background: #1f1f1f;
   --foreground: #e5e7eb;
   --card: #262626;
   --card-foreground: #e5e7eb;
   --popover: #262626;
   --popover-foreground: #e5e7eb;
-  --primary: rgb(247 73 33);
+  --primary: #00CEC8;
   --primary-foreground: #ffffff;
   --secondary: #2a2a2a;
   --secondary-foreground: #e5e7eb;
@@ -64,23 +95,18 @@
   --muted-foreground: #9ca3af;
   --accent: #2a2a2a;
   --accent-foreground: #e5e7eb;
-  --destructive: rgb(247 73 33);
+  --destructive: #EB4203;
   --border: rgba(229 231 235 / 10%);
   --input: rgba(229 231 235 / 12%);
-  --ring: rgb(247 73 33);
-  --chart-1: rgb(247 73 33);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
+  --ring: #00CEC8;
   --sidebar: #1a1a1a;
   --sidebar-foreground: #e5e7eb;
-  --sidebar-primary: rgb(247 73 33);
+  --sidebar-primary: #00CEC8;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #252525;
   --sidebar-accent-foreground: #e5e7eb;
   --sidebar-border: rgba(229 231 235 / 10%);
-  --sidebar-ring: rgb(247 73 33);
+  --sidebar-ring: #00CEC8;
 }
 
 @layer base {
@@ -124,3 +150,43 @@
   100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
 }
 
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes mascot-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-12px); }
+}
+
+@keyframes float-a {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-7px); }
+}
+
+@keyframes float-b {
+  0%, 100% { transform: translateY(0px); }
+  33% { transform: translateY(-9px); }
+  66% { transform: translateY(-3px); }
+}
+
+@keyframes float-c {
+  0%, 100% { transform: translateY(0px); }
+  40% { transform: translateY(-6px); }
+  80% { transform: translateY(-11px); }
+}
+
+@keyframes float-d {
+  0%, 100% { transform: translateY(0px); }
+  60% { transform: translateY(-8px); }
+}
+
+@keyframes dash-flow {
+  to { stroke-dashoffset: -24; }
+}
+
+@keyframes glow-pulse {
+  0%, 100% { opacity: 0.15; transform: scale(1); }
+  50% { opacity: 0.28; transform: scale(1.08); }
+}

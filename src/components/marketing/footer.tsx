@@ -6,31 +6,31 @@ export function Footer() {
       <div className="mx-auto max-w-6xl">
         <div className="flex flex-col items-center justify-between gap-4 md:flex-row">
           <div>
-            <Link href="/" className="text-xl font-bold">
-              <span className="text-white">Insta</span><span className="text-primary">Claw</span><span className="text-white">.bot</span>
+            <Link href="/" className="text-xl font-bold" style={{ fontFamily: "var(--font-heading)" }}>
+              <span className="text-foreground">Insta</span><span className="text-ember">Claw</span><span className="text-foreground">.bot</span>
             </Link>
             <p className="mt-1 text-sm text-muted-foreground">
-              Your personal AI assistant on Telegram.
+              Your AI teammate.
             </p>
           </div>
 
           <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground">
-            <Link href="#pricing" className="hover:text-foreground">
+            <Link href="#pricing" className="hover:text-foreground transition-colors">
               Pricing
             </Link>
-            <Link href="#faq" className="hover:text-foreground">
-              FAQ
+            <Link href="#examples" className="hover:text-foreground transition-colors">
+              Examples
             </Link>
-            <Link href="/sign-in" className="hover:text-foreground">
+            <Link href="/sign-in" className="hover:text-foreground transition-colors">
               Sign In
             </Link>
-            <Link href="/terms" className="hover:text-foreground">
+            <Link href="/terms" className="hover:text-foreground transition-colors">
               Terms
             </Link>
-            <Link href="/privacy" className="hover:text-foreground">
+            <Link href="/privacy" className="hover:text-foreground transition-colors">
               Privacy
             </Link>
-            <Link href="/acceptable-use" className="hover:text-foreground">
+            <Link href="/acceptable-use" className="hover:text-foreground transition-colors">
               Acceptable Use
             </Link>
           </div>
@@ -42,7 +42,7 @@ export function Footer() {
             href="https://github.com/openclaw"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-primary hover:underline"
+            className="text-teal hover:underline"
           >
             OpenClaw
           </a>

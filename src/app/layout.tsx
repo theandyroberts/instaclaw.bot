@@ -1,12 +1,19 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { DM_Sans, Fraunces, Geist_Mono } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 import Script from "next/script";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const dmSans = DM_Sans({
+  variable: "--font-body",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+});
+
+const fraunces = Fraunces({
+  variable: "--font-heading",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 const geistMono = Geist_Mono({
@@ -15,9 +22,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "InstaClaw.bot - Your Personal AI Assistant on Telegram",
+  title: "InstaClaw.bot - Your AI Teammate",
   description:
-    "Get your own personal AI assistant on Telegram in 5 minutes. Powered by OpenClaw. Starting at $29/mo.",
+    "InstaClaw is the fastest way to run OpenClaw in the cloud. Get a AI teammate that researches, monitors, and completes work automatically. Starting at $29/mo.",
 };
 
 export default function RootLayout({
@@ -51,7 +58,8 @@ export default function RootLayout({
         </noscript>
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${dmSans.variable} ${fraunces.variable} ${geistMono.variable} antialiased`}
+        style={{ fontFamily: "var(--font-body), ui-sans-serif, system-ui, sans-serif" }}
       >
         <SessionProvider>
           {children}

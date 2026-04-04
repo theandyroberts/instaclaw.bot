@@ -43,14 +43,14 @@ const plans: Plan[] = [
     monthlyPrice: 35,
     yearlyPrice: 348,
     features: [
-      "Personal AI assistant on Telegram",
-      "Kimi K2.5 AI (unlimited, free)",
+      "Personal AI teammate",
+      "Unlimited AI conversations",
       "Web browsing & research",
       "Writing & coding help",
-      "20 AI images per day",
-      "Dedicated private server",
+      "Private hosted server",
+      "Continuous monitoring",
+      "Automatic AI upgrades",
       "24/7 uptime",
-      "Email support",
     ],
     highlight: false,
     selectable: true,
@@ -112,7 +112,6 @@ export function Pricing() {
       : selectedPlan.monthlyPrice;
     const displayPrice = `$${monthlyEq}`;
 
-    // Store selected plan in localStorage
     localStorage.setItem(
       SELECTED_PLAN_KEY,
       JSON.stringify({
@@ -130,12 +129,21 @@ export function Pricing() {
     setModalOpen(false);
   }, []);
 
+  const selectedMonthlyEq = selectedPlan
+    ? interval === "yearly"
+      ? Math.round(selectedPlan.yearlyPrice / 12)
+      : selectedPlan.monthlyPrice
+    : 0;
+
   return (
     <>
-      <section id="pricing" className="bg-background px-4 py-20">
+      <section id="pricing" className="px-4 py-24">
         <div className="mx-auto max-w-6xl">
-          <div className="mb-12 text-center">
-            <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+          <div className="mb-14 text-center">
+            <h2
+              className="mb-4 text-3xl font-bold text-foreground md:text-5xl"
+              style={{ fontFamily: "var(--font-heading)" }}
+            >
               Simple, Transparent Pricing
             </h2>
             <p className="mx-auto max-w-2xl text-muted-foreground">
@@ -168,7 +176,7 @@ export function Pricing() {
             </div>
           </div>
 
-          <div className="mx-auto grid max-w-5xl gap-6 grid-cols-1 md:grid-cols-3">
+          <div className="mx-auto grid max-w-5xl gap-8 grid-cols-1 md:grid-cols-3">
             {plans.map((plan) => {
               const isSelected = selectedId === plan.id;
               const isEnterprise = plan.id === "enterprise";
@@ -187,11 +195,11 @@ export function Pricing() {
                 <Card
                   key={plan.id}
                   onClick={() => handleCardClick(plan)}
-                  className={`relative cursor-pointer transition-all ${
+                  className={`relative cursor-pointer transition-all bg-background ${
                     isSelected
                       ? isEnterprise
                         ? "border-2 border-muted-foreground/40 ring-2 ring-muted-foreground/20 shadow-lg"
-                        : "border-2 border-primary ring-2 ring-primary/30 shadow-lg shadow-primary/10"
+                        : "border-2 border-teal ring-2 ring-teal/30 shadow-lg shadow-teal/10"
                       : "border-2 border-border hover:border-muted-foreground/30"
                   } ${isEnterprise ? "opacity-75" : ""}`}
                 >
@@ -200,7 +208,7 @@ export function Pricing() {
                       <Badge
                         className={
                           plan.badge === "Most Popular"
-                            ? "bg-primary text-white"
+                            ? "bg-ember text-white"
                             : "bg-muted text-muted-foreground"
                         }
                       >
@@ -209,7 +217,9 @@ export function Pricing() {
                     </div>
                   )}
                   <CardHeader>
-                    <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                    <CardTitle className="text-2xl" style={{ fontFamily: "var(--font-heading)" }}>
+                      {plan.name}
+                    </CardTitle>
                     <CardDescription>{plan.description}</CardDescription>
                     <div className="mt-4">
                       <span className="text-4xl font-bold text-foreground">
@@ -231,7 +241,7 @@ export function Pricing() {
                         <li key={feature} className="flex items-start gap-2">
                           <Check
                             className={`mt-0.5 h-4 w-4 shrink-0 ${
-                              isEnterprise ? "text-muted-foreground/50" : "text-green-500"
+                              isEnterprise ? "text-muted-foreground/50" : "text-teal"
                             }`}
                           />
                           <span
@@ -252,7 +262,7 @@ export function Pricing() {
                     {isEnterprise && (
                       <a
                         href="mailto:andy@sparkpoint.studio?subject=InstaClaw.bot Enterprise"
-                        className="mt-6 block text-center text-sm text-primary hover:text-primary/80 hover:underline"
+                        className="mt-6 block text-center text-sm text-teal hover:text-teal/80 hover:underline"
                         onClick={(e) => e.stopPropagation()}
                       >
                         Contact us for pricing
@@ -266,16 +276,21 @@ export function Pricing() {
 
           <div className="mx-auto mt-8 max-w-md">
             <Button
-              className="w-full h-14 text-lg"
+              className="w-full h-14 text-lg bg-ember hover:bg-ember/90 text-white font-semibold"
               size="lg"
               onClick={handleCTA}
               disabled={!selectedId || isEnterprisePlan}
             >
               {isEnterprisePlan ? (
                 "Coming Soon"
+              ) : selectedPlan ? (
+                <>
+                  Purchase {selectedPlan.name} — ${selectedMonthlyEq}/mo
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </>
               ) : (
                 <>
-                  Get your AI assistant now
+                  Get Started
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </>
               )}
@@ -291,7 +306,7 @@ export function Pricing() {
           showCloseButton={true}
         >
           <VisuallyHidden.Root>
-            <DialogTitle>Set up your AI assistant</DialogTitle>
+            <DialogTitle>Set up your AI teammate</DialogTitle>
           </VisuallyHidden.Root>
           <div className="px-8 py-10">
             <OnboardingFunnel

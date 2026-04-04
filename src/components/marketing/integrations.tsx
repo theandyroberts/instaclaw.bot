@@ -35,11 +35,14 @@ export function Integrations() {
     <section className="bg-background px-4 py-20">
       <div className="mx-auto max-w-5xl">
         <div className="mb-10 text-center">
-          <h2 className="mb-4 text-3xl font-bold text-foreground md:text-4xl">
+          <h2
+            className="mb-4 text-3xl font-bold text-foreground md:text-4xl"
+            style={{ fontFamily: "var(--font-heading)" }}
+          >
             Connect Your Favorite Apps
           </h2>
           <p className="mx-auto max-w-2xl text-muted-foreground">
-            Your AI assistant works with 800+ apps. Connect your tools and let your bot take action — send emails, manage tasks, update CRMs, and more.
+            Your AI teammate works with 800+ apps. Connect your tools and let your bot take action — send emails, manage tasks, update CRMs, and more.
           </p>
         </div>
 
