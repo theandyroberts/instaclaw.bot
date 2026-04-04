@@ -7,7 +7,7 @@ import { connectSSH, execSSH } from "../lib/ssh";
 // Runs every 6 hours. Screenshots are stored as .screenshot.jpg inside each site's
 // canvas directory, served by the gateway at /__openclaw__/canvas/<site>/.screenshot.jpg
 
-const SCREENSHOT_INTERVAL = 6 * 60 * 60 * 1000; // 6 hours
+const SCREENSHOT_INTERVAL = 1 * 60 * 60 * 1000; // 1 hour
 
 const screenshotQueue = new Queue("site-screenshots", { connection: redis });
 
@@ -54,17 +54,16 @@ export const siteScreenshotWorker = new Worker(
 
         for (const site of sites) {
           try {
-            // Use Chromium inside the container to capture a screenshot
-            // The gateway serves canvas at localhost:18789/__openclaw__/canvas/<site>/
+            // Use Chromium via the public URL (our proxy handles auth)
+            const publicUrl = `https://${site}-${instance.instanceName}.instaclaw.bot`;
             await execSSH(
               ssh,
               `docker exec openclaw-openclaw-gateway-1 sh -c '` +
               `chromium --headless=new --no-sandbox --disable-gpu --disable-dev-shm-usage ` +
-              `--window-size=1280,720 --screenshot=/tmp/screenshot.jpg ` +
-              `--hide-scrollbars ` +
-              `"http://127.0.0.1:18789/__openclaw__/canvas/${site}/" 2>/dev/null && ` +
-              `cp /tmp/screenshot.jpg /home/node/.openclaw/canvas/${site}/.screenshot.jpg && ` +
-              `rm /tmp/screenshot.jpg' 2>/dev/null`,
+              `--window-size=1280,800 --screenshot=/tmp/screenshot.png ` +
+              `--hide-scrollbars "${publicUrl}" 2>/dev/null && ` +
+              `cp /tmp/screenshot.png /home/node/.openclaw/canvas/${site}/.screenshot.png && ` +
+              `rm /tmp/screenshot.png' 2>/dev/null`,
               "/opt/openclaw"
             );
           } catch {

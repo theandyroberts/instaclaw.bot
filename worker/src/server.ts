@@ -756,10 +756,10 @@ app.get("/instances/:instanceId/sites", async (req, res) => {
             // Check for screenshot
             const hasScreenshot = await execSSH(
               ssh,
-              `test -f /opt/openclaw/home/.openclaw/canvas/${name}/.screenshot.jpg && echo yes || echo no`
+              `test -f /opt/openclaw/home/.openclaw/canvas/${name}/.screenshot.png && echo yes || echo no`
             );
             if (hasScreenshot.trim() === "yes") {
-              screenshot = `/__openclaw__/canvas/${name}/.screenshot.jpg`;
+              screenshot = `/__openclaw__/canvas/${name}/.screenshot.png`;
             }
           } catch {
             // Non-blocking — site still appears without metadata
