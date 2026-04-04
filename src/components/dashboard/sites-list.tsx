@@ -85,14 +85,16 @@ export function SitesList({
               )}
 
               {/* Label */}
-              <div className="px-2 py-1.5">
-                <h4 className="truncate text-xs font-medium group-hover:text-primary">
+              <div className="px-3 py-2">
+                <h4 className="truncate text-base font-semibold group-hover:text-primary">
                   {site.title || site.name}
                 </h4>
-                {site.description && (
-                  <p className="mt-0.5 truncate text-[10px] text-gray-500">
+                {site.description ? (
+                  <p className="mt-1 line-clamp-2 text-sm text-gray-400">
                     {site.description}
                   </p>
+                ) : (
+                  <p className="mt-0.5 text-xs text-gray-500 font-mono">{site.name}</p>
                 )}
               </div>
             </a>
