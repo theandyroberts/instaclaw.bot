@@ -211,10 +211,10 @@ export function PlanPicker({
   return (
     <div className="mx-auto max-w-lg space-y-8">
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-100">
+        <h2 className="text-3xl font-bold text-foreground">
           Review and Purchase
         </h2>
-        <p className="mt-3 text-lg text-gray-400">
+        <p className="mt-3 text-lg text-muted-foreground">
           Review your selection, then let&apos;s get started.
         </p>
       </div>
@@ -223,12 +223,12 @@ export function PlanPicker({
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-2xl font-bold text-gray-100">{plan.name}</h3>
+            <h3 className="text-2xl font-bold text-foreground">{plan.name}</h3>
             <div className="text-right">
-              <span className="text-3xl font-bold text-gray-100">{pricing.price}</span>
-              <span className="text-gray-500">{pricing.period}</span>
+              <span className="text-3xl font-bold text-foreground">{pricing.price}</span>
+              <span className="text-muted-foreground">{pricing.period}</span>
               {monthlyEquivalent && (
-                <div className="text-sm text-gray-500">{monthlyEquivalent}</div>
+                <div className="text-sm text-muted-foreground">{monthlyEquivalent}</div>
               )}
             </div>
           </div>
@@ -237,7 +237,7 @@ export function PlanPicker({
             {plan.features.map((feature) => (
               <li key={feature} className="flex items-start gap-2">
                 <Check className="mt-0.5 h-4 w-4 shrink-0 text-green-500" />
-                <span className="text-sm text-gray-100">{feature}</span>
+                <span className="text-sm text-foreground">{feature}</span>
               </li>
             ))}
           </ul>
@@ -248,15 +248,15 @@ export function PlanPicker({
       {wizardState && (wizardState.botName || wizardState.personality) && (
         <Card>
           <CardContent className="py-6">
-            <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-gray-500">
+            <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-muted-foreground">
               Your bot configuration
             </h3>
             <div className="space-y-3">
               {wizardState.botName && (
                 <div className="flex items-center gap-3">
                   <Bot className="h-4 w-4 shrink-0 text-primary" />
-                  <span className="text-sm text-gray-400">Name</span>
-                  <span className="ml-auto text-sm font-medium text-gray-100">
+                  <span className="text-sm text-muted-foreground">Name</span>
+                  <span className="ml-auto text-sm font-medium text-foreground">
                     {wizardState.botName}
                   </span>
                 </div>
@@ -264,8 +264,8 @@ export function PlanPicker({
               {wizardState.personality && (
                 <div className="flex items-center gap-3">
                   {PersonalityIcon && <PersonalityIcon className="h-4 w-4 shrink-0 text-primary" />}
-                  <span className="text-sm text-gray-400">Personality</span>
-                  <span className="ml-auto text-sm font-medium text-gray-100">
+                  <span className="text-sm text-muted-foreground">Personality</span>
+                  <span className="ml-auto text-sm font-medium text-foreground">
                     {wizardState.personality === "custom"
                       ? wizardState.customPersonality || "Custom"
                       : personalityLabels[wizardState.personality] || wizardState.personality}
@@ -275,8 +275,8 @@ export function PlanPicker({
               {wizardState.userName && (
                 <div className="flex items-center gap-3">
                   <User className="h-4 w-4 shrink-0 text-primary" />
-                  <span className="text-sm text-gray-400">Owner</span>
-                  <span className="ml-auto text-sm font-medium text-gray-100">
+                  <span className="text-sm text-muted-foreground">Owner</span>
+                  <span className="ml-auto text-sm font-medium text-foreground">
                     {wizardState.userName}
                   </span>
                 </div>
@@ -284,8 +284,8 @@ export function PlanPicker({
               {wizardState.timezone && (
                 <div className="flex items-center gap-3">
                   <Clock className="h-4 w-4 shrink-0 text-primary" />
-                  <span className="text-sm text-gray-400">Timezone</span>
-                  <span className="ml-auto text-sm font-medium text-gray-100">
+                  <span className="text-sm text-muted-foreground">Timezone</span>
+                  <span className="ml-auto text-sm font-medium text-foreground">
                     {timezoneLabels[wizardState.timezone] || wizardState.timezone}
                   </span>
                 </div>
@@ -293,8 +293,8 @@ export function PlanPicker({
               {wizardState.jobTitle && (
                 <div className="flex items-center gap-3">
                   <BadgeCheck className="h-4 w-4 shrink-0 text-primary" />
-                  <span className="text-sm text-gray-400">Role</span>
-                  <span className="ml-auto text-sm font-medium text-gray-100">
+                  <span className="text-sm text-muted-foreground">Role</span>
+                  <span className="ml-auto text-sm font-medium text-foreground">
                     {wizardState.jobTitle}
                   </span>
                 </div>
@@ -302,8 +302,8 @@ export function PlanPicker({
               {wizardState.useCases && wizardState.useCases.length > 0 && (
                 <div className="flex items-start gap-3">
                   <Zap className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                  <span className="text-sm text-gray-400">Use cases</span>
-                  <span className="ml-auto text-right text-sm font-medium text-gray-100">
+                  <span className="text-sm text-muted-foreground">Use cases</span>
+                  <span className="ml-auto text-right text-sm font-medium text-foreground">
                     {wizardState.useCases.join(", ")}
                   </span>
                 </div>

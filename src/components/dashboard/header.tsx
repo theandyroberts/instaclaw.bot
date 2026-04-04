@@ -14,14 +14,14 @@ export function DashboardHeader({ title, description }: HeaderProps) {
     <div className="border-b border-border bg-background px-8 py-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-100">{title}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{title}</h1>
           {description && (
-            <p className="mt-1 text-sm text-gray-500">{description}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{description}</p>
           )}
         </div>
         {session?.user && (
           <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-500">{session.user.email}</span>
+            <span className="text-sm text-muted-foreground">{session.user.email}</span>
             {session.user.image ? (
               <img
                 src={session.user.image}
@@ -30,7 +30,7 @@ export function DashboardHeader({ title, description }: HeaderProps) {
                 onError={(e) => { e.currentTarget.style.display = 'none'; }}
               />
             ) : (
-              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-700 text-xs font-medium text-gray-300">
+              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-medium text-foreground">
                 {(session.user.name || session.user.email || "?").charAt(0).toUpperCase()}
               </div>
             )}

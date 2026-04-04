@@ -47,7 +47,7 @@ export function SitesList({
 
   if (sites.length === 0) {
     return (
-      <p className="text-sm text-gray-400">
+      <p className="text-sm text-muted-foreground">
         Try asking your bot: &quot;Build me a dashboard of coffee shops in Austin&quot;
       </p>
     );
@@ -84,7 +84,7 @@ export function SitesList({
                 </div>
               ) : (
                 <div className="flex h-20 w-32 items-center justify-center rounded-md border border-border bg-gradient-to-br from-gray-800 to-gray-900">
-                  <Globe className="h-5 w-5 text-gray-600" />
+                  <Globe className="h-5 w-5 text-muted-foreground" />
                 </div>
               )}
             </a>
@@ -101,7 +101,7 @@ export function SitesList({
                   {site.title || site.name}
                 </h4>
                 {site.description && (
-                  <p className="mt-1 line-clamp-2 text-sm text-gray-400 leading-relaxed">
+                  <p className="mt-1 line-clamp-2 text-sm text-muted-foreground leading-relaxed">
                     {site.description}
                   </p>
                 )}
@@ -115,14 +115,14 @@ export function SitesList({
                 >
                   Go to site <ExternalLink className="h-3 w-3" />
                 </a>
-                <span className="text-xs text-gray-600 font-mono">{site.name}</span>
+                <span className="text-xs text-muted-foreground font-mono">{site.name}</span>
                 <button
                   onClick={() => handleDelete(site.name)}
                   disabled={deleting === site.name}
                   className={`rounded p-0.5 transition-colors ${
                     confirmDelete === site.name
                       ? "text-red-500"
-                      : "text-gray-500 opacity-0 group-hover:opacity-100 hover:text-red-400"
+                      : "text-muted-foreground opacity-0 group-hover:opacity-100 hover:text-red-400"
                   }`}
                   title={confirmDelete === site.name ? "Click again to confirm" : "Delete"}
                 >

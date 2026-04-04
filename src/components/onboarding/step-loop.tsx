@@ -34,13 +34,13 @@ export function StepLoop({ config, onUpdate, onNext, onBack }: StepLoopProps) {
   return (
     <div className="mx-auto max-w-lg space-y-8">
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-100">
+        <h2 className="text-3xl font-bold text-foreground">
           Choose Your Loop
         </h2>
-        <p className="mt-3 text-lg text-gray-400">
+        <p className="mt-3 text-lg text-muted-foreground">
           Your bot will check in daily to keep you moving forward.
         </p>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-muted-foreground">
           You can change or remove your Loop later via your bot
         </p>
       </div>
@@ -57,19 +57,19 @@ export function StepLoop({ config, onUpdate, onNext, onBack }: StepLoopProps) {
               className={`relative flex items-center gap-4 rounded-xl border-2 p-4 text-left transition-all ${
                 isSelected
                   ? "border-primary bg-primary/15 ring-1 ring-primary/30"
-                  : "border-neutral-800 bg-neutral-900/50 hover:border-neutral-700 hover:bg-neutral-800/50"
+                  : "border-border bg-muted/50 hover:border-muted-foreground/30 hover:bg-muted"
               }`}
             >
               <Icon
                 className={`h-5 w-5 shrink-0 ${
-                  isSelected ? "text-primary" : "text-gray-500"
+                  isSelected ? "text-primary" : "text-muted-foreground"
                 }`}
               />
               <div className="min-w-0 flex-1">
-                <span className={`text-sm font-medium ${isSelected ? "text-white" : "text-gray-400"}`}>
+                <span className={`text-sm font-medium ${isSelected ? "text-primary" : "text-foreground"}`}>
                   {loop.label}
                 </span>
-                <p className={`text-xs ${isSelected ? "text-gray-300" : "text-gray-600"}`}>{loop.description}</p>
+                <p className={`text-xs ${isSelected ? "text-primary/70" : "text-muted-foreground"}`}>{loop.description}</p>
               </div>
               {isSelected && (
                 <Check className="h-5 w-5 shrink-0 text-primary" />

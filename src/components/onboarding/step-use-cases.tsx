@@ -77,13 +77,13 @@ export function StepUseCases({
   return (
     <div className="mx-auto max-w-lg space-y-8">
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-100">
+        <h2 className="text-3xl font-bold text-foreground">
           What will you use your bot for?
         </h2>
-        <p className="mt-3 text-lg text-gray-400">
+        <p className="mt-3 text-lg text-muted-foreground">
           Pick as many as you like
         </p>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-muted-foreground">
           This helps customize your bot&apos;s tools and capabilities
         </p>
       </div>
@@ -100,15 +100,15 @@ export function StepUseCases({
               className={`relative flex items-center gap-3 rounded-xl border-2 p-4 text-left transition-all ${
                 isSelected
                   ? "border-primary bg-primary/10"
-                  : "border-border hover:border-neutral-700 hover:bg-neutral-800/50"
+                  : "border-border hover:border-muted-foreground/30 hover:bg-muted"
               }`}
             >
               <Icon
                 className={`h-5 w-5 shrink-0 ${
-                  isSelected ? "text-primary" : "text-gray-500"
+                  isSelected ? "text-primary" : "text-muted-foreground"
                 }`}
               />
-              <span className="text-sm font-medium text-gray-100">
+              <span className="text-sm font-medium text-foreground">
                 {uc.label}
               </span>
               {isSelected && (

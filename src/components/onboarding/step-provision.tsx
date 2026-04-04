@@ -139,22 +139,22 @@ export function StepProvision({
       <Card>
         <CardContent className="flex flex-col items-center py-10 text-center">
           <div className="mb-6 w-full max-w-md">
-            <div className="h-1.5 w-full overflow-hidden rounded-full bg-neutral-800">
+            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
               <div
                 className="h-full w-1/3 rounded-full bg-red-500"
                 style={{ animation: "indeterminate 2.5s ease-in-out infinite" }}
               />
             </div>
           </div>
-          <h2 className="mb-2 text-xl font-semibold text-gray-100">{message}</h2>
-          <p className="max-w-md text-gray-500">{submessage}</p>
+          <h2 className="mb-2 text-xl font-semibold text-foreground">{message}</h2>
+          <p className="max-w-md text-muted-foreground">{submessage}</p>
         </CardContent>
       </Card>
 
       {/* Live provision log */}
       <Card>
         <CardContent className="py-6">
-          <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-gray-500">
+          <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-muted-foreground">
             Setup progress
           </h3>
           <div className="space-y-2.5">
@@ -178,15 +178,15 @@ export function StepProvision({
                   ) : isActive ? (
                     <Loader2 className="h-5 w-5 shrink-0 animate-spin text-primary" />
                   ) : (
-                    <Circle className="h-5 w-5 shrink-0 text-neutral-700" />
+                    <Circle className="h-5 w-5 shrink-0 text-muted-foreground" />
                   )}
                   <span
                     className={`text-sm ${
                       isCompleted
-                        ? "text-gray-300"
+                        ? "text-foreground"
                         : isActive
-                          ? "text-gray-100 font-medium"
-                          : "text-gray-600"
+                          ? "text-foreground font-medium"
+                          : "text-muted-foreground"
                     }`}
                   >
                     {displayMessage}
@@ -201,7 +201,7 @@ export function StepProvision({
       {/* Reassurance after 60 seconds */}
       {elapsed >= 120 && (
         <div className="text-center">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Your server is being set up in the background.
             You can safely close this page and come back anytime.
           </p>
@@ -212,15 +212,15 @@ export function StepProvision({
       {botConfig && (botConfig.botName || botConfig.personality) && (
         <Card>
           <CardContent className="py-6">
-            <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-gray-500">
+            <h3 className="mb-4 text-sm font-medium uppercase tracking-wider text-muted-foreground">
               Your bot at a glance
             </h3>
             <div className="space-y-3">
               {botConfig.botName && (
                 <div className="flex items-center gap-3">
                   <Bot className="h-4 w-4 shrink-0 text-primary" />
-                  <span className="text-sm text-gray-400">Name</span>
-                  <span className="ml-auto text-sm font-medium text-gray-100">
+                  <span className="text-sm text-muted-foreground">Name</span>
+                  <span className="ml-auto text-sm font-medium text-foreground">
                     {botConfig.botName}
                   </span>
                 </div>
@@ -228,8 +228,8 @@ export function StepProvision({
               {personality && (
                 <div className="flex items-center gap-3">
                   <PersonalityIcon className="h-4 w-4 shrink-0 text-primary" />
-                  <span className="text-sm text-gray-400">Personality</span>
-                  <span className="ml-auto text-sm font-medium text-gray-100">
+                  <span className="text-sm text-muted-foreground">Personality</span>
+                  <span className="ml-auto text-sm font-medium text-foreground">
                     {botConfig.personality === "custom"
                       ? botConfig.customPersonality || "Custom"
                       : personality.label}
@@ -239,8 +239,8 @@ export function StepProvision({
               {botConfig.userName && (
                 <div className="flex items-center gap-3">
                   <User className="h-4 w-4 shrink-0 text-primary" />
-                  <span className="text-sm text-gray-400">Owner</span>
-                  <span className="ml-auto text-sm font-medium text-gray-100">
+                  <span className="text-sm text-muted-foreground">Owner</span>
+                  <span className="ml-auto text-sm font-medium text-foreground">
                     {botConfig.userName}
                   </span>
                 </div>
@@ -248,8 +248,8 @@ export function StepProvision({
               {botConfig.useCases.length > 0 && (
                 <div className="flex items-start gap-3">
                   <Zap className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                  <span className="text-sm text-gray-400">Use cases</span>
-                  <span className="ml-auto text-right text-sm font-medium text-gray-100">
+                  <span className="text-sm text-muted-foreground">Use cases</span>
+                  <span className="ml-auto text-right text-sm font-medium text-foreground">
                     {botConfig.useCases.join(", ")}
                   </span>
                 </div>
@@ -257,7 +257,7 @@ export function StepProvision({
               {botConfig.extraContext && (
                 <div className="flex items-center gap-3">
                   <FileText className="h-4 w-4 shrink-0 text-primary" />
-                  <span className="text-sm text-gray-400">Custom instructions</span>
+                  <span className="text-sm text-muted-foreground">Custom instructions</span>
                   <span className="ml-auto text-sm font-medium text-green-400">
                     Included
                   </span>

@@ -84,13 +84,13 @@ export function StepPersonality({
   return (
     <div className="mx-auto max-w-lg space-y-8">
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-100">
+        <h2 className="text-3xl font-bold text-foreground">
           What vibe should your bot have?
         </h2>
-        <p className="mt-3 text-lg text-gray-400">
+        <p className="mt-3 text-lg text-muted-foreground">
           Pick a personality -- you can always change it later.
         </p>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-muted-foreground">
           This affects how your bot greets you and responds to casual chat
         </p>
       </div>
@@ -107,18 +107,18 @@ export function StepPersonality({
               className={`flex flex-col items-center gap-3 rounded-xl border-2 p-6 text-center transition-all ${
                 isSelected
                   ? "border-primary bg-primary/10 scale-[1.02]"
-                  : "border-border hover:border-neutral-700 hover:bg-neutral-800/50"
+                  : "border-border hover:border-muted-foreground/30 hover:bg-muted"
               }`}
             >
               <Icon
                 className={`h-8 w-8 ${
-                  isSelected ? "text-primary" : "text-gray-500"
+                  isSelected ? "text-primary" : "text-muted-foreground"
                 }`}
               />
-              <span className="text-base font-medium text-gray-100">
+              <span className="text-base font-medium text-foreground">
                 {p.label}
               </span>
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-muted-foreground">
                 {p.description}
               </span>
             </button>

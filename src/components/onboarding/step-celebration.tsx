@@ -88,12 +88,12 @@ export function StepCelebration({ botUsername, botName }: StepCelebrationProps) 
         </h1>
 
         {botName && (
-          <p className="text-lg text-gray-400">
-            <span className="font-medium text-gray-200">{botName}</span> is ready to go
+          <p className="text-lg text-muted-foreground">
+            <span className="font-medium text-foreground">{botName}</span> is ready to go
           </p>
         )}
 
-        <p className="mx-auto max-w-lg text-xl text-gray-300">
+        <p className="mx-auto max-w-lg text-xl text-muted-foreground">
           Your AI assistant is live and ready to chat on Telegram.
         </p>
 

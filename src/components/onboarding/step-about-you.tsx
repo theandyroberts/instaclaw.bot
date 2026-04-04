@@ -125,13 +125,13 @@ export function StepAboutYou({
   return (
     <div className="mx-auto max-w-lg space-y-8">
       <div className="text-center">
-        <h2 className="text-3xl font-bold text-gray-100">
+        <h2 className="text-3xl font-bold text-foreground">
           Tell your bot about yourself
         </h2>
-        <p className="mt-3 text-lg text-gray-400">
+        <p className="mt-3 text-lg text-muted-foreground">
           We wrote a starting point -- edit it to get better results.
         </p>
-        <p className="mt-1 text-sm text-gray-500">
+        <p className="mt-1 text-sm text-muted-foreground">
           Help your bot personalize responses to you
         </p>
       </div>
@@ -207,7 +207,7 @@ export function StepAboutYou({
             onChange={(e) => setUserDescription(e.target.value)}
             maxLength={1000}
           />
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Edit freely -- this helps your bot personalize its responses.
           </p>
         </div>

@@ -63,7 +63,7 @@ export function OnboardingWizard() {
 
   if (!instance) {
     return (
-      <div className="text-center text-gray-500">
+      <div className="text-center text-muted-foreground">
         <p>No instance found. Please subscribe to a plan first.</p>
       </div>
     );
@@ -95,9 +95,9 @@ export function OnboardingWizard() {
               <div
                 className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
                   isActive
-                    ? "bg-red-600 text-white"
-                    : "bg-neutral-800 text-gray-500"
-                } ${isCurrent ? "ring-2 ring-red-400" : ""}`}
+                    ? "bg-primary text-white"
+                    : "bg-muted text-muted-foreground"
+                } ${isCurrent ? "ring-2 ring-primary/60" : ""}`}
               >
                 {step + 1}
               </div>
@@ -105,8 +105,8 @@ export function OnboardingWizard() {
                 <div
                   className={`h-0.5 w-12 ${
                     currentStepIndex > stepMap[step]
-                      ? "bg-red-600"
-                      : "bg-neutral-800"
+                      ? "bg-primary"
+                      : "bg-muted"
                   }`}
                 />
               )}

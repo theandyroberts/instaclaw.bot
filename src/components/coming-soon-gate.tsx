@@ -32,16 +32,16 @@ export function ComingSoonGate({ children }: { children: React.ReactNode }) {
     <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
         <h1 className="mb-2 text-4xl font-bold">
-          <span className="text-white">Insta</span>
+          <span className="text-foreground">Insta</span>
           <span className="text-primary">Claw</span>
         </h1>
         <div className="mb-8 inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary">
           Coming Soon
         </div>
-        <p className="mb-2 text-lg text-gray-300">
+        <p className="mb-2 text-lg text-muted-foreground">
           We&apos;re putting the finishing touches on your AI assistant platform.
         </p>
-        <p className="mb-10 text-gray-500">
+        <p className="mb-10 text-muted-foreground">
           Have the passphrase? Enter it below for early access.
         </p>
         <form onSubmit={handleSubmit} className="flex gap-2">

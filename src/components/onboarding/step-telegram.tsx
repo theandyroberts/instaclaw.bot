@@ -78,8 +78,8 @@ export function StepTelegram({ onComplete, botName }: StepTelegramProps) {
       <Card>
         <CardContent className="flex flex-col items-center py-12 text-center">
           <Loader2 className="mb-4 h-10 w-10 animate-spin text-primary" />
-          <h2 className="mb-2 text-xl font-semibold text-gray-100">{botName ? `Connecting ${botName}...` : "Connecting your bot..."}</h2>
-          <p className="text-gray-500">Configuring Telegram integration. Almost there!</p>
+          <h2 className="mb-2 text-xl font-semibold text-foreground">{botName ? `Connecting ${botName}...` : "Connecting your bot..."}</h2>
+          <p className="text-muted-foreground">Configuring Telegram integration. Almost there!</p>
         </CardContent>
       </Card>
     );
@@ -108,10 +108,10 @@ export function StepTelegram({ onComplete, botName }: StepTelegramProps) {
 
           {/* Screen text */}
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4">
-            <span className="text-xs font-bold uppercase tracking-[0.25em] text-gray-500">
+            <span className="text-xs font-bold uppercase tracking-[0.25em] text-muted-foreground">
               Video tutorial
             </span>
-            <span className="text-center text-lg font-bold tracking-wide text-gray-100 sm:text-xl">
+            <span className="text-center text-lg font-bold tracking-wide text-foreground sm:text-xl">
               HOW TO SET UP TELEGRAM
             </span>
 
@@ -120,7 +120,7 @@ export function StepTelegram({ onComplete, botName }: StepTelegramProps) {
               <Play className="h-7 w-7 text-white" style={{ marginLeft: 3 }} />
             </div>
 
-            <span className="text-sm text-gray-500">1 min watch</span>
+            <span className="text-sm text-muted-foreground">1 min watch</span>
           </div>
         </button>
 
@@ -155,10 +155,10 @@ export function StepTelegram({ onComplete, botName }: StepTelegramProps) {
 
         {/* Instructions */}
         <div className="rounded-lg bg-card p-4">
-          <h3 className="mb-3 font-semibold text-gray-100">
+          <h3 className="mb-3 font-semibold text-foreground">
             Step-by-step instructions:
           </h3>
-          <ol className="space-y-3 text-sm text-gray-300">
+          <ol className="space-y-3 text-sm text-foreground/80">
             <li className="flex gap-3">
               <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-primary/10 text-xs font-medium text-primary">
                 1
@@ -181,7 +181,7 @@ export function StepTelegram({ onComplete, botName }: StepTelegramProps) {
                 2
               </span>
               <span>
-                Send <code className="rounded bg-neutral-800 px-1">/newbot</code>{" "}
+                Send <code className="rounded bg-muted px-1">/newbot</code>{" "}
                 to BotFather
               </span>
             </li>
@@ -198,7 +198,7 @@ export function StepTelegram({ onComplete, botName }: StepTelegramProps) {
                 4
               </span>
               <span>
-                Choose a username ending in &quot;bot&quot;{botName ? <> (e.g., <code className="rounded bg-neutral-800 px-1">{botName}_bot</code>)</> : <> (e.g., &quot;myai_helper_bot&quot;)</>}
+                Choose a username ending in &quot;bot&quot;{botName ? <> (e.g., <code className="rounded bg-muted px-1">{botName}_bot</code>)</> : <> (e.g., &quot;myai_helper_bot&quot;)</>}
               </span>
             </li>
             <li className="flex gap-3">

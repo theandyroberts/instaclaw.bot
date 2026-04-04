@@ -450,7 +450,7 @@ export function OnboardingFunnel({
                         ? "bg-primary text-white"
                         : isCurrent
                           ? "bg-primary text-white ring-2 ring-yellow-400 ring-offset-2 ring-offset-background"
-                          : "bg-muted text-gray-500"
+                          : "bg-muted text-muted-foreground"
                     }`}
                   >
                     {i + 1}
@@ -459,10 +459,10 @@ export function OnboardingFunnel({
                   <span
                     className={`text-[10px] sm:text-xs whitespace-nowrap ${
                       isCurrent
-                        ? "text-gray-300"
+                        ? "text-foreground"
                         : isCompleted
-                          ? "text-gray-400 hidden sm:block"
-                          : "text-gray-600 hidden sm:block"
+                          ? "text-muted-foreground hidden sm:block"
+                          : "text-muted-foreground hidden sm:block"
                     }`}
                   >
                     {isCurrent ? meta.description : meta.label}
@@ -494,14 +494,14 @@ export function OnboardingFunnel({
                     className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
                       isActive
                         ? "bg-primary text-white"
-                        : "bg-muted text-gray-500"
+                        : "bg-muted text-muted-foreground"
                     } ${isCurrent ? "ring-2 ring-yellow-400 ring-offset-2 ring-offset-background" : ""}`}
                   >
                     {i + 1}
                   </div>
                   <span
                     className={`text-xs ${
-                      isActive ? "text-gray-300" : "text-gray-600"
+                      isActive ? "text-foreground" : "text-muted-foreground"
                     }`}
                   >
                     {seg.label}
@@ -528,14 +528,14 @@ export function OnboardingFunnel({
               <CreditCard className="h-16 w-16 text-primary" />
               <Loader2 className="absolute -bottom-1 -right-1 h-6 w-6 animate-spin text-primary" />
             </div>
-            <h2 className="mb-2 text-xl font-semibold text-gray-100">
+            <h2 className="mb-2 text-xl font-semibold text-foreground">
               Processing your payment...
             </h2>
-            <p className="max-w-md text-gray-500">
+            <p className="max-w-md text-muted-foreground">
               Hang tight -- confirming with Stripe. This usually takes just a
               few seconds.
             </p>
-            <div className="mt-6 flex items-center gap-2 text-sm text-gray-400">
+            <div className="mt-6 flex items-center gap-2 text-sm text-muted-foreground">
               <Loader2 className="h-4 w-4 animate-spin" />
               Please keep this page open
             </div>
@@ -615,10 +615,10 @@ export function OnboardingFunnel({
         <Card>
           <CardContent className="flex flex-col items-center py-12 text-center">
             <Loader2 className="mb-4 h-10 w-10 animate-spin text-primary" />
-            <h2 className="mb-2 text-xl font-semibold text-gray-100">
+            <h2 className="mb-2 text-xl font-semibold text-foreground">
               Preparing checkout...
             </h2>
-            <p className="text-gray-500">
+            <p className="text-muted-foreground">
               Hang tight -- setting up your Stripe session.
             </p>
           </CardContent>
