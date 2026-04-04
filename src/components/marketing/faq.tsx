@@ -44,7 +44,7 @@ const faqs = [
   {
     question: "How does InstaClaw.bot compare to SimpleClaw?",
     answer:
-      "We offer the same Pro tier at $49/mo with $15 LLM credit, but we also have a Starter tier at $29/mo with unlimited Kimi AI. That's $20/mo less to get started. Same quality, better price.",
+      "We offer a Pro tier at $59/mo with $30/mo AI capacity and your choice of Claude, GPT-4, or Gemini. We also have a Standard tier at $35/mo with unlimited AI. Same dedicated server, better price to get started.",
   },
 ];
 

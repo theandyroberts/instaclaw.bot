@@ -53,7 +53,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
     },
     features: [
       "Everything in Standard",
-      "$15/mo LLM credit",
+      "$30/mo AI capacity",
       "Claude, GPT-4, Gemini, Kimi, MiniMax",
       "Choose your AI model",
       "Priority support",
