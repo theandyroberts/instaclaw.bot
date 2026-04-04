@@ -59,9 +59,9 @@ export function SitesList({
 
   return (
     <div className="space-y-2">
-      <div className="divide-y divide-border">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         {sites.map((site) => (
-          <div key={site.name} className="group flex gap-4 py-4 first:pt-0">
+          <div key={site.name} className="group flex gap-4 rounded-lg border border-border p-3">
             {/* Thumbnail — small, on the left */}
             <a
               href={siteUrl(site.name)}
