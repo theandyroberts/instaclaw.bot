@@ -103,7 +103,7 @@ export function CustomDomainsForm({ instanceId, initialDomains }: CustomDomainsF
               className="flex items-center justify-between rounded-lg border border-border px-3 py-2"
             >
               <div className="flex items-center gap-3 min-w-0">
-                <Globe className="h-4 w-4 shrink-0 text-gray-500" />
+                <Globe className="h-4 w-4 shrink-0 text-muted-foreground" />
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <code className="text-sm font-mono truncate">{d.domain}</code>
@@ -111,7 +111,7 @@ export function CustomDomainsForm({ instanceId, initialDomains }: CustomDomainsF
                       {d.status}
                     </Badge>
                   </div>
-                  <p className="text-xs text-gray-500 truncate">
+                  <p className="text-xs text-muted-foreground truncate">
                     Serves: {d.siteSlug}
                   </p>
                 </div>
@@ -125,7 +125,7 @@ export function CustomDomainsForm({ instanceId, initialDomains }: CustomDomainsF
                 {deleting === d.domain ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
-                  <Trash2 className="h-4 w-4 text-gray-500" />
+                  <Trash2 className="h-4 w-4 text-muted-foreground" />
                 )}
               </Button>
             </div>
@@ -135,12 +135,12 @@ export function CustomDomainsForm({ instanceId, initialDomains }: CustomDomainsF
 
       {/* Add new domain */}
       {loadingSites ? (
-        <div className="flex items-center gap-2 text-sm text-gray-500">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Loader2 className="h-4 w-4 animate-spin" />
           Loading sites...
         </div>
       ) : sites.length === 0 ? (
-        <p className="text-sm text-gray-500">
+        <p className="text-sm text-muted-foreground">
           No published sites yet. Ask your bot to create a website first.
         </p>
       ) : (
@@ -173,19 +173,19 @@ export function CustomDomainsForm({ instanceId, initialDomains }: CustomDomainsF
 
           {/* DNS instructions */}
           <div className="rounded-md bg-muted/50 border border-border p-3 space-y-2">
-            <p className="text-xs font-medium text-gray-400">DNS Setup Instructions</p>
-            <ol className="text-xs text-gray-500 space-y-1 list-decimal list-inside">
+            <p className="text-xs font-medium text-muted-foreground">DNS Setup Instructions</p>
+            <ol className="text-xs text-muted-foreground space-y-1 list-decimal list-inside">
               <li>Go to your domain registrar&apos;s DNS settings</li>
               <li>
                 Add a <strong>CNAME</strong> record pointing your domain to{" "}
-                <code className="rounded bg-gray-100 dark:bg-gray-800 px-1 py-0.5 font-mono text-[11px]">
+                <code className="rounded bg-muted px-1 py-0.5 font-mono text-[11px]">
                   worker.instaclaw.bot
                 </code>
               </li>
               <li>Save and wait for DNS propagation (usually under 30 minutes)</li>
               <li>SSL is provisioned automatically on the first visit</li>
             </ol>
-            <p className="text-[11px] text-gray-400">
+            <p className="text-[11px] text-muted-foreground">
               For root domains (no www), use an A record pointing to{" "}
               <code className="font-mono">157.245.83.185</code>
             </p>

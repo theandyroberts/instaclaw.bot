@@ -65,11 +65,11 @@ export default async function DashboardPage() {
         />
         <div className="p-8">
           <Card>
-            <CardContent className="py-6 text-center text-gray-400">
+            <CardContent className="py-6 text-center text-muted-foreground">
               <p>No personal instance configured. Use the admin panels to manage the system.</p>
             </CardContent>
           </Card>
-          <p className="mt-8 text-center text-xs text-gray-300">v0.6.0</p>
+          <p className="mt-8 text-center text-xs text-muted-foreground/50">v0.6.0</p>
         </div>
       </>
     );
@@ -99,10 +99,10 @@ export default async function DashboardPage() {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 Status
               </CardTitle>
-              <Server className="h-4 w-4 text-gray-400" />
+              <Server className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-2">
@@ -122,10 +122,10 @@ export default async function DashboardPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 Telegram Bot
               </CardTitle>
-              <MessageCircle className="h-4 w-4 text-gray-400" />
+              <MessageCircle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               {instance.telegramBotUsername ? (
@@ -138,23 +138,23 @@ export default async function DashboardPage() {
                   @{instance.telegramBotUsername}
                 </a>
               ) : (
-                <span className="text-gray-400">Not configured</span>
+                <span className="text-muted-foreground">Not configured</span>
               )}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
+              <CardTitle className="text-sm font-medium text-muted-foreground">
                 Plan
               </CardTitle>
-              <CreditCard className="h-4 w-4 text-gray-400" />
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="font-medium capitalize">
                 {subscription.plan}
               </div>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-muted-foreground">
                 AI: {MODEL_DISPLAY_NAMES[subscription.plan] || instance.llmProvider || "Kimi"}
               </p>
             </CardContent>
@@ -167,20 +167,20 @@ export default async function DashboardPage() {
             return (
               <Card>
                 <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-500">
+                  <CardTitle className="text-sm font-medium text-muted-foreground">
                     AI Capacity
                   </CardTitle>
-                  <BarChart3 className="h-4 w-4 text-gray-400" />
+                  <BarChart3 className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="font-medium">{pct}% used</div>
-                  <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-gray-200 dark:bg-gray-700">
+                  <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
                     <div
                       className={`h-full rounded-full transition-all ${barColor}`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     Monthly capacity resets each billing cycle
                   </p>
                   {pct >= 80 && <TopupButton plan={subscription.plan} />}
@@ -196,7 +196,7 @@ export default async function DashboardPage() {
             <CardContent className="flex items-center justify-between py-6">
               <div>
                 <h3 className="font-semibold">Chat with your AI assistant</h3>
-                <p className="text-sm text-gray-500">
+                <p className="text-sm text-muted-foreground">
                   Open Telegram and start a conversation with @
                   {instance.telegramBotUsername}
                 </p>
@@ -220,13 +220,13 @@ export default async function DashboardPage() {
           <Card className="mt-6">
             <CardContent className="py-6">
               <div className="flex items-start gap-3">
-                <Globe className="mt-0.5 h-5 w-5 text-gray-400" />
+                <Globe className="mt-0.5 h-5 w-5 text-muted-foreground" />
                 <div className="w-full space-y-3">
                   <h3 className="font-semibold">Your Public Sites</h3>
                   <SitesList initialSites={sites} instanceName={instance.instanceName} />
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     Sites are accessible at{" "}
-                    <code className="rounded bg-gray-100 px-1 py-0.5 font-mono text-xs dark:bg-gray-800">
+                    <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
                       &lt;site&gt;-{instance.instanceName}.instaclaw.bot
                     </code>
                   </p>
@@ -241,10 +241,10 @@ export default async function DashboardPage() {
             <CardContent className="py-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-start gap-3">
-                  <Globe className="mt-0.5 h-5 w-5 text-gray-400" />
+                  <Globe className="mt-0.5 h-5 w-5 text-muted-foreground" />
                   <div>
                     <h3 className="font-semibold">Enable Public Sites</h3>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-muted-foreground">
                       Set an instance name in Settings to let your bot create shareable websites
                     </p>
                   </div>
@@ -263,8 +263,8 @@ export default async function DashboardPage() {
         {/* 4. Support */}
         <Card className="mt-6">
           <CardHeader className="flex flex-row items-center gap-2 pb-2">
-            <LifeBuoy className="h-4 w-4 text-gray-400" />
-            <CardTitle className="text-sm font-medium text-gray-500">
+            <LifeBuoy className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Support
             </CardTitle>
           </CardHeader>
@@ -283,7 +283,7 @@ export default async function DashboardPage() {
 
         {/* 5. Footer */}
         {instance.gatewayToken ? (
-          <p className="mt-8 text-center text-xs text-gray-400">
+          <p className="mt-8 text-center text-xs text-muted-foreground">
             GW: <code className="font-mono select-all">{instance.gatewayToken}</code>
           </p>
         ) : (
@@ -291,7 +291,7 @@ export default async function DashboardPage() {
             GW token missing from database
           </p>
         )}
-        <p className="mt-2 text-center text-xs text-gray-300">v0.6.0</p>
+        <p className="mt-2 text-center text-xs text-muted-foreground/50">v0.6.0</p>
       </div>
     </>
   );

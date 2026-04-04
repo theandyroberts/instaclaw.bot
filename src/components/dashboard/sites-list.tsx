@@ -83,7 +83,7 @@ export function SitesList({
                   />
                 </div>
               ) : (
-                <div className="flex h-20 w-32 items-center justify-center rounded-md border border-border bg-gradient-to-br from-gray-800 to-gray-900">
+                <div className="flex h-20 w-32 items-center justify-center rounded-md border border-border bg-muted">
                   <Globe className="h-5 w-5 text-muted-foreground" />
                 </div>
               )}

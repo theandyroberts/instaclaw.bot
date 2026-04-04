@@ -98,7 +98,7 @@ export function Sidebar({ onboardingIncomplete, isAdmin }: SidebarProps) {
       <div className="border-t border-border p-3">
         <Button
           variant="ghost"
-          className="w-full justify-start text-gray-400"
+          className="w-full justify-start text-muted-foreground"
           onClick={() => signOut({ callbackUrl: "/" })}
         >
           <LogOut className="mr-2 h-4 w-4" />

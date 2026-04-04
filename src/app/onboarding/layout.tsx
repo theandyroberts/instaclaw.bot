@@ -14,10 +14,10 @@ export default async function OnboardingLayout({
     <div className="min-h-screen bg-background">
       <header className="border-b border-border bg-background px-6 py-4">
         <div className="mx-auto flex max-w-2xl items-center justify-between">
-          <a href="/" className="text-xl font-bold hover:opacity-80 transition-opacity"><span className="text-white">Insta</span><span className="text-primary">Claw</span><span className="text-white">.bot</span></a>
+          <a href="/" className="text-xl font-bold hover:opacity-80 transition-opacity"><span className="text-foreground">Insta</span><span className="text-primary">Claw</span><span className="text-foreground">.bot</span></a>
           {session?.user?.email && (
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-500">{session.user.email}</span>
+              <span className="text-sm text-muted-foreground">{session.user.email}</span>
               <SignOutLink />
             </div>
           )}

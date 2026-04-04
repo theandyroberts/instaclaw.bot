@@ -55,15 +55,15 @@ export function InstanceNameForm({ currentName }: InstanceNameFormProps) {
             disabled
             className="font-mono opacity-70"
           />
-          <Lock className="h-4 w-4 shrink-0 text-gray-500" />
+          <Lock className="h-4 w-4 shrink-0 text-muted-foreground" />
         </div>
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted-foreground">
           Your sites are at{" "}
-          <code className="rounded bg-gray-100 dark:bg-gray-800 px-1 py-0.5 font-mono text-xs">
+          <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
             &lt;site&gt;-{name}.instaclaw.bot
           </code>
         </p>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-muted-foreground">
           Subdomain is locked after first choice. Contact{" "}
           <a href="mailto:andy@sparkpoint.studio?subject=Change InstaClaw.bot subdomain" className="text-primary hover:underline">
             support
@@ -109,9 +109,9 @@ export function InstanceNameForm({ currentName }: InstanceNameFormProps) {
       )}
       {error && <p className="text-xs text-red-500">{error}</p>}
       {isValid && (
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted-foreground">
           Your sites will be at{" "}
-          <code className="rounded bg-gray-100 dark:bg-gray-800 px-1 py-0.5 font-mono text-xs">
+          <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
             &lt;site&gt;-{name}.instaclaw.bot
           </code>
         </p>
@@ -120,7 +120,7 @@ export function InstanceNameForm({ currentName }: InstanceNameFormProps) {
         <p className="text-xs font-medium text-amber-500">
           Choose carefully -- this cannot be changed later.
         </p>
-        <ul className="text-xs text-gray-400 space-y-0.5 list-disc list-inside">
+        <ul className="text-xs text-muted-foreground space-y-0.5 list-disc list-inside">
           <li>Keep it short -- it appears in every site URL</li>
           <li>Use your brand, business name, or bot name</li>
           <li>Make it something people can say out loud or type from memory</li>

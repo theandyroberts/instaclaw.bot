@@ -10,7 +10,7 @@ export default function SignInPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 text-3xl font-bold">
-            <span className="text-white">Insta</span><span className="text-primary">Claw</span><span className="text-white">.bot</span>
+            <span className="text-foreground">Insta</span><span className="text-primary">Claw</span><span className="text-foreground">.bot</span>
           </div>
           <CardTitle className="text-2xl">Welcome back</CardTitle>
           <CardDescription>
@@ -44,7 +44,7 @@ export default function SignInPage() {
             </svg>
             Continue with Google
           </Button>
-          <p className="mt-4 text-center text-sm text-gray-500">
+          <p className="mt-4 text-center text-sm text-muted-foreground">
             By signing in, you agree to our{" "}
             <a href="/terms" className="text-primary hover:underline">
               Terms of Service

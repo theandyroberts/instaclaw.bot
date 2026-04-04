@@ -42,11 +42,11 @@ export default async function SettingsPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex justify-between">
-              <span className="text-sm text-gray-500">Email</span>
+              <span className="text-sm text-muted-foreground">Email</span>
               <span className="text-sm font-medium">{session.user.email}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-sm text-gray-500">Name</span>
+              <span className="text-sm text-muted-foreground">Name</span>
               <span className="text-sm font-medium">{session.user.name || "--"}</span>
             </div>
           </CardContent>
@@ -99,18 +99,18 @@ export default async function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500">Status</span>
+                <span className="text-sm text-muted-foreground">Status</span>
                 <Badge variant={instance.status === "active" ? "default" : "secondary"}>
                   {instance.status}
                 </Badge>
               </div>
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500">AI Model</span>
+                <span className="text-sm text-muted-foreground">AI Model</span>
                 <span className="text-sm font-medium">{(subscription && MODEL_DISPLAY_NAMES[subscription.plan]) || instance.llmProvider}</span>
               </div>
               {instance.telegramBotUsername && (
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-500">Telegram Bot</span>
+                  <span className="text-sm text-muted-foreground">Telegram Bot</span>
                   <a
                     href={`https://t.me/${instance.telegramBotUsername}`}
                     target="_blank"
@@ -123,12 +123,12 @@ export default async function SettingsPage() {
               )}
               {instance.ipAddress && (
                 <div className="flex justify-between">
-                  <span className="text-sm text-gray-500">Server IP</span>
+                  <span className="text-sm text-muted-foreground">Server IP</span>
                   <span className="text-sm font-mono">{instance.ipAddress}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-sm text-gray-500">Health</span>
+                <span className="text-sm text-muted-foreground">Health</span>
                 <Badge variant={instance.healthStatus === "healthy" ? "default" : "secondary"}>
                   {instance.healthStatus}
                 </Badge>

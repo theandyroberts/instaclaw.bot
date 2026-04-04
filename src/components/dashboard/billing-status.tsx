@@ -73,7 +73,7 @@ export function BillingStatus() {
     return (
       <Card>
         <CardContent className="flex items-center justify-center py-8">
-          <Loader2 className="h-6 w-6 animate-spin text-gray-400" />
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </CardContent>
       </Card>
     );
@@ -128,7 +128,7 @@ export function BillingStatus() {
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center text-sm text-gray-400">
+        <div className="flex items-center text-sm text-muted-foreground">
           <Calendar className="mr-2 h-4 w-4" />
           Renews on{" "}
           {new Date(subscription.currentPeriodEnd).toLocaleDateString()}
