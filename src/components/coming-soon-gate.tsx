@@ -33,7 +33,7 @@ export function ComingSoonGate({ children }: { children: React.ReactNode }) {
       <div className="max-w-md text-center">
         <h1 className="mb-2 text-4xl font-bold">
           <span className="text-foreground">Insta</span>
-          <span className="text-primary">Claw</span>
+          <span className="text-ember">Claw</span>
         </h1>
         <div className="mb-8 inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary">
           Coming Soon
