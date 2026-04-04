@@ -730,7 +730,7 @@ app.get("/instances/:instanceId/sites", async (req, res) => {
     try {
       const output = await execSSH(
         ssh,
-        "ls /opt/openclaw/home/.openclaw/canvas/ 2>/dev/null || true"
+        "ls -d /opt/openclaw/home/.openclaw/canvas/*/ 2>/dev/null | xargs -n1 basename || true"
       );
       const siteNames = output
         .split("\n")
@@ -753,13 +753,14 @@ app.get("/instances/:instanceId/sites", async (req, res) => {
             const descMatch = head.match(/<meta[^>]+name=["']description["'][^>]+content=["']([^"']+)["']/i)
               || head.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']description["']/i);
             if (descMatch) description = descMatch[1].trim();
-            // Check for screenshot
-            const hasScreenshot = await execSSH(
+            // Check for screenshot (.png preferred, .jpg fallback)
+            const ssCheck = await execSSH(
               ssh,
-              `test -f /opt/openclaw/home/.openclaw/canvas/${name}/.screenshot.png && echo yes || echo no`
+              `test -f /opt/openclaw/home/.openclaw/canvas/${name}/.screenshot.png && echo png || (test -f /opt/openclaw/home/.openclaw/canvas/${name}/.screenshot.jpg && echo jpg || echo no)`
             );
-            if (hasScreenshot.trim() === "yes") {
-              screenshot = `/__openclaw__/canvas/${name}/.screenshot.png`;
+            const ssExt = ssCheck.trim();
+            if (ssExt === "png" || ssExt === "jpg") {
+              screenshot = `/__openclaw__/canvas/${name}/.screenshot.${ssExt}`;
             }
           } catch {
             // Non-blocking — site still appears without metadata

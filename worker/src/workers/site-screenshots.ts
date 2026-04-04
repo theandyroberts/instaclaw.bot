@@ -48,7 +48,7 @@ export const siteScreenshotWorker = new Worker(
         // List sites
         const output = await execSSH(
           ssh,
-          "ls /opt/openclaw/home/.openclaw/canvas/ 2>/dev/null || true"
+          "ls -d /opt/openclaw/home/.openclaw/canvas/*/ 2>/dev/null | xargs -n1 basename || true"
         );
         const sites = output.split("\n").map(s => s.trim()).filter(s => s && s !== ".trash");
 

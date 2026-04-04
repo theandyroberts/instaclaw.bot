@@ -54,8 +54,12 @@ export function SitesList({
   }
 
   const siteUrl = (name: string) => `https://${name}-${instanceName}.instaclaw.bot`;
-  const screenshotUrl = (site: SiteInfo) =>
-    site.screenshot ? `${siteUrl(site.name)}/.screenshot.png` : "";
+  const screenshotUrl = (site: SiteInfo) => {
+    if (!site.screenshot) return "";
+    // Extract extension from server path (e.g. /__openclaw__/canvas/foo/.screenshot.png)
+    const ext = site.screenshot.endsWith(".jpg") ? "jpg" : "png";
+    return `${siteUrl(site.name)}/.screenshot.${ext}`;
+  };
 
   return (
     <div className="space-y-2">
