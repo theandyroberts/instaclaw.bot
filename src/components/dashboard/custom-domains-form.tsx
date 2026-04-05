@@ -39,7 +39,11 @@ export function CustomDomainsForm({ instanceId, initialDomains }: CustomDomainsF
     fetch("/api/instance/sites")
       .then((r) => r.json())
       .then((data) => {
-        const siteList = (data.sites || []).filter((s: string) => s !== "index.html");
+        const raw = data.sites || [];
+        // Handle both old format (string[]) and new format (SiteInfo[])
+        const siteList: string[] = raw
+          .map((s: string | { name: string }) => (typeof s === "string" ? s : s.name))
+          .filter((s: string) => s && s !== "index.html");
         setSites(siteList);
         if (siteList.length > 0 && !selectedSite) {
           setSelectedSite(siteList[0]);
