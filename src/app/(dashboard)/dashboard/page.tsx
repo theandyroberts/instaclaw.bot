@@ -217,23 +217,19 @@ export default async function DashboardPage() {
 
         {/* 3. Public Sites */}
         {instance.status === "active" && instance.instanceName && (
-          <Card className="mt-6">
-            <CardContent className="py-6">
-              <div className="flex items-start gap-3">
-                <Globe className="mt-0.5 h-5 w-5 text-muted-foreground" />
-                <div className="w-full space-y-3">
-                  <h3 className="font-semibold">Your Public Sites</h3>
-                  <SitesList initialSites={sites} instanceName={instance.instanceName} />
-                  <p className="text-xs text-muted-foreground">
-                    Sites are accessible at{" "}
-                    <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
-                      &lt;site&gt;-{instance.instanceName}.instaclaw.bot
-                    </code>
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="mt-6 space-y-3">
+            <div className="flex items-center gap-2">
+              <Globe className="h-5 w-5 text-muted-foreground" />
+              <h3 className="font-semibold">Your Public Sites</h3>
+            </div>
+            <SitesList initialSites={sites} instanceName={instance.instanceName} />
+            <p className="text-xs text-muted-foreground">
+              Sites are accessible at{" "}
+              <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs">
+                &lt;site&gt;-{instance.instanceName}.instaclaw.bot
+              </code>
+            </p>
+          </div>
         )}
 
         {instance.status === "active" && !instance.instanceName && (

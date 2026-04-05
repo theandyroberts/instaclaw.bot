@@ -40,7 +40,7 @@ export function Sidebar({ onboardingIncomplete, isAdmin }: SidebarProps) {
   ];
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-border bg-sidebar">
+    <aside className="hidden md:flex h-screen w-64 flex-col border-r border-border bg-sidebar">
       <div className="border-b border-border p-4">
         <Link href="/" className="text-xl font-bold">
           <span className="text-foreground">Insta</span><span className="text-ember">Claw</span><span className="text-foreground">.bot</span>

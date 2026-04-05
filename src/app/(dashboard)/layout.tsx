@@ -28,7 +28,22 @@ export default async function DashboardLayout({
   return (
     <div className="flex h-screen bg-background">
       <Sidebar onboardingIncomplete={onboardingIncomplete} isAdmin={admin} />
-      <div className="flex-1 overflow-auto">{children}</div>
+      <div className="flex-1 overflow-auto">
+        {/* Mobile nav */}
+        <div className="flex items-center justify-between border-b border-border px-4 py-3 md:hidden">
+          <span className="text-lg font-bold">
+            <span className="text-foreground">Insta</span>
+            <span className="text-ember">Claw</span>
+            <span className="text-foreground">.bot</span>
+          </span>
+          <nav className="flex gap-4 text-sm">
+            <a href="/dashboard" className="text-muted-foreground hover:text-foreground">Overview</a>
+            <a href="/dashboard/billing" className="text-muted-foreground hover:text-foreground">Billing</a>
+            <a href="/dashboard/settings" className="text-muted-foreground hover:text-foreground">Settings</a>
+          </nav>
+        </div>
+        {children}
+      </div>
     </div>
   );
 }
